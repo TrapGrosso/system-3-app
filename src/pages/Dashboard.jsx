@@ -1,48 +1,47 @@
 import { useAuth } from '@/contexts/AuthContext'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { AppSidebar } from "@/components/navigation/app-sidebar"
+import { ChartAreaInteractive } from "@/components/chart-area-interactive"
+import { DataTable } from "@/components/data-table"
+import { SectionCards } from "@/components/section-cards"
+import { SiteHeader } from "@/components/navigation/site-header"
+import {
+  SidebarInset,
+  SidebarProvider,
+} from "@/components/ui/sidebar"
 
-export default function Dashboard() {
+import data from "./data.json"
+
+export default function Page() {
     const { user, signOut } = useAuth()
 
     const handleLogout = async () => {
         await signOut()
     }
 
-    return (
-        <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-                    <Button onClick={handleLogout} variant="outline">
-                        Logout
-                    </Button>
-                </div>
-                
-                <div className="grid gap-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Welcome back!</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-gray-600">
-                                You are successfully logged in as: <span className="font-medium">{user?.email}</span>
-                            </p>
-                        </CardContent>
-                    </Card>
-                    
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Dashboard Content</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-gray-600">
-                                This is your protected dashboard. Only authenticated users can see this content.
-                            </p>
-                        </CardContent>
-                    </Card>
-                </div>
+  return (
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        }
+      }
+    >
+      <AppSidebar variant="inset" />
+      <SidebarInset>
+        <SiteHeader />
+        {/*<div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              <SectionCards />
+              <div className="px-4 lg:px-6">
+                <ChartAreaInteractive />
+              </div>
+              <DataTable data={data} />
             </div>
-        </div>
-    )
+          </div>
+        </div>*/}
+      </SidebarInset>
+    </SidebarProvider>
+  )
 }
