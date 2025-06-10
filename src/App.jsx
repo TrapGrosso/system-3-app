@@ -2,6 +2,9 @@ import './App.css'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
+import AddLeads from './pages/AddLeads'
+import Marketing from './pages/Marketing'
+import Campaigns from './pages/Campaigns'
 import ProtectedRoute from './components/ProtectedRoute'
 import { useAuth } from './contexts/AuthContext'
 import { RoundSpinner } from './components/ui/spinner'
@@ -29,6 +32,30 @@ function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/add-leads" 
+          element={
+            <ProtectedRoute>
+              <AddLeads />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/marketing" 
+          element={
+            <ProtectedRoute>
+              <Marketing />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/campaigns" 
+          element={
+            <ProtectedRoute>
+              <Campaigns />
             </ProtectedRoute>
           } 
         />

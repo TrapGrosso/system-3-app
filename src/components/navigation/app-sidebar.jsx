@@ -31,17 +31,17 @@ const data = {
   navMain: [
     {
       title: "Add Leads",
-      url: "#",
+      url: "/add-leads",
       icon: IconListDetails,
     },
     {
       title: "Marketing",
-      url: "#",
+      url: "/marketing",
       icon: IconChartBar,
     },
     {
       title: "Campaigns",
-      url: "#",
+      url: "/campaigns",
       icon: IconMailSpark,
     }
   ],
