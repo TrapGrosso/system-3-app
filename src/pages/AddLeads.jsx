@@ -1,43 +1,74 @@
+import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Separator } from '@/components/ui/separator'
+import { ManualInput } from '@/components/leads/ManualInput'
+import { CsvUpload } from '@/components/leads/CsvUpload'
+import { SubmitSection } from '@/components/leads/SubmitSection'
 
 export default function AddLeads() {
     const { user } = useAuth()
+    const [manualUrls, setManualUrls] = useState([])
+    const [csvUrls, setCsvUrls] = useState([])
+    const [activeTab, setActiveTab] = useState('manual')
+
+    // Combine URLs from both sources and remove duplicates
+    const allUrls = [...new Set([...manualUrls, ...csvUrls])]
+
+    const handleSuccess = (data) => {
+        // Reset forms after successful submission
+        setManualUrls([])
+        setCsvUrls([])
+        console.log('Success:', data)
+    }
+
+    const handleError = (error) => {
+        console.error('Error:', error)
+    }
 
     return (
         <DashboardLayout headerText="Add Leads">
-            <div className="px-4 lg:px-6">
-                <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-                    <h2 className="text-2xl font-bold mb-4">Lead Management</h2>
-                    <p className="text-muted-foreground mb-6">
-                        Add and manage your leads from this page.
-                    </p>
-                    
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Lead Name</label>
-                                <input 
-                                    type="text" 
-                                    placeholder="Enter lead name"
-                                    className="w-full px-3 py-2 border border-input rounded-md"
+            <div className="px-4 lg:px-6 space-y-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Add LinkedIn Leads</CardTitle>
+                        <CardDescription>
+                            Import LinkedIn profile and company URLs manually or via CSV upload. 
+                            All URLs will be processed and validated on the backend.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                            <TabsList className="grid w-full grid-cols-2">
+                                <TabsTrigger value="manual">Manual Input</TabsTrigger>
+                                <TabsTrigger value="csv">CSV Upload</TabsTrigger>
+                            </TabsList>
+                            
+                            <TabsContent value="manual" className="space-y-4">
+                                <ManualInput 
+                                    onUrlsChange={setManualUrls}
+                                    initialValue=""
                                 />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Email</label>
-                                <input 
-                                    type="email" 
-                                    placeholder="Enter email"
-                                    className="w-full px-3 py-2 border border-input rounded-md"
+                            </TabsContent>
+                            
+                            <TabsContent value="csv" className="space-y-4">
+                                <CsvUpload 
+                                    onDataChange={setCsvUrls}
                                 />
-                            </div>
-                        </div>
+                            </TabsContent>
+                        </Tabs>
                         
-                        <button className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90">
-                            Add Lead
-                        </button>
-                    </div>
-                </div>
+                        <Separator />
+                        
+                        <SubmitSection 
+                            urls={allUrls}
+                            onSuccess={handleSuccess}
+                            onError={handleError}
+                        />
+                    </CardContent>
+                </Card>
             </div>
         </DashboardLayout>
     )
