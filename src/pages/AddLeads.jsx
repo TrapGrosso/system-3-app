@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { useAddLeads } from '@/hooks/useAddLeads'
+import { useAddLeads } from '@/api/add-leads/useAddLeads'
+import { useFetchAddLeadLogs } from '@/api/add-leads/fetchAddLeadLogs'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -31,6 +32,14 @@ export default function AddLeads() {
             console.error('Error:', error)
         }
     })
+
+    // Fetch add lead logs
+    const { 
+        data: logs = [], 
+        isLoading: isLoadingLogs, 
+        isError: isErrorLogs, 
+        error: logsError 
+    } = useFetchAddLeadLogs(user.id)
 
     const handleSubmit = (urls) => {
         if (urls.length === 0) return
@@ -75,7 +84,12 @@ export default function AddLeads() {
                             </TabsContent>
                             
                             <TabsContent value="logs" className="space-y-4">
-                                <LogTable />
+                                <LogTable 
+                                    logs={logs}
+                                    isLoading={isLoadingLogs}
+                                    isError={isErrorLogs}
+                                    error={logsError}
+                                />
                             </TabsContent>
                         </Tabs>
                         

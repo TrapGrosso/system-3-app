@@ -1,51 +1,8 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { RotateCcw } from 'lucide-react'
-
-// Mock data for demonstration - replace with actual Supabase data later
-const mockLogs = [
-  {
-    id: "1",
-    status: "success",
-    start_time: "2025-01-15T10:30:00Z",
-    end_time: "2025-01-15T10:30:02Z",
-    duration_ms: 2000,
-    message: "Successfully processed 25 leads"
-  },
-  {
-    id: "2",
-    status: "failed",
-    start_time: "2025-01-15T10:35:00Z",
-    end_time: "2025-01-15T10:35:05Z",
-    duration_ms: 5000,
-    message: "Failed to process leads: Network timeout"
-  },
-  {
-    id: "3",
-    status: "in_progress",
-    start_time: "2025-01-15T10:40:00Z",
-    end_time: null,
-    duration_ms: null,
-    message: "Processing 10 leads..."
-  },
-  {
-    id: "4",
-    status: "success",
-    start_time: "2025-01-15T09:20:00Z",
-    end_time: "2025-01-15T09:20:01Z",
-    duration_ms: 1200,
-    message: "Successfully processed 5 leads"
-  },
-  {
-    id: "5",
-    status: "failed",
-    start_time: "2025-01-15T09:15:00Z",
-    end_time: "2025-01-15T09:15:03Z",
-    duration_ms: 3000,
-    message: "Failed to process leads: Invalid URL format"
-  }
-]
+import { Skeleton } from '@/components/ui/skeleton'
+import { RotateCcw, AlertCircle, Loader2 } from 'lucide-react'
 
 const getStatusBadge = (status) => {
   switch (status) {
@@ -92,17 +49,79 @@ const handleRetry = (logId) => {
   console.log('Retrying log:', logId)
 }
 
-export const LogTable = () => {
+export const LogTable = ({ logs = [], isLoading = false, isError = false, error = null }) => {
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium">Processing Logs</h3>
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span className="text-sm text-muted-foreground">Loading...</span>
+          </div>
+        </div>
+        
+        <div className="border rounded-lg">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[100px]">Status</TableHead>
+                <TableHead className="w-[180px]">Start Time</TableHead>
+                <TableHead className="w-[180px]">End Time</TableHead>
+                <TableHead className="w-[100px]">Duration</TableHead>
+                <TableHead>Message</TableHead>
+                <TableHead className="w-[80px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {[...Array(3)].map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+                  <TableCell><Skeleton className="h-8 w-16" /></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (isError) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium">Processing Logs</h3>
+          <Badge variant="destructive" className="text-xs">
+            Error
+          </Badge>
+        </div>
+        
+        <div className="text-center py-8 text-muted-foreground">
+          <AlertCircle className="h-8 w-8 mx-auto mb-2 text-destructive" />
+          <p className="text-sm font-medium">Failed to load logs</p>
+          <p className="text-xs mt-1">{error?.message || 'An unexpected error occurred'}</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium">Processing Logs</h3>
         <Badge variant="outline" className="text-xs">
-          {mockLogs.length} total logs
+          {logs.length} total logs
         </Badge>
       </div>
       
-      {mockLogs.length === 0 ? (
+      {logs.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
           <p className="text-sm">No logs available yet.</p>
           <p className="text-xs mt-1">Logs will appear here after processing leads.</p>
@@ -121,7 +140,7 @@ export const LogTable = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockLogs.map((log) => (
+              {logs.map((log) => (
                 <TableRow key={log.id}>
                   <TableCell>
                     {getStatusBadge(log.status)}

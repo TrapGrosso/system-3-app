@@ -6,6 +6,7 @@ import { SectionCards } from "@/components/section-cards"
 
 export default function Dashboard() {
     const { user, signOut } = useAuth()
+    console.log(user)
 
     const handleLogout = async () => {
         await signOut()
