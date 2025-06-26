@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { RotateCcw, AlertCircle, Loader2 } from 'lucide-react'
 
 const getStatusBadge = (status) => {
@@ -155,9 +156,16 @@ export const LogTable = ({ logs = [], isLoading = false, isError = false, error 
                     {formatDuration(log.duration_ms)}
                   </TableCell>
                   <TableCell className="max-w-[300px]">
-                    <span className="text-sm truncate block" title={log.message}>
-                      {log.message}
-                    </span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-sm truncate block cursor-help">
+                          {log.message}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs">
+                        <p className="text-xs">{log.message}</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </TableCell>
                   <TableCell>
                     {log.status === 'failed' ? (
