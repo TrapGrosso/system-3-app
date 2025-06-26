@@ -2,27 +2,11 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
 import { CheckCircle, AlertCircle, Send } from 'lucide-react'
-import { useAddLeads } from '@/hooks/useAddLeads'
 
-export const SubmitSection = ({ urls, onSuccess, onError }) => {
-  const { mutate: submitLeads, isPending, isSuccess, isError, error } = useAddLeads({
-    onSuccess: (data) => {
-      onSuccess?.(data)
-    },
-    onError: (error) => {
-      onError?.(error)
-    }
-  })
-
+export const SubmitSection = ({ urls, onSubmit, isPending, isSuccess, isError, error }) => {
   const handleSubmit = () => {
     if (urls.length === 0) return
-    
-    const leads = urls.map(url => ({
-      url: url.trim(),
-      source: 'manual' // We could make this more specific based on the input method
-    }))
-    
-    submitLeads(leads)
+    onSubmit(urls)
   }
 
   const totalUrls = urls.length
