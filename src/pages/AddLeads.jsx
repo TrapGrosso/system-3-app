@@ -6,10 +6,10 @@ import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
-import { ManualInput } from '@/components/leads/ManualInput'
-import { CsvUpload } from '@/components/leads/CsvUpload'
-import { SubmitSection } from '@/components/leads/SubmitSection'
-import { LogTable } from '@/components/leads/LogTable'
+import { ManualInput } from '@/components/add-leads/ManualInput'
+import { CsvUpload } from '@/components/add-leads/CsvUpload'
+import { SubmitSection } from '@/components/add-leads/SubmitSection'
+import { LogTable } from '@/components/add-leads/LogTable'
 
 export default function AddLeads() {
     const { user } = useAuth()
