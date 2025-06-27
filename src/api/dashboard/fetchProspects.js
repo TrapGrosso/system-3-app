@@ -32,3 +32,47 @@ export const useFetchProspects = (userId) => {
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   })
 }
+
+/**
+ * EXAMPLE PAYLOAD
+ * 
+ * [
+  {
+    "success": true,
+    "data": [
+      {
+        "linkedin_id": "elizaveta-sheshko",
+        "first_name": "Lizaveta",
+        "last_name": "Sheshka",
+        "headline": "IT Innovations Manager | FTECH",
+        "title": "IT Innovation Manager",
+        "status": "new",
+        "location": "Poland",
+        "email": null,
+        "company_name": null,
+        "has_bd_scrape": true,
+        "has_deep_search": false,
+        "note_count": 0,
+        "task_count": 0
+      },
+      {
+        "linkedin_id": "adamjtraub",
+        "first_name": "Adam",
+        "last_name": "Traub",
+        "headline": "Franchise Business Coach",
+        "title": "Franchise Business Coach",
+        "status": "new",
+        "location": "Carlsbad, California, United States",
+        "email": null,
+        "company_name": null,
+        "has_bd_scrape": true,
+        "has_deep_search": false,
+        "note_count": 0,
+        "task_count": 0
+      },
+      ...
+    ],
+    "timestamp": "2025-06-27T17:15:58.654Z"
+  }
+]
+ */
