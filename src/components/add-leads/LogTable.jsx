@@ -45,12 +45,14 @@ const formatDuration = (durationMs) => {
   }
 }
 
-const handleRetry = (logId) => {
-  // TODO: Implement retry logic when Supabase integration is added
-  console.log('Retrying log:', logId)
-}
-
-export const LogTable = ({ logs = [], isLoading = false, isError = false, error = null }) => {
+export const LogTable = ({ 
+  logs = [], 
+  isLoading = false, 
+  isError = false, 
+  error = null,
+  onRetry,
+  isRetryPending = false
+}) => {
   // Loading state
   if (isLoading) {
     return (
@@ -172,10 +174,15 @@ export const LogTable = ({ logs = [], isLoading = false, isError = false, error 
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleRetry(log.id)}
+                        onClick={() => onRetry(log.id)}
+                        disabled={isRetryPending}
                         className="h-8 w-full"
                       >
-                        <RotateCcw className="h-3 w-3 mr-1" />
+                        {isRetryPending ? (
+                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                        ) : (
+                          <RotateCcw className="h-3 w-3 mr-1" />
+                        )}
                         Retry
                       </Button>
                     ) : (

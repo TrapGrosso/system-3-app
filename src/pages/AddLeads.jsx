@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAddLeads } from '@/api/add-leads/useAddLeads'
+import { useRetryAddLeads } from '@/api/add-leads/useRetryAddLeads'
 import { useFetchAddLeadLogs } from '@/api/add-leads/fetchAddLeadLogs'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -16,20 +17,41 @@ export default function AddLeads() {
     const [manualUrls, setManualUrls] = useState([])
     const [csvUrls, setCsvUrls] = useState([])
     const [activeTab, setActiveTab] = useState('manual')
+    const [successMessage, setSuccessMessage] = useState('')
+    const [errorMessage, setErrorMessage] = useState('')
 
     // Combine URLs from both sources and remove duplicates
     const allUrls = [...new Set([...manualUrls, ...csvUrls])]
 
     // Move the useAddLeads hook here
-    const { mutate: submitLeads, isPending, isSuccess, isError, error, data } = useAddLeads({
+    const { mutate: submitLeads, isPending } = useAddLeads({
         onSuccess: (data) => {
-            // Reset forms after successful submission
+            setErrorMessage('') // Clear any existing errors
+            setSuccessMessage(data.message || 'Leads submitted successfully')
             setManualUrls([])
             setCsvUrls([])
+            refetchLogs()
             console.log('Success:', data)
         },
         onError: (error) => {
+            setSuccessMessage('') // Clear any existing success
+            setErrorMessage(error?.message || 'Failed to submit leads')
             console.error('Error:', error)
+        }
+    })
+
+    // Retry leads hook
+    const { mutate: retryAddLeads, isPending: isRetryPending } = useRetryAddLeads({
+        onSuccess: (data) => {
+            setErrorMessage('') // Clear any existing errors
+            setSuccessMessage(data.message || 'Retry submitted successfully')
+            refetchLogs()
+            console.log('Retry submitted successfully')
+        },
+        onError: (error) => {
+            setSuccessMessage('') // Clear any existing success
+            setErrorMessage(error?.message || 'Failed to submit retry')
+            console.error('Retry error:', error)
         }
     })
 
@@ -38,11 +60,15 @@ export default function AddLeads() {
         data: logs = [], 
         isLoading: isLoadingLogs, 
         isError: isErrorLogs, 
-        error: logsError 
+        error: logsError,
+        refetch: refetchLogs
     } = useFetchAddLeadLogs(user.id)
 
     const handleSubmit = (urls) => {
         if (urls.length === 0) return
+        
+        setSuccessMessage('') // Clear messages before new operation
+        setErrorMessage('')
         
         const leads = urls.map(url => ({
             url: url.trim()
@@ -54,6 +80,13 @@ export default function AddLeads() {
         }
         
         submitLeads(payload)
+    }
+
+    const handleRetry = (logId) => {
+        setSuccessMessage('') // Clear messages before new operation
+        setErrorMessage('')
+        
+        retryAddLeads({ log_id: logId, user_id: user.id })
     }
 
     return (
@@ -94,6 +127,8 @@ export default function AddLeads() {
                                     isLoading={isLoadingLogs}
                                     isError={isErrorLogs}
                                     error={logsError}
+                                    onRetry={handleRetry}
+                                    isRetryPending={isRetryPending}
                                 />
                             </TabsContent>
                         </Tabs>
@@ -103,11 +138,9 @@ export default function AddLeads() {
                         <SubmitSection 
                             urls={allUrls}
                             onSubmit={handleSubmit}
-                            isPending={isPending}
-                            isSuccess={isSuccess}
-                            isError={isError}
-                            error={error}
-                            data={data}
+                            isPending={isPending || isRetryPending}
+                            successMessage={successMessage}
+                            errorMessage={errorMessage}
                         />
                     </CardContent>
                 </Card>
