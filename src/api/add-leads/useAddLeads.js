@@ -1,16 +1,19 @@
 import { useMutation } from '@tanstack/react-query'
 
-const submitLeads = async (leads) => {
-  const response = await fetch('https://n8n.coolify.fabiodevelopsthings.com/webhook/add-leads', {
+const submitLeads = async (payload) => {
+  const response = await fetch('https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/addLeads', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
     },
-    body: JSON.stringify({ leads }),
+    body: JSON.stringify(payload),
   })
 
   if (!response.ok) {
-    throw new Error('Failed to submit leads')
+    const error = await response.json()
+    throw new Error(error.error)
   }
 
   return response.json()

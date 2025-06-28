@@ -21,7 +21,7 @@ export default function AddLeads() {
     const allUrls = [...new Set([...manualUrls, ...csvUrls])]
 
     // Move the useAddLeads hook here
-    const { mutate: submitLeads, isPending, isSuccess, isError, error } = useAddLeads({
+    const { mutate: submitLeads, isPending, isSuccess, isError, error, data } = useAddLeads({
         onSuccess: (data) => {
             // Reset forms after successful submission
             setManualUrls([])
@@ -48,7 +48,12 @@ export default function AddLeads() {
             url: url.trim()
         }))
         
-        submitLeads(leads)
+        const payload = {
+            user_id: user.id,
+            leads
+        }
+        
+        submitLeads(payload)
     }
 
     return (
@@ -102,6 +107,7 @@ export default function AddLeads() {
                             isSuccess={isSuccess}
                             isError={isError}
                             error={error}
+                            data={data}
                         />
                     </CardContent>
                 </Card>
