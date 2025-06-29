@@ -170,7 +170,7 @@ export const LogTable = ({
                     </Tooltip>
                   </TableCell>
                   <TableCell>
-                    {log.status === 'failed' ? (
+                    {log.status === 'failed' && log.retry_eligible ? (
                       <Button
                         variant="ghost"
                         size="sm"

@@ -1,4 +1,5 @@
 import { useAuth } from '@/contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
 import { DataTable } from "@/components/data-table"
@@ -9,12 +10,17 @@ import { Spinner } from '@/components/ui/spinner'
 
 export default function Dashboard() {
     const { user, signOut } = useAuth()
+    const navigate = useNavigate()
     console.log(user)
 
     const { data: prospects = [], isLoading, isError } = useFetchProspects(user?.id)
 
     const handleLogout = async () => {
         await signOut()
+    }
+
+    const handleRowClick = (linkedinId) => {
+        navigate(`/prospects/${linkedinId}`)
     }
 
   return (
@@ -42,7 +48,7 @@ export default function Dashboard() {
           </div>
         )}
         
-        {!isLoading && !isError && <ProspectsTable prospects={prospects} />}
+        {!isLoading && !isError && <ProspectsTable prospects={prospects} onRowClick={handleRowClick} />}
       </div>
     </DashboardLayout>
   )

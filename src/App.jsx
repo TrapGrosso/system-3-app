@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard'
 import AddLeads from './pages/AddLeads'
 import Marketing from './pages/Marketing'
 import Campaigns from './pages/Campaigns'
+import ProspectDetails from './pages/ProspectDetails'
 import ProtectedRoute from './components/ProtectedRoute'
 import { useAuth } from './contexts/AuthContext'
 import { RoundSpinner } from './components/ui/spinner'
@@ -56,6 +57,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Campaigns />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/prospects/:linkedinId" 
+          element={
+            <ProtectedRoute>
+              <ProspectDetails />
             </ProtectedRoute>
           } 
         />
