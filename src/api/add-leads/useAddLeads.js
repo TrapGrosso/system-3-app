@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 
-const submitLeads = async (payload) => {
+const addLeads = async (payload) => {
   const response = await fetch('https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/addLeads', {
     method: 'POST',
     headers: {
@@ -21,7 +21,7 @@ const submitLeads = async (payload) => {
 
 export const useAddLeads = (options = {}) => {
   return useMutation({
-    mutationFn: submitLeads,
+    mutationFn: addLeads,
     onSuccess: (data) => {
       console.log('Leads submitted successfully:', data)
       options.onSuccess?.(data)

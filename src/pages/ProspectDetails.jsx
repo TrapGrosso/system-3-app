@@ -1,24 +1,112 @@
 import React from 'react'
 import { useParams } from 'react-router-dom'
 import { DashboardLayout } from '@/components/layouts/DashboardLayout'
+import { Spinner } from '@/components/ui/spinner'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { useAuth } from '@/contexts/AuthContext'
+import { usegetProspectDetails } from '@/api/prospect-details/useGetProspectsDetails'
+import {
+  ProspectHeader,
+  CompanyCard,
+  TabsPanel,
+} from '@/components/prospect-details'
 
 export default function ProspectDetails() {
+  const { user } = useAuth()
   const { linkedinId } = useParams()
+
+  const { data, isLoading, isError, refetch } = usegetProspectDetails(user?.id, linkedinId)
+  console.log(data)
+
+  if (isLoading) {
+    return (
+      <DashboardLayout headerText="Prospect Details">
+        <div className="flex justify-center items-center py-20">
+          <div className="text-center">
+            <Spinner size="lg" className="mb-4" />
+            <p className="text-muted-foreground">Loading prospect details...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  if (isError || Array.isArray(data) && !data.length) {
+    return (
+      <DashboardLayout headerText="Prospect Details">
+        <div className="flex justify-center items-center py-20">
+          <Card className="max-w-md">
+            <CardContent className="pt-6 text-center">
+              <p className="text-muted-foreground mb-4">
+                Failed to load prospect details. Please try again.
+              </p>
+              <Button variant="outline" onClick={() => refetch()}>
+                Retry
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  if (!data) {
+    return (
+      <DashboardLayout headerText="Prospect Details">
+        <div className="flex justify-center items-center py-20">
+          <Card className="max-w-md">
+            <CardContent className="pt-6 text-center">
+              <p className="text-muted-foreground">
+                No prospect found with LinkedIn ID: <strong>{linkedinId}</strong>
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   return (
     <DashboardLayout headerText="Prospect Details">
-      <div className="px-4 lg:px-6">
-        <div className="mb-4">
-          <h2 className="text-2xl font-semibold">Prospect Details</h2>
-          <p className="text-muted-foreground">LinkedIn ID: {linkedinId}</p>
-        </div>
+      <ProspectHeader prospect={data.prospect} />
+      
+      <div className="grid gap-6 px-4 lg:px-6 lg:grid-cols-3 mb-6">
+        <CompanyCard company={data.company} />
         
-        <div className="bg-muted/50 rounded-lg p-6">
-          <p className="text-center text-muted-foreground">
-            Prospect details page placeholder for LinkedIn ID: <strong>{linkedinId}</strong>
-          </p>
-        </div>
+        {/* Optional stats cards can go here in the future */}
+        <Card className="lg:col-span-1">
+          <CardContent className="pt-6">
+            <div className="space-y-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">
+                  {data.notes?.length || 0}
+                </div>
+                <p className="text-sm text-muted-foreground">Notes</p>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">
+                  {data.tasks?.length || 0}
+                </div>
+                <p className="text-sm text-muted-foreground">Tasks</p>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">
+                  {data.campaigns?.length || 0}
+                </div>
+                <p className="text-sm text-muted-foreground">Campaigns</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      <TabsPanel
+        notes={data.notes}
+        tasks={data.tasks}
+        enrichment={data.enrichment}
+        campaigns={data.campaigns}
+      />
     </DashboardLayout>
   )
 }

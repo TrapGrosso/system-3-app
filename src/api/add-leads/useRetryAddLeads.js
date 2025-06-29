@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 
-const submitLeads = async (payload) => {
+const retryAddLeads = async (payload) => {
   const response = await fetch('https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/retryAddLeads', {
     method: 'POST',
     headers: {
@@ -21,7 +21,7 @@ const submitLeads = async (payload) => {
 
 export const useRetryAddLeads = (options = {}) => {
   return useMutation({
-    mutationFn: submitLeads,
+    mutationFn: retryAddLeads,
     onSuccess: (data) => {
       console.log('Retry request submitted successfully:', data)
       options.onSuccess?.(data)

@@ -11,7 +11,6 @@ import { Spinner } from '@/components/ui/spinner'
 export default function Dashboard() {
     const { user, signOut } = useAuth()
     const navigate = useNavigate()
-    console.log(user)
 
     const { data: prospects = [], isLoading, isError } = useFetchProspects(user?.id)
 
