@@ -1,11 +1,65 @@
+import {
+  IconChartBar,
+  IconDashboard,
+  IconHelp,
+  IconListDetails,
+  IconSettings,
+  IconMailSpark,
+} from "@tabler/icons-react"
+
 import { AppSidebar } from "@/components/navigation/app-sidebar"
 import { SiteHeader } from "@/components/navigation/site-header"
 import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
+import { useAuth } from "@/contexts/AuthContext"
 
 export function DashboardLayout({ children, headerText = "Dashboard" }) {
+  const { user, signOut } = useAuth()
+
+  const sidebarData = {
+    user: {
+      name: user.user_metadata.name,
+      email: user.email,
+      avatar: "/avatars/shadcn.jpg",
+      fallback: user.user_metadata.name.split('')[0].toUpperCase()
+    },
+    navMain: [
+      {
+        title: "Dashboard",
+        url: "/dashboard",
+        icon: IconDashboard
+      },
+      {
+        title: "Add Leads",
+        url: "/add-leads",
+        icon: IconListDetails,
+      },
+      {
+        title: "Marketing",
+        url: "/marketing",
+        icon: IconChartBar,
+      },
+      {
+        title: "Campaigns",
+        url: "/campaigns",
+        icon: IconMailSpark,
+      }
+    ],
+    navSecondary: [
+      {
+        title: "Settings",
+        url: "#",
+        icon: IconSettings,
+      },
+      {
+        title: "Get Help",
+        url: "#",
+        icon: IconHelp,
+      }
+    ]
+  }
   return (
     <SidebarProvider
       style={
@@ -15,7 +69,7 @@ export function DashboardLayout({ children, headerText = "Dashboard" }) {
         }
       }
     >
-      <AppSidebar variant="inset" />
+      <AppSidebar data={sidebarData} onSignOut={signOut} variant="inset" />
       <SidebarInset>
         <SiteHeader headerText={headerText} />
         <div className="flex flex-1 flex-col">

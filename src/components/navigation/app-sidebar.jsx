@@ -22,46 +22,12 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navMain: [
-    {
-      title: "Add Leads",
-      url: "/add-leads",
-      icon: IconListDetails,
-    },
-    {
-      title: "Marketing",
-      url: "/marketing",
-      icon: IconChartBar,
-    },
-    {
-      title: "Campaigns",
-      url: "/campaigns",
-      icon: IconMailSpark,
-    }
-  ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: IconSettings,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: IconHelp,
-    }
-  ]
-}
-
 export function AppSidebar({
+  data,
+  onSignOut,
   ...props
 }) {
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -81,7 +47,7 @@ export function AppSidebar({
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={data.user} onSignOut={onSignOut} />
       </SidebarFooter>
     </Sidebar>
   );
