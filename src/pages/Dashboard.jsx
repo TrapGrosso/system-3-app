@@ -17,6 +17,44 @@ export default function Dashboard() {
         navigate(`/prospects/${linkedinId}`)
     }
 
+    // Individual prospect action handlers
+    const handleAddToGroup = (linkedinId) => {
+        // TODO: Implement actual API call
+        console.log('Add to group:', linkedinId)
+        alert(`Adding prospect ${linkedinId} to group`)
+    }
+
+    const handleAddToCampaign = (linkedinId) => {
+        // TODO: Implement actual API call
+        console.log('Add to campaign:', linkedinId)
+        alert(`Adding prospect ${linkedinId} to campaign`)
+    }
+
+    const handleAddToDeepSearch = (linkedinId) => {
+        // TODO: Implement actual API call
+        console.log('Add to deep search queue:', linkedinId)
+        alert(`Adding prospect ${linkedinId} to deep search queue`)
+    }
+
+    // Bulk action handlers
+    const handleBulkAddToGroup = (linkedinIds) => {
+        // TODO: Implement actual API call
+        console.log('Bulk add to group:', linkedinIds)
+        alert(`Adding ${linkedinIds.length} prospects to group`)
+    }
+
+    const handleBulkAddToCampaign = (linkedinIds) => {
+        // TODO: Implement actual API call
+        console.log('Bulk add to campaign:', linkedinIds)
+        alert(`Adding ${linkedinIds.length} prospects to campaign`)
+    }
+
+    const handleBulkAddToDeepSearch = (linkedinIds) => {
+        // TODO: Implement actual API call
+        console.log('Bulk add to deep search queue:', linkedinIds)
+        alert(`Adding ${linkedinIds.length} prospects to deep search queue`)
+    }
+
   return (
     <DashboardLayout headerText="Dashboard">
       <SectionCards />
@@ -42,7 +80,18 @@ export default function Dashboard() {
           </div>
         )}
         
-        {!isLoading && !isError && <ProspectsTable prospects={prospects} onRowClick={handleRowClick} />}
+        {!isLoading && !isError && (
+          <ProspectsTable 
+            prospects={prospects} 
+            onRowClick={handleRowClick}
+            onAddToGroup={handleAddToGroup}
+            onAddToCampaign={handleAddToCampaign}
+            onAddToDeepSearch={handleAddToDeepSearch}
+            onBulkAddToGroup={handleBulkAddToGroup}
+            onBulkAddToCampaign={handleBulkAddToCampaign}
+            onBulkAddToDeepSearch={handleBulkAddToDeepSearch}
+          />
+        )}
       </div>
     </DashboardLayout>
   )

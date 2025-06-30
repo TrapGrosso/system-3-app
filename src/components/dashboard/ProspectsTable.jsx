@@ -55,191 +55,256 @@ const getStatusVariant = (status) => {
   }
 }
 
-const columns = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <div className="flex items-center justify-center">
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all" />
-      </div>
-    ),
-    cell: ({ row }) => (
-      <div className="flex items-center justify-center">
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row" />
-      </div>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "first_name",
-    header: "First Name",
-    cell: ({ row }) => (
-      <div className="font-medium">
-        {row.original.first_name || '—'}
-      </div>
-    ),
-    filterFn: (row, id, value) => {
-      const firstName = row.original.first_name || ''
-      const lastName = row.original.last_name || ''
-      const fullName = `${firstName} ${lastName}`.toLowerCase()
-      return fullName.includes(value.toLowerCase())
-    },
-  },
-  {
-    accessorKey: "last_name",
-    header: "Last Name",
-    cell: ({ row }) => (
-      <div>{row.original.last_name || '—'}</div>
-    ),
-  },
-  {
-    accessorKey: "title",
-    header: "Title",
-    cell: ({ row }) => (
-      <div className="max-w-xs">
-        <div className="truncate" title={row.original.title || row.original.headline}>
-          {row.original.title || row.original.headline || '—'}
-        </div>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => (
-      <Badge variant={getStatusVariant(row.original.status)}>
-        {row.original.status || 'Unknown'}
-      </Badge>
-    ),
-    filterFn: (row, id, value) => {
-      if (value === 'all') return true
-      return row.original.status?.toLowerCase() === value.toLowerCase()
-    },
-  },
-  {
-    accessorKey: "location",
-    header: "Location",
-    cell: ({ row }) => (
-      <div className="max-w-xs">
-        <div className="truncate" title={row.original.location}>
-          {row.original.location || '—'}
-        </div>
-      </div>
-    ),
-    filterFn: (row, id, value) => {
-      if (value === 'all') return true
-      return row.original.location?.toLowerCase().includes(value.toLowerCase())
-    },
-  },
-  {
-    accessorKey: "email",
-    header: "Email",
-    cell: ({ row }) => (
-      <div>
-        {row.original.email ? (
-          <a 
-            href={`mailto:${row.original.email}`}
-            className="text-blue-600 hover:underline"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {row.original.email}
-          </a>
-        ) : (
-          '—'
-        )}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "company_name",
-    header: "Company",
-    cell: ({ row }) => (
-      <div className="max-w-xs">
-        <div className="truncate" title={row.original.company_name}>
-          {row.original.company_name || '—'}
-        </div>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "note_count",
-    header: "Notes",
-    cell: ({ row }) => (
-      <div className="text-right">
-        {row.original.note_count || 0}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "task_count",
-    header: "Tasks",
-    cell: ({ row }) => (
-      <div className="text-right">
-        {row.original.task_count || 0}
-      </div>
-    ),
-  },
-  {
-    id: "actions",
-    header: "",
-    cell: ({ row }) => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="h-8 w-8 p-0"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className="sr-only">Open menu</span>
-            <MoreHorizontalIcon className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation()
-              alert(`Add note for ${row.original.first_name} ${row.original.last_name}`)
-            }}
-          >
-            Add Note
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation()
-              alert(`Create task for ${row.original.first_name} ${row.original.last_name}`)
-            }}
-          >
-            Create Task
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="text-destructive"
-            onClick={(e) => {
-              e.stopPropagation()
-              alert(`Delete ${row.original.first_name} ${row.original.last_name}`)
-            }}
-          >
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-]
+const getBooleanVariant = (value) => {
+  return value ? 'default' : 'outline'
+}
 
-export default function ProspectsTable({ prospects = [], onRowClick }) {
+export default function ProspectsTable({ 
+  prospects = [], 
+  onRowClick,
+  onAddToGroup,
+  onAddToCampaign,
+  onAddToDeepSearch,
+  onBulkAddToGroup,
+  onBulkAddToCampaign,
+  onBulkAddToDeepSearch
+}) {
+  
+  const columns = React.useMemo(() => [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <div className="flex items-center justify-center">
+          <Checkbox
+            checked={
+              table.getIsAllPageRowsSelected() ||
+              (table.getIsSomePageRowsSelected() && "indeterminate")
+            }
+            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+            aria-label="Select all" />
+        </div>
+      ),
+      cell: ({ row }) => (
+        <div className="flex items-center justify-center">
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Select row" />
+        </div>
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "first_name",
+      header: "First Name",
+      cell: ({ row }) => (
+        <div className="font-medium">
+          {row.original.first_name || '—'}
+        </div>
+      ),
+      filterFn: (row, id, value) => {
+        const firstName = row.original.first_name || ''
+        const lastName = row.original.last_name || ''
+        const fullName = `${firstName} ${lastName}`.toLowerCase()
+        return fullName.includes(value.toLowerCase())
+      },
+    },
+    {
+      accessorKey: "last_name",
+      header: "Last Name",
+      cell: ({ row }) => (
+        <div>{row.original.last_name || '—'}</div>
+      ),
+    },
+    {
+      accessorKey: "title",
+      header: "Title",
+      cell: ({ row }) => (
+        <div className="max-w-xs">
+          <div className="truncate" title={row.original.title || row.original.headline}>
+            {row.original.title || row.original.headline || '—'}
+          </div>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => (
+        <Badge variant={getStatusVariant(row.original.status)}>
+          {row.original.status || 'Unknown'}
+        </Badge>
+      ),
+      filterFn: (row, id, value) => {
+        if (value === 'all') return true
+        return row.original.status?.toLowerCase() === value.toLowerCase()
+      },
+    },
+    {
+      accessorKey: "in_group",
+      header: "Group",
+      cell: ({ row }) => (
+        <Badge variant={getBooleanVariant(row.original.groups?.length > 0)}>
+          {row.original.groups?.length > 0 ? '✓' : '—'}
+        </Badge>
+      ),
+      filterFn: (row, id, value) => {
+        if (value === 'all') return true
+        const hasGroup = row.original.groups?.length > 0
+        return value === 'yes' ? hasGroup : !hasGroup
+      },
+    },
+    {
+      accessorKey: "in_campaign",
+      header: "Campaign",
+      cell: ({ row }) => (
+        <Badge variant={getBooleanVariant(row.original.campaigns?.length > 0)}>
+          {row.original.campaigns?.length > 0 ? '✓' : '—'}
+        </Badge>
+      ),
+      filterFn: (row, id, value) => {
+        if (value === 'all') return true
+        const hasCampaign = row.original.campaigns?.length > 0
+        return value === 'yes' ? hasCampaign : !hasCampaign
+      },
+    },
+    {
+      accessorKey: "email",
+      header: "Email",
+      cell: ({ row }) => (
+        <div>
+          {row.original.email ? (
+            <a 
+              href={`mailto:${row.original.email}`}
+              className="text-blue-600 hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {row.original.email}
+            </a>
+          ) : (
+            '—'
+          )}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "company_name",
+      header: "Company",
+      cell: ({ row }) => (
+        <div className="max-w-xs">
+          <div className="truncate" title={row.original.company_name}>
+            {row.original.company_name || '—'}
+          </div>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "note_count",
+      header: "Notes",
+      cell: ({ row }) => (
+        <div className="text-right">
+          {row.original.note_count || 0}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "task_count",
+      header: "Tasks",
+      cell: ({ row }) => (
+        <div className="text-right">
+          {row.original.task_count || 0}
+        </div>
+      ),
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="h-8 w-8 p-0"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontalIcon className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                alert(`Add note for ${row.original.first_name} ${row.original.last_name}`)
+              }}
+            >
+              Add Note
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                alert(`Create task for ${row.original.first_name} ${row.original.last_name}`)
+              }}
+            >
+              Create Task
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                if (onAddToGroup) {
+                  onAddToGroup(row.original.linkedin_id)
+                } else {
+                  alert(`Add ${row.original.first_name} ${row.original.last_name} to group`)
+                }
+              }}
+            >
+              Add to Group
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                if (onAddToCampaign) {
+                  onAddToCampaign(row.original.linkedin_id)
+                } else {
+                  alert(`Add ${row.original.first_name} ${row.original.last_name} to campaign`)
+                }
+              }}
+            >
+              Add to Campaign
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                if (onAddToDeepSearch) {
+                  onAddToDeepSearch(row.original.linkedin_id)
+                } else {
+                  alert(`Add ${row.original.first_name} ${row.original.last_name} to deep search queue`)
+                }
+              }}
+            >
+              Add to Deep Search Queue
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={(e) => {
+                e.stopPropagation()
+                alert(`Delete ${row.original.first_name} ${row.original.last_name}`)
+              }}
+            >
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+  ], [onAddToGroup, onAddToCampaign, onAddToDeepSearch])
+
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnFilters, setColumnFilters] = React.useState([])
   const [sorting, setSorting] = React.useState([])
@@ -249,9 +314,11 @@ export default function ProspectsTable({ prospects = [], onRowClick }) {
   })
 
   // Search state
-  const [globalFilter, setGlobalFilter] = React.useState("")
+  const [globalFilterColumn, setGlobalFilterColumn] = React.useState("first_name")
+  const [globalFilterValue, setGlobalFilterValue] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState("all")
-  const [locationFilter, setLocationFilter] = React.useState("all")
+  const [groupFilter, setGroupFilter] = React.useState("all")
+  const [campaignFilter, setCampaignFilter] = React.useState("all")
 
   const table = useReactTable({
     data: prospects,
@@ -276,20 +343,25 @@ export default function ProspectsTable({ prospects = [], onRowClick }) {
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
-  // Handle search filter
+  // Handle global filter
   React.useEffect(() => {
-    table.getColumn("first_name")?.setFilterValue(globalFilter)
-  }, [globalFilter, table])
+    table.getColumn(globalFilterColumn)?.setFilterValue(globalFilterValue || "")
+  }, [globalFilterColumn, globalFilterValue, table])
 
   // Handle status filter
   React.useEffect(() => {
     table.getColumn("status")?.setFilterValue(statusFilter === "all" ? "" : statusFilter)
   }, [statusFilter, table])
 
-  // Handle location filter
+  // Handle group filter
   React.useEffect(() => {
-    table.getColumn("location")?.setFilterValue(locationFilter === "all" ? "" : locationFilter)
-  }, [locationFilter, table])
+    table.getColumn("in_group")?.setFilterValue(groupFilter === "all" ? "" : groupFilter)
+  }, [groupFilter, table])
+
+  // Handle campaign filter
+  React.useEffect(() => {
+    table.getColumn("in_campaign")?.setFilterValue(campaignFilter === "all" ? "" : campaignFilter)
+  }, [campaignFilter, table])
 
   // Get unique values for filter dropdowns
   const uniqueStatuses = React.useMemo(() => {
@@ -297,10 +369,14 @@ export default function ProspectsTable({ prospects = [], onRowClick }) {
     return [...new Set(statuses)]
   }, [prospects])
 
-  const uniqueLocations = React.useMemo(() => {
-    const locations = prospects.map(p => p.location).filter(Boolean)
-    return [...new Set(locations)]
-  }, [prospects])
+  // Available columns for global filtering (excluding already filtered columns)
+  const filterableColumns = React.useMemo(() => [
+    { value: "first_name", label: "Name" },
+    { value: "last_name", label: "Last Name" },
+    { value: "title", label: "Title" },
+    { value: "email", label: "Email" },
+    { value: "company_name", label: "Company" }
+  ], [])
 
   const selectedRows = table.getFilteredSelectedRowModel().rows
   const selectedCount = selectedRows.length
@@ -314,7 +390,8 @@ export default function ProspectsTable({ prospects = [], onRowClick }) {
   }
 
   const handleBulkAction = (action) => {
-    const selectedProspects = selectedRows.map(row => row.original)
+    const selectedLinkedinIds = selectedRows.map(row => row.original.linkedin_id)
+    
     switch (action) {
       case 'email':
         alert(`Send email to ${selectedCount} prospects`)
@@ -324,6 +401,27 @@ export default function ProspectsTable({ prospects = [], onRowClick }) {
         break
       case 'export':
         alert(`Export ${selectedCount} prospects`)
+        break
+      case 'addToGroup':
+        if (onBulkAddToGroup) {
+          onBulkAddToGroup(selectedLinkedinIds)
+        } else {
+          alert(`Add ${selectedCount} prospects to group`)
+        }
+        break
+      case 'addToCampaign':
+        if (onBulkAddToCampaign) {
+          onBulkAddToCampaign(selectedLinkedinIds)
+        } else {
+          alert(`Add ${selectedCount} prospects to campaign`)
+        }
+        break
+      case 'addToDeepSearch':
+        if (onBulkAddToDeepSearch) {
+          onBulkAddToDeepSearch(selectedLinkedinIds)
+        } else {
+          alert(`Add ${selectedCount} prospects to deep search queue`)
+        }
         break
       default:
         break
@@ -379,15 +477,29 @@ export default function ProspectsTable({ prospects = [], onRowClick }) {
       {/* Filters Section */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-6">
-          {/* Search Input */}
-          <div className="relative">
-            <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search prospects..."
-              value={globalFilter}
-              onChange={(e) => setGlobalFilter(e.target.value)}
-              className="pl-8 w-full lg:w-64"
-            />
+          {/* Global Filter */}
+          <div className="flex items-center gap-2">
+            <Select value={globalFilterColumn} onValueChange={setGlobalFilterColumn}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {filterableColumns.map((column) => (
+                  <SelectItem key={column.value} value={column.value}>
+                    {column.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="relative">
+              <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search..."
+                value={globalFilterValue}
+                onChange={(e) => setGlobalFilterValue(e.target.value)}
+                className="pl-8 w-full lg:w-48"
+              />
+            </div>
           </div>
 
           {/* Status Filter */}
@@ -410,24 +522,36 @@ export default function ProspectsTable({ prospects = [], onRowClick }) {
             </Select>
           </div>
 
-          {/* Location Filter */}
+          {/* Group Filter */}
           <div className="flex items-center gap-2">
-            <Label htmlFor="location-filter" className="text-sm font-medium whitespace-nowrap">
-              Location:
+            <Label htmlFor="group-filter" className="text-sm font-medium whitespace-nowrap">
+              Group:
             </Label>
-            <Select value={locationFilter} onValueChange={setLocationFilter}>
-              <SelectTrigger className="w-40" id="location-filter">
+            <Select value={groupFilter} onValueChange={setGroupFilter}>
+              <SelectTrigger className="w-32" id="group-filter">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
-                {uniqueLocations.slice(0, 10).map((location) => (
-                  <SelectItem key={location} value={location}>
-                    <div className="truncate" title={location}>
-                      {location}
-                    </div>
-                  </SelectItem>
-                ))}
+                <SelectItem value="yes">In Group</SelectItem>
+                <SelectItem value="no">No Group</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Campaign Filter */}
+          <div className="flex items-center gap-2">
+            <Label htmlFor="campaign-filter" className="text-sm font-medium whitespace-nowrap">
+              Campaign:
+            </Label>
+            <Select value={campaignFilter} onValueChange={setCampaignFilter}>
+              <SelectTrigger className="w-32" id="campaign-filter">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="yes">In Campaign</SelectItem>
+                <SelectItem value="no">No Campaign</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -443,6 +567,16 @@ export default function ProspectsTable({ prospects = [], onRowClick }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleBulkAction('addToGroup')}>
+                Add to Group
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleBulkAction('addToCampaign')}>
+                Add to Campaign
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleBulkAction('addToDeepSearch')}>
+                Add to Deep Search Queue
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleBulkAction('email')}>
                 Send Email
               </DropdownMenuItem>

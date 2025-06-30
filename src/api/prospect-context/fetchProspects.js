@@ -36,7 +36,7 @@ export const useFetchProspects = (userId) => {
 /**
  * EXAMPLE PAYLOAD
  * 
- * [
+ * 
   {
     "success": true,
     "data": [
@@ -53,7 +53,9 @@ export const useFetchProspects = (userId) => {
         "has_bd_scrape": true,
         "has_deep_search": false,
         "note_count": 0,
-        "task_count": 0
+        "task_count": 0,
+        "groups": [],
+        "campaigns": []
       },
       {
         "linkedin_id": "adamjtraub",
@@ -68,11 +70,28 @@ export const useFetchProspects = (userId) => {
         "has_bd_scrape": true,
         "has_deep_search": false,
         "note_count": 0,
-        "task_count": 0
+        "task_count": 0,
+        "groups": [],
+        "campaigns": []
       },
-      ...
+      {
+        "linkedin_id": "lifespider",
+        "first_name": "Birgitta",
+        "last_name": "Granstrom",
+        "headline": "Do you belong to The Weird Ones? If you've ever felt out of place, misunderstood, or…",
+        "title": "",
+        "status": "new",
+        "location": "Salem, Oregon, United States",
+        "email": null,
+        "company_name": null,
+        "has_bd_scrape": true,
+        "has_deep_search": false,
+        "note_count": 0,
+        "task_count": 0,
+        "groups": [],
+        "campaigns": []
+      }
     ],
-    "timestamp": "2025-06-27T17:15:58.654Z"
+    "timestamp": "2025-06-30T11:07:09.530Z"
   }
-]
  */
