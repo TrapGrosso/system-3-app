@@ -58,6 +58,7 @@ function HandleGroupsDialog({
       if (data.duplicates > 0) {
         toast.info(`${data.duplicates} duplicate${data.duplicates !== 1 ? 's' : ''} were skipped`)
       }
+      refetchGroups() // Refresh groups immediately after successful addition
       if (setDialogOpen) {
         setDialogOpen(false)
       }

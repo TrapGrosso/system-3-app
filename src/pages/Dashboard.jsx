@@ -12,7 +12,7 @@ import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
 
 export default function Dashboard() {
     const { user, signOut } = useAuth()
-    const { prospects, isLoading, isError } = useProspects()
+    const { prospects, isLoading, isError, refetch: refetchProspects } = useProspects()
     const navigate = useNavigate()
 
     // State for HandleGroupsDialog
@@ -106,8 +106,7 @@ export default function Dashboard() {
         open={addGroupOpen}
         onOpenChange={setAddGroupOpen}
         onSuccess={() => {
-          // Optional: refetch prospects if they're cached
-          // refetchProspects()
+          refetchProspects() // Refresh prospects list after successful group addition
           setAddGroupOpen(false)
           setProspectIdsForGroup([])
         }}
