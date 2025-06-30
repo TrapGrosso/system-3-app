@@ -1,22 +1,17 @@
 import { useAuth } from '@/contexts/AuthContext'
+import { useProspects } from '@/contexts/ProspectsContext'
 import { useNavigate } from 'react-router-dom'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
 import { DataTable } from "@/components/data-table"
 import { SectionCards } from "@/components/section-cards"
-import { useFetchProspects } from '@/api/dashboard/fetchProspects'
 import ProspectsTable from '@/components/dashboard/ProspectsTable'
 import { Spinner } from '@/components/ui/spinner'
 
 export default function Dashboard() {
     const { user, signOut } = useAuth()
+    const { prospects, isLoading, isError } = useProspects()
     const navigate = useNavigate()
-
-    const { data: prospects = [], isLoading, isError } = useFetchProspects(user?.id)
-
-    const handleLogout = async () => {
-        await signOut()
-    }
 
     const handleRowClick = (linkedinId) => {
         navigate(`/prospects/${linkedinId}`)
