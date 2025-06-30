@@ -31,10 +31,17 @@ function HandleGroupsDialog({
   prospect_ids = [], 
   onSuccess,
   trigger,
-  children 
+  children,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange
 }) {
-  const [open, setOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
   const [selectedGroupId, setSelectedGroupId] = useState("")
+  
+  // Determine if this is controlled or uncontrolled
+  const isControlled = controlledOpen !== undefined
+  const dialogOpen = isControlled ? controlledOpen : internalOpen
+  const setDialogOpen = isControlled ? controlledOnOpenChange : setInternalOpen
   
   // Fetch groups
   const { 
@@ -51,7 +58,9 @@ function HandleGroupsDialog({
       if (data.duplicates > 0) {
         toast.info(`${data.duplicates} duplicate${data.duplicates !== 1 ? 's' : ''} were skipped`)
       }
-      setOpen(false)
+      if (setDialogOpen) {
+        setDialogOpen(false)
+      }
       setSelectedGroupId("")
       onSuccess?.(data)
     },
@@ -70,7 +79,9 @@ function HandleGroupsDialog({
   }
 
   const handleOpenChange = (newOpen) => {
-    setOpen(newOpen)
+    if (setDialogOpen) {
+      setDialogOpen(newOpen)
+    }
     if (!newOpen) {
       setSelectedGroupId("")
     }
@@ -80,7 +91,7 @@ function HandleGroupsDialog({
   const isSubmitting = addToGroupMutation.isPending
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       
@@ -148,7 +159,7 @@ function HandleGroupsDialog({
         <DialogFooter>
           <Button 
             variant="outline" 
-            onClick={() => setOpen(false)}
+            onClick={() => handleOpenChange(false)}
             disabled={isSubmitting}
           >
             Cancel

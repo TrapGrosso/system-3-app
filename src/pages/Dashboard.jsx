@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProspects } from '@/contexts/ProspectsContext'
 import { useNavigate } from 'react-router-dom'
@@ -7,11 +8,16 @@ import { DataTable } from "@/components/data-table"
 import { SectionCards } from "@/components/section-cards"
 import ProspectsTable from '@/components/dashboard/ProspectsTable'
 import { Spinner } from '@/components/ui/spinner'
+import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
 
 export default function Dashboard() {
     const { user, signOut } = useAuth()
     const { prospects, isLoading, isError } = useProspects()
     const navigate = useNavigate()
+
+    // State for HandleGroupsDialog
+    const [addGroupOpen, setAddGroupOpen] = useState(false)
+    const [prospectIdsForGroup, setProspectIdsForGroup] = useState([])
 
     const handleRowClick = (linkedinId) => {
         navigate(`/prospects/${linkedinId}`)
@@ -19,9 +25,8 @@ export default function Dashboard() {
 
     // Individual prospect action handlers
     const handleAddToGroup = (linkedinId) => {
-        // TODO: Implement actual API call
-        console.log('Add to group:', linkedinId)
-        alert(`Adding prospect ${linkedinId} to group`)
+        setProspectIdsForGroup([linkedinId])
+        setAddGroupOpen(true)
     }
 
     const handleAddToCampaign = (linkedinId) => {
@@ -38,9 +43,9 @@ export default function Dashboard() {
 
     // Bulk action handlers
     const handleBulkAddToGroup = (linkedinIds) => {
-        // TODO: Implement actual API call
-        console.log('Bulk add to group:', linkedinIds)
-        alert(`Adding ${linkedinIds.length} prospects to group`)
+        if (!linkedinIds.length) return
+        setProspectIdsForGroup(linkedinIds)
+        setAddGroupOpen(true)
     }
 
     const handleBulkAddToCampaign = (linkedinIds) => {
@@ -93,6 +98,20 @@ export default function Dashboard() {
           />
         )}
       </div>
+      
+      {/* HandleGroupsDialog - controlled by Dashboard state */}
+      <HandleGroupsDialog
+        user_id={user?.id}
+        prospect_ids={prospectIdsForGroup}
+        open={addGroupOpen}
+        onOpenChange={setAddGroupOpen}
+        onSuccess={() => {
+          // Optional: refetch prospects if they're cached
+          // refetchProspects()
+          setAddGroupOpen(false)
+          setProspectIdsForGroup([])
+        }}
+      />
     </DashboardLayout>
   )
 }
