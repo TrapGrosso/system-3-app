@@ -38,59 +38,25 @@ export const useFetchProspects = (userId) => {
  * 
  * 
   {
-    "success": true,
+    "success": boolean,
     "data": [
-      {
-        "linkedin_id": "elizaveta-sheshko",
-        "first_name": "Lizaveta",
-        "last_name": "Sheshka",
-        "headline": "IT Innovations Manager | FTECH",
-        "title": "IT Innovation Manager",
-        "status": "new",
-        "location": "Poland",
-        "email": null,
-        "company_name": null,
-        "has_bd_scrape": true,
-        "has_deep_search": false,
-        "note_count": 0,
-        "task_count": 0,
-        "groups": [],
-        "campaigns": []
-      },
-      {
-        "linkedin_id": "adamjtraub",
-        "first_name": "Adam",
-        "last_name": "Traub",
-        "headline": "Franchise Business Coach",
-        "title": "Franchise Business Coach",
-        "status": "new",
-        "location": "Carlsbad, California, United States",
-        "email": null,
-        "company_name": null,
-        "has_bd_scrape": true,
-        "has_deep_search": false,
-        "note_count": 0,
-        "task_count": 0,
-        "groups": [],
-        "campaigns": []
-      },
-      {
-        "linkedin_id": "lifespider",
-        "first_name": "Birgitta",
-        "last_name": "Granstrom",
-        "headline": "Do you belong to The Weird Ones? If you've ever felt out of place, misunderstood, or…",
-        "title": "",
-        "status": "new",
-        "location": "Salem, Oregon, United States",
-        "email": null,
-        "company_name": null,
-        "has_bd_scrape": true,
-        "has_deep_search": false,
-        "note_count": 0,
-        "task_count": 0,
-        "groups": [],
-        "campaigns": []
-      }
+     {
+      linkedin_id: string;
+      first_name: string | null;
+      last_name: string | null;
+      headline: string | null;
+      title: string | null;
+      status: string | null;
+      location: string | null;
+      email: string | null;
+      company_name: string | null;
+      has_bd_scrape: boolean;
+      has_deep_search: boolean;
+      note_count: number;
+      task_count: number;
+      groups: { id: string; name: string }[];
+      campaigns: { id: string; name: string }[];
+    }
     ],
     "timestamp": "2025-06-30T11:07:09.530Z"
   }

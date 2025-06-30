@@ -152,8 +152,12 @@ export default function ProspectsTable({
       ),
       filterFn: (row, id, value) => {
         if (value === 'all') return true
-        const hasGroup = row.original.groups?.length > 0
-        return value === 'yes' ? hasGroup : !hasGroup
+        const groups = row.original.groups || []
+        if (value === 'none') return groups.length === 0
+        if (value === 'yes') return groups.length > 0
+        if (value === 'no') return groups.length === 0
+        // Check for specific group name
+        return groups.some(g => (g.name || '').toLowerCase() === value.toLowerCase())
       },
     },
     {
@@ -166,8 +170,12 @@ export default function ProspectsTable({
       ),
       filterFn: (row, id, value) => {
         if (value === 'all') return true
-        const hasCampaign = row.original.campaigns?.length > 0
-        return value === 'yes' ? hasCampaign : !hasCampaign
+        const campaigns = row.original.campaigns || []
+        if (value === 'none') return campaigns.length === 0
+        if (value === 'yes') return campaigns.length > 0
+        if (value === 'no') return campaigns.length === 0
+        // Check for specific campaign name
+        return campaigns.some(c => (c.name || '').toLowerCase() === value.toLowerCase())
       },
     },
     {
@@ -369,6 +377,24 @@ export default function ProspectsTable({
     return [...new Set(statuses)]
   }, [prospects])
 
+  // Get unique group names
+  const uniqueGroupNames = React.useMemo(() => {
+    const groupNames = prospects
+      .flatMap(p => p.groups || [])
+      .map(g => g.name)
+      .filter(Boolean)
+    return [...new Set(groupNames)].sort()
+  }, [prospects])
+
+  // Get unique campaign names
+  const uniqueCampaignNames = React.useMemo(() => {
+    const campaignNames = prospects
+      .flatMap(p => p.campaigns || [])
+      .map(c => c.name)
+      .filter(Boolean)
+    return [...new Set(campaignNames)].sort()
+  }, [prospects])
+
   // Available columns for global filtering (excluding already filtered columns)
   const filterableColumns = React.useMemo(() => [
     { value: "first_name", label: "Name" },
@@ -528,13 +554,17 @@ export default function ProspectsTable({
               Group:
             </Label>
             <Select value={groupFilter} onValueChange={setGroupFilter}>
-              <SelectTrigger className="w-32" id="group-filter">
+              <SelectTrigger className="w-40" id="group-filter">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
-                <SelectItem value="yes">In Group</SelectItem>
-                <SelectItem value="no">No Group</SelectItem>
+                <SelectItem value="none">No Group</SelectItem>
+                {uniqueGroupNames.map((groupName) => (
+                  <SelectItem key={groupName} value={groupName}>
+                    {groupName}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -545,13 +575,17 @@ export default function ProspectsTable({
               Campaign:
             </Label>
             <Select value={campaignFilter} onValueChange={setCampaignFilter}>
-              <SelectTrigger className="w-32" id="campaign-filter">
+              <SelectTrigger className="w-40" id="campaign-filter">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
-                <SelectItem value="yes">In Campaign</SelectItem>
-                <SelectItem value="no">No Campaign</SelectItem>
+                <SelectItem value="none">No Campaign</SelectItem>
+                {uniqueCampaignNames.map((campaignName) => (
+                  <SelectItem key={campaignName} value={campaignName}>
+                    {campaignName}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
