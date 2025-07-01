@@ -29,10 +29,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 
-import { useFetchGroups } from "@/api/dialog-handleGroups/fetchGroups"
-import { useAddToGroup } from "@/api/dialog-handleGroups/addToGroup"
-import { useCreateGroup } from "@/api/dialog-handleGroups/createGroup"
-import { useDeleteGroup } from "@/api/dialog-handleGroups/deleteGroup"
+import { useFetchGroups } from "@/api/groups-context/fetchGroups"
+import { useAddToGroup } from "@/api/groups-context/addToGroup"
+import { useCreateGroup } from "@/api/groups-context/createGroup"
+import { useDeleteGroup } from "@/api/groups-context/deleteGroup"
 
 function HandleGroupsDialog({ 
   user_id, 
