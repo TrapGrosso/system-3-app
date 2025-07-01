@@ -1,8 +1,8 @@
 import * as React from "react"
-import { useState, useEffect, useRef } from "react"
+import { useState } from "react"
 import { toast } from "sonner"
 import { useQueryClient } from '@tanstack/react-query'
-import { Trash2, CheckCircle, XCircle } from "lucide-react"
+import { Trash2 } from "lucide-react"
 
 import {
   Dialog,
@@ -49,12 +49,6 @@ function HandleGroupsDialog({
   const [groupName, setGroupName] = useState("")
   const [groupDescription, setGroupDescription] = useState("")
   
-  // Status message state
-  const [statusMessage, setStatusMessage] = useState(null)
-  const [statusType, setStatusType] = useState(null) // 'success' | 'error'
-  const [isShowingStatus, setIsShowingStatus] = useState(false)
-  const timeoutRef = useRef(null)
-  
   // React Query client for cache invalidation
   const queryClient = useQueryClient()
   
@@ -62,40 +56,6 @@ function HandleGroupsDialog({
   const isControlled = controlledOpen !== undefined
   const dialogOpen = isControlled ? controlledOpen : internalOpen
   const setDialogOpen = isControlled ? controlledOnOpenChange : setInternalOpen
-
-  // Helper function to show status message with timeout
-  const showStatusMessage = (message, type) => {
-    // Clear any existing timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-    }
-
-    setStatusMessage(message)
-    setStatusType(type)
-    setIsShowingStatus(true)
-
-    // Set timeout for message display
-    timeoutRef.current = setTimeout(() => {
-      if (type === 'success') {
-        // Close dialog on success after timeout
-        handleOpenChange(false)
-      } else {
-        // Just clear message on error (keep dialog open)
-        setIsShowingStatus(false)
-        setStatusMessage(null)
-        setStatusType(null)
-      }
-    }, 2500) // 2.5 second timeout
-  }
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
-    }
-  }, [])
   
   // Fetch groups
   const { 
@@ -108,13 +68,14 @@ function HandleGroupsDialog({
   const addToGroupMutation = useAddToGroup({
     onSuccess: (data) => {
       const message = data.message || 'Successfully added leads to group'
-      showStatusMessage(message, 'success')
+      toast.success(message)
       queryClient.invalidateQueries(['fetchGroups', user_id])
       setSelectedGroupId("")
+      handleOpenChange(false)
       onSuccess?.(data)
     },
     onError: (error) => {
-      showStatusMessage(error.message || "Failed to add leads to group", 'error')
+      toast.error(error.message || "Failed to add leads to group")
     },
   })
 
@@ -122,7 +83,7 @@ function HandleGroupsDialog({
   const createGroupMutation = useCreateGroup({
     onSuccess: (data) => {
       const message = data.message || (data.success ? 'Group created successfully' : 'Group created successfully')
-      showStatusMessage(message, 'success')
+      toast.success(message)
       queryClient.invalidateQueries(['fetchGroups', user_id])
       // Auto-select the newly created group
       setSelectedGroupId(data.data.group.id)
@@ -133,7 +94,7 @@ function HandleGroupsDialog({
       setActiveTab("add")
     },
     onError: (error) => {
-      showStatusMessage(error.message || "Failed to create group", 'error')
+      toast.error(error.message || "Failed to create group")
     },
   })
 
@@ -141,7 +102,7 @@ function HandleGroupsDialog({
   const deleteGroupMutation = useDeleteGroup({
     onSuccess: (data) => {
       const message = data.message || (data.success ? 'Group deleted successfully' : 'Group deleted successfully')
-      showStatusMessage(message, 'success')
+      toast.success(message)
       queryClient.invalidateQueries(['fetchGroups', user_id])
       // Clear selection if deleted group was selected
       if (data.data.group_id === selectedGroupId) {
@@ -149,7 +110,7 @@ function HandleGroupsDialog({
       }
     },
     onError: (error) => {
-      showStatusMessage(error.message || "Failed to delete group", 'error')
+      toast.error(error.message || "Failed to delete group")
     },
   })
 
@@ -184,18 +145,11 @@ function HandleGroupsDialog({
       setDialogOpen(newOpen)
     }
     if (!newOpen) {
-      // Clear timeout when closing dialog
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
       // Reset all state
       setSelectedGroupId("")
       setGroupName("")
       setGroupDescription("")
       setActiveTab("add")
-      setStatusMessage(null)
-      setStatusType(null)
-      setIsShowingStatus(false)
     }
   }
 
@@ -399,36 +353,19 @@ function HandleGroupsDialog({
         </Tabs>
 
         <DialogFooter className="flex flex-col gap-3">
-          {/* Status Message Display */}
-          {isShowingStatus && statusMessage && (
-            <div className={`flex items-center justify-center gap-2 p-3 rounded-md text-sm font-medium transition-all ${
-              statusType === 'success' 
-                ? 'bg-green-50 text-green-700 border border-green-200' 
-                : 'bg-red-50 text-red-700 border border-red-200'
-            }`}>
-              {statusType === 'success' ? (
-                <CheckCircle className="h-4 w-4" />
-              ) : (
-                <XCircle className="h-4 w-4" />
-              )}
-              <span>{statusMessage}</span>
-              <Spinner size="sm" className="ml-2" />
-            </div>
-          )}
-          
           {/* Dialog Action Buttons */}
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button 
               variant="outline" 
               onClick={() => handleOpenChange(false)}
-              disabled={isSubmitting || isCreating || isDeleting || isShowingStatus}
+              disabled={isSubmitting || isCreating || isDeleting}
             >
               Cancel
             </Button>
             {activeTab === "add" && (
               <Button 
                 onClick={handleSubmit} 
-                disabled={!selectedGroupId || isSubmitting || groups.length === 0 || isShowingStatus}
+                disabled={!selectedGroupId || isSubmitting || groups.length === 0}
               >
                 {isSubmitting && <Spinner size="sm" className="mr-2" />}
                 Add to Group

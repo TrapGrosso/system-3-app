@@ -9,6 +9,7 @@ import ProspectDetails from './pages/ProspectDetails'
 import ProtectedRoute from './components/ProtectedRoute'
 import { useAuth } from './contexts/AuthContext'
 import { RoundSpinner } from './components/ui/spinner'
+import { Toaster } from './components/ui/sonner'
 
 function App() {
   const { user, loading } = useAuth()
@@ -23,6 +24,7 @@ function App() {
 
   return (
     <Router>
+      <Toaster richColors position="bottom-right" />
       <Routes>
         <Route 
           path="/login" 
