@@ -17,7 +17,7 @@ const fetchProspects = async (user_id) => {
   const result = await response.json()
   
   // Extract only the data field from the response
-  return result.data || []
+  return result || []
 }
 
 export const useFetchProspects = (userId) => {
@@ -34,30 +34,67 @@ export const useFetchProspects = (userId) => {
 }
 
 /**
- * EXAMPLE PAYLOAD
+ * Fetches all prospects for a user with enriched data including groups and campaigns.
  * 
+ * Example Request:
+ * GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f
  * 
-  {
-    "success": boolean,
-    "data": [
-     {
-      linkedin_id: string;
-      first_name: string | null;
-      last_name: string | null;
-      headline: string | null;
-      title: string | null;
-      status: string | null;
-      location: string | null;
-      email: string | null;
-      company_name: string | null;
-      has_bd_scrape: boolean;
-      has_deep_search: boolean;
-      note_count: number;
-      task_count: number;
-      groups: { id: string; name: string }[];
-      campaigns: { id: string; name: string }[];
-    }
-    ],
-    "timestamp": "2025-06-30T11:07:09.530Z"
-  }
+ * Example Success Response (200):
+ * [
+ *   {
+ *     "linkedin_id": "elizaveta-sheshko",
+ *     "first_name": "Lizaveta",
+ *     "last_name": "Sheshka",
+ *     "headline": "IT Innovations Manager | FTECH",
+ *     "title": "IT Innovation Manager",
+ *     "status": "new",
+ *     "location": "Poland",
+ *     "email": null,
+ *     "company_name": null,
+ *     "has_bd_scrape": true,
+ *     "has_deep_search": false,
+ *     "note_count": 0,
+ *     "task_count": 0,
+ *     "groups": [
+ *       {
+ *         "id": "3ecaa693-ee42-4e1a-82a9-7a959d719b15",
+ *         "name": "test group"
+ *       },
+ *       {
+ *         "id": "a555dbda-15b9-41fb-96ed-1feb643f22e7",
+ *         "name": "some other group"
+ *       }
+ *     ],
+ *     "campaigns": []
+ *   },
+ *   {
+ *     "linkedin_id": "adamjtraub",
+ *     "first_name": "Adam",
+ *     "last_name": "Traub",
+ *     "headline": "Franchise Business Coach",
+ *     "title": "Franchise Business Coach",
+ *     "status": "new",
+ *     "location": "Carlsbad, California, United States",
+ *     "email": null,
+ *     "company_name": null,
+ *     "has_bd_scrape": true,
+ *     "has_deep_search": false,
+ *     "note_count": 0,
+ *     "task_count": 0,
+ *     "groups": [
+ *       {
+ *         "id": "a555dbda-15b9-41fb-96ed-1feb643f22e7",
+ *         "name": "some other group"
+ *       },
+ *       {
+ *         "id": "3ecaa693-ee42-4e1a-82a9-7a959d719b15",
+ *         "name": "test group"
+ *       }
+ *     ],
+ *     "campaigns": []
+ *   }
+ * ]
+ * 
+ * Example Error Response (400):
+ * {"error": "Missing required query param: user_id"}
  */

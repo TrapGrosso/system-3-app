@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { useAddLeads } from '@/api/add-leads/useAddLeads'
-import { useRetryAddLeads } from '@/api/add-leads/useRetryAddLeads'
+import { useAddLeads } from '@/api/add-leads/addLeads'
+import { useRetryAddLeads } from '@/api/add-leads/retryAddLeads'
 import { useFetchAddLeadLogs } from '@/api/add-leads/fetchAddLeadLogs'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'

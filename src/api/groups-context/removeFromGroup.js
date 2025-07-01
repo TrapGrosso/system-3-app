@@ -34,20 +34,14 @@ export const useRemoveFromGroup = (options = {}) => {
 }
 
 /**
- * Example body:
- * {
- *   prospect_ids: ['id1', 'id2'],
- *   group_id: 'group id'
- * }
+ * Removes prospects from a specific group.
  * 
- * Example response:
+ * Example Payload:
+ * {"group_id": "a555dbda-15b9-41fb-96ed-1feb643f22e7", "prospect_ids": ["alice", "bob"], "user_id": "1c8eb38e-7896-46e9-9a0c-d6af1bab11af"}
  * 
- * success
- * {
-    "added": 1,
-    "duplicates": 0,
-    "message": "All prospects added successfully",
-    "timestamp": "2025-06-30T19:09:40.206Z"
-  }
+ * Example Success Response (200):
+ * {"removed": 2, "not_found": 0, "message": "All prospects removed successfully", "timestamp": "2025-07-01T16:45:00.000Z"}
  * 
+ * Example Error Response (400):
+ * {"error": "Missing or invalid group_id. Must be a valid UUID string"}
  */

@@ -35,24 +35,31 @@ export const useFetchGroups = (userId) => {
 }
 
 /**
- * EXAMPLE PAYLOAD
+ * Fetches all groups for a user with prospect counts.
  * 
+ * Example Request:
+ * GET /fetchGroups?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f
+ * 
+ * Example Success Response (200):
  * [
-    {
-      "id": "a555dbda-15b9-41fb-96ed-1feb643f22e7",
-      "name": "some other group",
-      "description": "IDK",
-      "created_at": "2025-06-30T18:42:38.90691",
-      "updated_at": "2025-06-30T18:42:38.90691",
-      "prospect_count": 0
-    },
-    {
-      "id": "3ecaa693-ee42-4e1a-82a9-7a959d719b15",
-      "name": "test group",
-      "description": "some description",
-      "created_at": "2025-06-30T18:36:28.954714",
-      "updated_at": "2025-06-30T18:36:28.954714",
-      "prospect_count": 2
-    }
-  ]
+ *   {
+ *     "id": "a555dbda-15b9-41fb-96ed-1feb643f22e7",
+ *     "name": "some other group",
+ *     "description": "IDK",
+ *     "created_at": "2025-06-30T18:42:38.90691",
+ *     "updated_at": "2025-06-30T18:42:38.90691",
+ *     "prospect_count": 0
+ *   },
+ *   {
+ *     "id": "3ecaa693-ee42-4e1a-82a9-7a959d719b15",
+ *     "name": "test group",
+ *     "description": "some description",
+ *     "created_at": "2025-06-30T18:36:28.954714",
+ *     "updated_at": "2025-06-30T18:36:28.954714",
+ *     "prospect_count": 1
+ *   }
+ * ]
+ * 
+ * Example Error Response (400):
+ * {"error": "Missing required query param: user_id"}
  */

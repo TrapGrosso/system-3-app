@@ -34,21 +34,14 @@ export const useDeleteGroup = (options = {}) => {
 }
 
 /**
- * Example body:
- * {
- *   user_id: string,
- *   group_id: string
- * }
+ * Deletes a group after validating ownership and returns deletion confirmation.
  * 
- * Example response:
+ * Example Payload:
+ * {"user_id": "a555dbda-15b9-41fb-96ed-1feb643f22e7", "group_id": "b666eceb-26ca-52gc-a7fe-2gfd754g33f8"}
  * 
- * {
-    "success": true,
-    "data": {
-      "deleted": true,
-      "group_id": "568de373-e4d4-4f49-964b-dcf3c6a15497"
-    },
-    "timestamp": "2025-07-01T11:47:05.269Z"
-  }
+ * Example Success Response (200):
+ * {"success": true, "data": {"deleted": true, "group_id": "..."}, "message": "Group deleted successfully", "timestamp": "..."}
  * 
+ * Example Error Response (404):
+ * {"error": "Group not found or you don't have permission to delete it"}
  */

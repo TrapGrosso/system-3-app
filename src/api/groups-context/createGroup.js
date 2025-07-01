@@ -34,27 +34,14 @@ export const useCreateGroup = (options = {}) => {
 }
 
 /**
- * Example body:
- * {
- *   user_id: string,
- *   group_name: string,
- *   group_description: string,   
- * }
+ * Creates a new group with validation and returns the created group details.
  * 
- * Example response:
- * {
-    "success": true,
-    "data": {
-      "group": {
-        "id": "568de373-e4d4-4f49-964b-dcf3c6a15497",
-        "user_id": "bb370a65-08df-4ddc-8a0f-aa5c65fc568f",
-        "name": "example group",
-        "description": "example description",
-        "created_at": "2025-07-01T11:46:31.384471",
-        "updated_at": "2025-07-01T11:46:31.384471"
-      }
-    },
-    "timestamp": "2025-07-01T11:46:31.426Z"
-  }
+ * Example Payload:
+ * {"user_id": "a555dbda-15b9-41fb-96ed-1feb643f22e7", "group_name": "Sales Team", "group_description": "Main sales group"}
  * 
+ * Example Success Response (201):
+ * {"success": true, "data": {"group": {"id": "...", "name": "Sales Team", ...}}, "message": "Group created successfully", "timestamp": "..."}
+ * 
+ * Example Error Response (400):
+ * {"error": "Missing or invalid user_id. Must be a valid UUID string"}
  */

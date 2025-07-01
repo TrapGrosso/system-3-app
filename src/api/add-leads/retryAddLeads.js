@@ -32,3 +32,16 @@ export const useRetryAddLeads = (options = {}) => {
     },
   })
 }
+
+/**
+ * Retries failed 'add_leads' operations by re-processing leads from failed branches of a log record.
+ * 
+ * Example Payload:
+ * {"log_id": "b2a38cb7-cc22-4659-bd48-48af7567d9d4", "user_id": "bb370a65-08df-4ddc-8a0f-aa5c65fc568f"}
+ * 
+ * Example Success Response (200):
+ * {"message": "Retry dispatched for X leads from failed branches: people, companies", "retried_leads_count": X, "failed_branches": ["people", "companies"]}
+ * 
+ * Example Error Response (400):
+ * {"error": "`log_id` and `user_id` must be valid UUIDs"}
+ */

@@ -34,20 +34,14 @@ export const useAddToGroup = (options = {}) => {
 }
 
 /**
- * Example body:
- * {
- *   prospect_ids: ['id1', 'id2'],
- *   group_id: 'group id'
- * }
+ * Adds prospects to a group with duplicate checking and permission validation.
  * 
- * Example response:
+ * Example Payload:
+ * {"group_id": "a555dbda-15b9-41fb-96ed-1feb643f22e7", "prospect_ids": ["alice", "bob"], "user_id": "1c8eb38e-7896-46e9-9a0c-d6af1bab11af"}
  * 
- * success
- * {
-    "added": 1,
-    "duplicates": 0,
-    "message": "All prospects added successfully",
-    "timestamp": "2025-06-30T19:09:40.206Z"
-  }
+ * Example Success Response (200):
+ * {"added": 2, "duplicates": 0, "message": "All prospects added successfully", "timestamp": "2025-06-30T18:54:42.123Z"}
  * 
+ * Example Error Response (400):
+ * {"error": "Missing or invalid group_id. Must be a valid UUID string"}
  */
