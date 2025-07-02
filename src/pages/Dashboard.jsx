@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { useProspects } from '@/contexts/ProspectsContext'
+import { useProspectsQuery } from '@/api/prospect-context/fetchProspects'
 import { useNavigate } from 'react-router-dom'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
@@ -12,8 +12,25 @@ import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
 
 export default function Dashboard() {
     const { user, signOut } = useAuth()
-    const { prospects, isLoading, isError, refetch: refetchProspects } = useProspects()
     const navigate = useNavigate()
+
+    // Query state for server-side filtering, sorting, and pagination
+    const [query, setQuery] = useState({
+        page: 1,
+        page_size: 10,
+        sort_by: 'created_at',
+        sort_dir: 'desc',
+    })
+
+    // Use new query hook
+    const { data: queryResult, isLoading, isError, refetch: refetchProspects } = useProspectsQuery({ 
+        userId: user?.id, 
+        ...query 
+    })
+
+    // Extract data from query result
+    const prospects = queryResult?.data || []
+    const total = queryResult?.total || 0
 
     // State for HandleGroupsDialog
     const [addGroupOpen, setAddGroupOpen] = useState(false)
@@ -87,7 +104,22 @@ export default function Dashboard() {
         
         {!isLoading && !isError && (
           <ProspectsTable 
-            prospects={prospects} 
+            prospects={prospects}
+            total={total}
+            pageIndex={query.page - 1}
+            pageSize={query.page_size}
+            sorting={[{ id: query.sort_by, desc: query.sort_dir === 'desc' }]}
+            onPaginationChange={({ pageIndex, pageSize }) => 
+              setQuery(q => ({ ...q, page: pageIndex + 1, page_size: pageSize }))
+            }
+            onSortingChange={(sorting) => {
+              const s = sorting[0] || {}
+              setQuery(q => ({ 
+                ...q, 
+                sort_by: s.id || 'created_at', 
+                sort_dir: s.desc ? 'desc' : 'asc' 
+              }))
+            }}
             onRowClick={handleRowClick}
             onAddToGroup={handleAddToGroup}
             onAddToCampaign={handleAddToCampaign}

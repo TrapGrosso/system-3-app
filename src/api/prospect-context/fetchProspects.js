@@ -1,7 +1,16 @@
 import { useQuery } from '@tanstack/react-query'
 
-const fetchProspects = async (user_id) => {
-  const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getAllProspects?user_id=${user_id}`, {
+// Updated fetchProspects to accept a params object for server-side filtering, sorting, and pagination
+const fetchProspects = async (params) => {
+  // Build query string, omitting undefined/null values
+  const searchParams = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      searchParams.append(key, value)
+    }
+  })
+  
+  const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getAllProspects?${searchParams.toString()}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -16,14 +25,15 @@ const fetchProspects = async (user_id) => {
 
   const result = await response.json()
   
-  // Extract only the data field from the response
-  return result || []
+  // Return the API payload unmodified: { data, total, page, page_size }
+  return result
 }
 
+// Legacy hook for backward compatibility (will be deprecated)
 export const useFetchProspects = (userId) => {
   return useQuery({
     queryKey: ['prospects', userId],
-    queryFn: () => fetchProspects(userId),
+    queryFn: () => fetchProspects({ user_id: userId }),
     staleTime: 60000, // 60 seconds - prospects data is relatively stable
     cacheTime: 300000, // 5 minutes cache
     refetchInterval: 120000, // Refetch every 2 minutes to get latest prospects
@@ -33,68 +43,74 @@ export const useFetchProspects = (userId) => {
   })
 }
 
+// New hook for server-side filtered/sorted/paginated prospects
+export const useProspectsQuery = ({ userId, ...query }) => {
+  return useQuery({
+    queryKey: ['prospects', userId, query],
+    queryFn: () => fetchProspects({ user_id: userId, ...query }),
+    keepPreviousData: true, // Keep old data visible while refetching
+    staleTime: 60000, // 60 seconds - prospects data is relatively stable
+    cacheTime: 300000, // 5 minutes cache
+    refetchOnWindowFocus: true,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  })
+}
+
 /**
- * Fetches all prospects for a user with enriched data including groups and campaigns.
+ * Fetches prospects for a user with server-side filtering, sorting, and pagination.
+ * 
+ * Query Parameters:
+ * - user_id (required): UUID of the user
+ * - page (optional): Page number, default 1
+ * - page_size (optional): Results per page, default 10, max 100
+ * - sort_by (optional): Column to sort by (first_name, last_name, status, etc.)
+ * - sort_dir (optional): Sort direction, 'asc' or 'desc', default 'asc'
+ * - q (optional): Global search across name, title, company, email
+ * - status (optional): Filter by prospect status
+ * - in_group (optional): 'yes' or 'no' to filter by group membership
+ * - group_name (optional): Filter by specific group name
+ * - in_campaign (optional): 'yes' or 'no' to filter by campaign membership
+ * - campaign_name (optional): Filter by specific campaign name
+ * - has_bd_scrape (optional): Filter by BD scrape enrichment flag
+ * - has_deep_search (optional): Filter by deep search enrichment flag
  * 
  * Example Request:
- * GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f
+ * GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&page=2&page_size=20&sort_by=first_name&sort_dir=asc&status=new
  * 
  * Example Success Response (200):
- * [
- *   {
- *     "linkedin_id": "elizaveta-sheshko",
- *     "first_name": "Lizaveta",
- *     "last_name": "Sheshka",
- *     "headline": "IT Innovations Manager | FTECH",
- *     "title": "IT Innovation Manager",
- *     "status": "new",
- *     "location": "Poland",
- *     "email": null,
- *     "company_name": null,
- *     "has_bd_scrape": true,
- *     "has_deep_search": false,
- *     "note_count": 0,
- *     "task_count": 0,
- *     "groups": [
- *       {
- *         "id": "3ecaa693-ee42-4e1a-82a9-7a959d719b15",
- *         "name": "test group"
- *       },
- *       {
- *         "id": "a555dbda-15b9-41fb-96ed-1feb643f22e7",
- *         "name": "some other group"
- *       }
- *     ],
- *     "campaigns": []
- *   },
- *   {
- *     "linkedin_id": "adamjtraub",
- *     "first_name": "Adam",
- *     "last_name": "Traub",
- *     "headline": "Franchise Business Coach",
- *     "title": "Franchise Business Coach",
- *     "status": "new",
- *     "location": "Carlsbad, California, United States",
- *     "email": null,
- *     "company_name": null,
- *     "has_bd_scrape": true,
- *     "has_deep_search": false,
- *     "note_count": 0,
- *     "task_count": 0,
- *     "groups": [
- *       {
- *         "id": "a555dbda-15b9-41fb-96ed-1feb643f22e7",
- *         "name": "some other group"
- *       },
- *       {
- *         "id": "3ecaa693-ee42-4e1a-82a9-7a959d719b15",
- *         "name": "test group"
- *       }
- *     ],
- *     "campaigns": []
- *   }
- * ]
+ * {
+ *   "data": [
+ *     {
+ *       "linkedin_id": "elizaveta-sheshko",
+ *       "first_name": "Lizaveta",
+ *       "last_name": "Sheshka",
+ *       "headline": "IT Innovations Manager | FTECH",
+ *       "title": "IT Innovation Manager",
+ *       "status": "new",
+ *       "location": "Poland",
+ *       "email": null,
+ *       "company_name": null,
+ *       "has_bd_scrape": true,
+ *       "has_deep_search": false,
+ *       "note_count": 0,
+ *       "task_count": 0,
+ *       "groups": [
+ *         {
+ *           "id": "3ecaa693-ee42-4e1a-82a9-7a959d719b15",
+ *           "name": "test group"
+ *         }
+ *       ],
+ *       "campaigns": []
+ *     }
+ *   ],
+ *   "total": 523,
+ *   "page": 2,
+ *   "page_size": 20
+ * }
  * 
  * Example Error Response (400):
  * {"error": "Missing required query param: user_id"}
+ * {"error": "Parameter validation failed: Value 150 exceeds maximum of 100"}
+ * {"error": "Parameter validation failed: Invalid value \"invalid_column\". Must be one of: first_name, last_name, status, company_name, created_at, title, location, email, note_count, task_count"}
  */

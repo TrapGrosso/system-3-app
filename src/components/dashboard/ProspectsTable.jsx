@@ -2,14 +2,9 @@ import * as React from "react"
 import {
   flexRender,
   getCoreRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ChevronDownIcon, MoreHorizontalIcon, SearchIcon } from "lucide-react"
+import { ChevronDownIcon, MoreHorizontalIcon } from "lucide-react"
 
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
@@ -17,13 +12,11 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -61,6 +54,12 @@ const getBooleanVariant = (value) => {
 
 export default function ProspectsTable({ 
   prospects = [], 
+  total = 0,
+  pageIndex = 0,
+  pageSize = 10,
+  sorting = [],
+  onPaginationChange,
+  onSortingChange,
   onRowClick,
   onAddToGroup,
   onAddToCampaign,
@@ -104,12 +103,6 @@ export default function ProspectsTable({
           {row.original.first_name || '—'}
         </div>
       ),
-      filterFn: (row, id, value) => {
-        const firstName = row.original.first_name || ''
-        const lastName = row.original.last_name || ''
-        const fullName = `${firstName} ${lastName}`.toLowerCase()
-        return fullName.includes(value.toLowerCase())
-      },
     },
     {
       accessorKey: "last_name",
@@ -137,10 +130,6 @@ export default function ProspectsTable({
           {row.original.status || 'Unknown'}
         </Badge>
       ),
-      filterFn: (row, id, value) => {
-        if (value === 'all') return true
-        return row.original.status?.toLowerCase() === value.toLowerCase()
-      },
     },
     {
       accessorKey: "in_group",
@@ -150,15 +139,6 @@ export default function ProspectsTable({
           {row.original.groups?.length > 0 ? '✓' : '—'}
         </Badge>
       ),
-      filterFn: (row, id, value) => {
-        if (value === 'all') return true
-        const groups = row.original.groups || []
-        if (value === 'none') return groups.length === 0
-        if (value === 'yes') return groups.length > 0
-        if (value === 'no') return groups.length === 0
-        // Check for specific group name
-        return groups.some(g => (g.name || '').toLowerCase() === value.toLowerCase())
-      },
     },
     {
       accessorKey: "in_campaign",
@@ -168,15 +148,6 @@ export default function ProspectsTable({
           {row.original.campaigns?.length > 0 ? '✓' : '—'}
         </Badge>
       ),
-      filterFn: (row, id, value) => {
-        if (value === 'all') return true
-        const campaigns = row.original.campaigns || []
-        if (value === 'none') return campaigns.length === 0
-        if (value === 'yes') return campaigns.length > 0
-        if (value === 'no') return campaigns.length === 0
-        // Check for specific campaign name
-        return campaigns.some(c => (c.name || '').toLowerCase() === value.toLowerCase())
-      },
     },
     {
       accessorKey: "email",
@@ -314,97 +285,33 @@ export default function ProspectsTable({
   ], [onAddToGroup, onAddToCampaign, onAddToDeepSearch])
 
   const [rowSelection, setRowSelection] = React.useState({})
-  const [columnFilters, setColumnFilters] = React.useState([])
-  const [sorting, setSorting] = React.useState([])
-  const [pagination, setPagination] = React.useState({
-    pageIndex: 0,
-    pageSize: 10,
-  })
 
-  // Search state
-  const [globalFilterColumn, setGlobalFilterColumn] = React.useState("first_name")
-  const [globalFilterValue, setGlobalFilterValue] = React.useState("")
-  const [statusFilter, setStatusFilter] = React.useState("all")
-  const [groupFilter, setGroupFilter] = React.useState("all")
-  const [campaignFilter, setCampaignFilter] = React.useState("all")
+  // Convert props to TanStack Table format
+  const pagination = React.useMemo(() => ({
+    pageIndex,
+    pageSize,
+  }), [pageIndex, pageSize])
 
   const table = useReactTable({
     data: prospects,
     columns,
     state: {
       sorting,
-      columnFilters,
       rowSelection,
       pagination,
     },
     getRowId: (row) => row.linkedin_id,
     enableRowSelection: true,
+    manualPagination: true,
+    manualSorting: true,
+    pageCount: Math.ceil(total / pageSize),
     onRowSelectionChange: setRowSelection,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onPaginationChange: setPagination,
+    onSortingChange,
+    onPaginationChange,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
-  // Handle global filter
-  React.useEffect(() => {
-    table.getColumn(globalFilterColumn)?.setFilterValue(globalFilterValue || "")
-  }, [globalFilterColumn, globalFilterValue, table])
-
-  // Handle status filter
-  React.useEffect(() => {
-    table.getColumn("status")?.setFilterValue(statusFilter === "all" ? "" : statusFilter)
-  }, [statusFilter, table])
-
-  // Handle group filter
-  React.useEffect(() => {
-    table.getColumn("in_group")?.setFilterValue(groupFilter === "all" ? "" : groupFilter)
-  }, [groupFilter, table])
-
-  // Handle campaign filter
-  React.useEffect(() => {
-    table.getColumn("in_campaign")?.setFilterValue(campaignFilter === "all" ? "" : campaignFilter)
-  }, [campaignFilter, table])
-
-  // Get unique values for filter dropdowns
-  const uniqueStatuses = React.useMemo(() => {
-    const statuses = prospects.map(p => p.status).filter(Boolean)
-    return [...new Set(statuses)]
-  }, [prospects])
-
-  // Get unique group names
-  const uniqueGroupNames = React.useMemo(() => {
-    const groupNames = prospects
-      .flatMap(p => p.groups || [])
-      .map(g => g.name)
-      .filter(Boolean)
-    return [...new Set(groupNames)].sort()
-  }, [prospects])
-
-  // Get unique campaign names
-  const uniqueCampaignNames = React.useMemo(() => {
-    const campaignNames = prospects
-      .flatMap(p => p.campaigns || [])
-      .map(c => c.name)
-      .filter(Boolean)
-    return [...new Set(campaignNames)].sort()
-  }, [prospects])
-
-  // Available columns for global filtering (excluding already filtered columns)
-  const filterableColumns = React.useMemo(() => [
-    { value: "first_name", label: "Name" },
-    { value: "last_name", label: "Last Name" },
-    { value: "title", label: "Title" },
-    { value: "email", label: "Email" },
-    { value: "company_name", label: "Company" }
-  ], [])
-
-  const selectedRows = table.getFilteredSelectedRowModel().rows
+  const selectedRows = table.getSelectedRowModel().rows
   const selectedCount = selectedRows.length
 
   const handleRowClick = (prospect) => {
@@ -500,99 +407,9 @@ export default function ProspectsTable({
 
   return (
     <div className="space-y-4">
-      {/* Filters Section */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-6">
-          {/* Global Filter */}
-          <div className="flex items-center gap-2">
-            <Select value={globalFilterColumn} onValueChange={setGlobalFilterColumn}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {filterableColumns.map((column) => (
-                  <SelectItem key={column.value} value={column.value}>
-                    {column.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="relative">
-              <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search..."
-                value={globalFilterValue}
-                onChange={(e) => setGlobalFilterValue(e.target.value)}
-                className="pl-8 w-full lg:w-48"
-              />
-            </div>
-          </div>
-
-          {/* Status Filter */}
-          <div className="flex items-center gap-2">
-            <Label htmlFor="status-filter" className="text-sm font-medium whitespace-nowrap">
-              Status:
-            </Label>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-32" id="status-filter">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                {uniqueStatuses.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {status}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Group Filter */}
-          <div className="flex items-center gap-2">
-            <Label htmlFor="group-filter" className="text-sm font-medium whitespace-nowrap">
-              Group:
-            </Label>
-            <Select value={groupFilter} onValueChange={setGroupFilter}>
-              <SelectTrigger className="w-40" id="group-filter">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="none">No Group</SelectItem>
-                {uniqueGroupNames.map((groupName) => (
-                  <SelectItem key={groupName} value={groupName}>
-                    {groupName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Campaign Filter */}
-          <div className="flex items-center gap-2">
-            <Label htmlFor="campaign-filter" className="text-sm font-medium whitespace-nowrap">
-              Campaign:
-            </Label>
-            <Select value={campaignFilter} onValueChange={setCampaignFilter}>
-              <SelectTrigger className="w-40" id="campaign-filter">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="none">No Campaign</SelectItem>
-                {uniqueCampaignNames.map((campaignName) => (
-                  <SelectItem key={campaignName} value={campaignName}>
-                    {campaignName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* Bulk Actions */}
-        {selectedCount > 0 && (
+      {/* Bulk Actions */}
+      {selectedCount > 0 && (
+        <div className="flex justify-end">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
@@ -626,8 +443,8 @@ export default function ProspectsTable({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Table */}
       <div className="rounded-md border">
@@ -684,8 +501,7 @@ export default function ProspectsTable({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
+            {selectedCount} of {total} row(s) selected.
           </span>
         </div>
 
@@ -695,18 +511,18 @@ export default function ProspectsTable({
               Rows per page:
             </Label>
             <Select
-              value={`${table.getState().pagination.pageSize}`}
+              value={`${pageSize}`}
               onValueChange={(value) => {
-                table.setPageSize(Number(value))
+                onPaginationChange({ pageIndex: 0, pageSize: Number(value) })
               }}
             >
               <SelectTrigger className="w-20" id="page-size">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {[10, 20, 30, 50].map((pageSize) => (
-                  <SelectItem key={pageSize} value={`${pageSize}`}>
-                    {pageSize}
+                {[10, 20, 30, 50].map((size) => (
+                  <SelectItem key={size} value={`${size}`}>
+                    {size}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -720,7 +536,7 @@ export default function ProspectsTable({
           <Pagination>
             <PaginationContent>
               <PaginationPrevious 
-                onClick={() => table.previousPage()}
+                onClick={() => onPaginationChange({ pageIndex: currentPage - 1, pageSize })}
                 className={canPreviousPage ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}
               />
               
@@ -733,7 +549,7 @@ export default function ProspectsTable({
                   <PaginationItem key={page}>
                     <PaginationLink
                       isActive={page === currentPage}
-                      onClick={() => table.setPageIndex(page)}
+                      onClick={() => onPaginationChange({ pageIndex: page, pageSize })}
                       className="cursor-pointer"
                     >
                       {page + 1}
@@ -743,7 +559,7 @@ export default function ProspectsTable({
               ))}
               
               <PaginationNext 
-                onClick={() => table.nextPage()}
+                onClick={() => onPaginationChange({ pageIndex: currentPage + 1, pageSize })}
                 className={canNextPage ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}
               />
             </PaginationContent>
