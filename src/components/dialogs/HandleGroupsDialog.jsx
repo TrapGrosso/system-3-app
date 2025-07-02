@@ -1,7 +1,5 @@
 import * as React from "react"
 import { useState } from "react"
-import { toast } from "sonner"
-import { useQueryClient } from '@tanstack/react-query'
 import { Trash2 } from "lucide-react"
 
 import {
@@ -29,10 +27,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 
-import { useFetchGroups } from "@/api/groups-context/fetchGroups"
-import { useAddToGroup } from "@/api/groups-context/addToGroup"
-import { useCreateGroup } from "@/api/groups-context/createGroup"
-import { useDeleteGroup } from "@/api/groups-context/deleteGroup"
+import { useGroups } from "@/contexts/GroupsContext"
 
 function HandleGroupsDialog({ 
   user_id, 
@@ -49,94 +44,70 @@ function HandleGroupsDialog({
   const [groupName, setGroupName] = useState("")
   const [groupDescription, setGroupDescription] = useState("")
   
-  // React Query client for cache invalidation
-  const queryClient = useQueryClient()
+  // Get groups context
+  const {
+    groups,
+    isLoadingGroups,
+    isErrorGroups,
+    createGroup,
+    deleteGroup,
+    addToGroup,
+    refetchGroups,
+    getGroupById,
+  } = useGroups()
   
   // Determine if this is controlled or uncontrolled
   const isControlled = controlledOpen !== undefined
   const dialogOpen = isControlled ? controlledOpen : internalOpen
   const setDialogOpen = isControlled ? controlledOnOpenChange : setInternalOpen
-  
-  // Fetch groups
-  const { 
-    data: groups = [], 
-    isLoading: isLoadingGroups, 
-    isError: isErrorGroups 
-  } = useFetchGroups(user_id)
-
-  // Add to group mutation
-  const addToGroupMutation = useAddToGroup({
-    onSuccess: (data) => {
-      const message = data.message || 'Successfully added leads to group'
-      toast.success(message)
-      queryClient.invalidateQueries(['fetchGroups', user_id])
-      setSelectedGroupId("")
-      handleOpenChange(false)
-      onSuccess?.(data)
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to add leads to group")
-    },
-  })
-
-  // Create group mutation
-  const createGroupMutation = useCreateGroup({
-    onSuccess: (data) => {
-      const message = data.message || (data.success ? 'Group created successfully' : 'Group created successfully')
-      toast.success(message)
-      queryClient.invalidateQueries(['fetchGroups', user_id])
-      // Auto-select the newly created group
-      setSelectedGroupId(data.data.group.id)
-      // Clear form
-      setGroupName("")
-      setGroupDescription("")
-      // Switch back to add tab
-      setActiveTab("add")
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to create group")
-    },
-  })
-
-  // Delete group mutation
-  const deleteGroupMutation = useDeleteGroup({
-    onSuccess: (data) => {
-      const message = data.message || (data.success ? 'Group deleted successfully' : 'Group deleted successfully')
-      toast.success(message)
-      queryClient.invalidateQueries(['fetchGroups', user_id])
-      // Clear selection if deleted group was selected
-      if (data.data.group_id === selectedGroupId) {
-        setSelectedGroupId("")
-      }
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to delete group")
-    },
-  })
 
   const handleSubmit = () => {
     if (!selectedGroupId || !prospect_ids.length) return
     
-    addToGroupMutation.mutate({
+    addToGroup.mutate({
       prospect_ids,
-      group_id: selectedGroupId
+      group_id: selectedGroupId,
+      user_id
+    }, {
+      onSuccess: (data) => {
+        setSelectedGroupId("")
+        handleOpenChange(false)
+        onSuccess?.(data)
+      }
     })
   }
 
   const handleCreateGroup = () => {
     if (!groupName.trim()) return
     
-    createGroupMutation.mutate({
+    createGroup.mutate({
       user_id,
       group_name: groupName.trim(),
       group_description: groupDescription.trim()
+    }, {
+      onSuccess: (data) => {
+        // Auto-select the newly created group
+        setSelectedGroupId(data.data.group.id)
+        // Clear form
+        setGroupName("")
+        setGroupDescription("")
+        // Switch back to add tab
+        setActiveTab("add")
+      }
     })
   }
 
   const handleDeleteGroup = (groupId) => {
-    deleteGroupMutation.mutate({
+    deleteGroup.mutate({
       user_id,
       group_id: groupId
+    }, {
+      onSuccess: (data) => {
+        // Clear selection if deleted group was selected
+        if (data.data.group_id === selectedGroupId) {
+          setSelectedGroupId("")
+        }
+      }
     })
   }
 
@@ -153,10 +124,10 @@ function HandleGroupsDialog({
     }
   }
 
-  const selectedGroup = groups.find(group => group.id === selectedGroupId)
-  const isSubmitting = addToGroupMutation.isPending
-  const isCreating = createGroupMutation.isPending
-  const isDeleting = deleteGroupMutation.isPending
+  const selectedGroup = getGroupById(selectedGroupId)
+  const isSubmitting = addToGroup.isPending
+  const isCreating = createGroup.isPending
+  const isDeleting = deleteGroup.isPending
 
   // Inner component for Add to Group tab
   const AddToGroupTab = () => (
@@ -172,7 +143,7 @@ function HandleGroupsDialog({
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={() => queryClient.invalidateQueries(['fetchGroups', user_id])}
+            onClick={() => refetchGroups()}
           >
             Retry
           </Button>
