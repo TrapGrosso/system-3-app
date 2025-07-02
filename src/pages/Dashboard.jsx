@@ -7,6 +7,7 @@ import { ChartAreaInteractive } from "@/components/chart-area-interactive"
 import { DataTable } from "@/components/data-table"
 import { SectionCards } from "@/components/section-cards"
 import ProspectsTable from '@/components/dashboard/ProspectsTable'
+import FilterBar from '@/components/dashboard/FilterBar'
 import { Spinner } from '@/components/ui/spinner'
 import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
 
@@ -20,6 +21,15 @@ export default function Dashboard() {
         page_size: 10,
         sort_by: 'created_at',
         sort_dir: 'desc',
+        // Filter options
+        q: '',
+        status: '',
+        in_group: '',
+        group_name: '',
+        in_campaign: '',
+        campaign_name: '',
+        has_bd_scrape: '',
+        has_deep_search: '',
     })
 
     // Use new query hook
@@ -77,6 +87,15 @@ export default function Dashboard() {
         alert(`Adding ${linkedinIds.length} prospects to deep search queue`)
     }
 
+    // Filter change handler
+    const handleFiltersChange = (newFilters) => {
+        setQuery(prevQuery => ({
+            ...prevQuery,
+            ...newFilters,
+            page: 1, // Reset to first page when filters change
+        }))
+    }
+
   return (
     <DashboardLayout headerText="Dashboard">
       <SectionCards />
@@ -103,31 +122,37 @@ export default function Dashboard() {
         )}
         
         {!isLoading && !isError && (
-          <ProspectsTable 
-            prospects={prospects}
-            total={total}
-            pageIndex={query.page - 1}
-            pageSize={query.page_size}
-            sorting={[{ id: query.sort_by, desc: query.sort_dir === 'desc' }]}
-            onPaginationChange={({ pageIndex, pageSize }) => 
-              setQuery(q => ({ ...q, page: pageIndex + 1, page_size: pageSize }))
-            }
-            onSortingChange={(sorting) => {
-              const s = sorting[0] || {}
-              setQuery(q => ({ 
-                ...q, 
-                sort_by: s.id || 'created_at', 
-                sort_dir: s.desc ? 'desc' : 'asc' 
-              }))
-            }}
-            onRowClick={handleRowClick}
-            onAddToGroup={handleAddToGroup}
-            onAddToCampaign={handleAddToCampaign}
-            onAddToDeepSearch={handleAddToDeepSearch}
-            onBulkAddToGroup={handleBulkAddToGroup}
-            onBulkAddToCampaign={handleBulkAddToCampaign}
-            onBulkAddToDeepSearch={handleBulkAddToDeepSearch}
-          />
+          <>
+            <FilterBar
+              filters={query}
+              onFiltersChange={handleFiltersChange}
+            />
+            <ProspectsTable 
+              prospects={prospects}
+              total={total}
+              pageIndex={query.page - 1}
+              pageSize={query.page_size}
+              sorting={[{ id: query.sort_by, desc: query.sort_dir === 'desc' }]}
+              onPaginationChange={({ pageIndex, pageSize }) => 
+                setQuery(q => ({ ...q, page: pageIndex + 1, page_size: pageSize }))
+              }
+              onSortingChange={(sorting) => {
+                const s = sorting[0] || {}
+                setQuery(q => ({ 
+                  ...q, 
+                  sort_by: s.id || 'created_at', 
+                  sort_dir: s.desc ? 'desc' : 'asc' 
+                }))
+              }}
+              onRowClick={handleRowClick}
+              onAddToGroup={handleAddToGroup}
+              onAddToCampaign={handleAddToCampaign}
+              onAddToDeepSearch={handleAddToDeepSearch}
+              onBulkAddToGroup={handleBulkAddToGroup}
+              onBulkAddToCampaign={handleBulkAddToCampaign}
+              onBulkAddToDeepSearch={handleBulkAddToDeepSearch}
+            />
+          </>
         )}
       </div>
       
