@@ -1,5 +1,5 @@
 import * as React from "react"
-import { SearchIcon, FilterIcon, XIcon } from "lucide-react"
+import { SearchIcon, FilterIcon, XIcon, ChevronDownIcon, CheckIcon } from "lucide-react"
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -12,10 +12,19 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from '@/components/ui/toggle-group'
-import { Card, CardContent } from '@/components/ui/card'
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useGroups } from '@/contexts/GroupsContext'
 import { useFetchCampaigns } from '@/api/campaign-context/fetchCampaigns'
 import { useAuth } from '@/contexts/AuthContext'
@@ -54,6 +63,96 @@ const SEARCH_FIELD_OPTIONS = [
   { value: 'campaign_names', label: 'Campaign Names' },
   { value: 'enrichment_data', label: 'Enrichment Data' },
 ]
+
+// Multi-select chip picker component using Command + Popover
+function MultiSelectChipPicker({ 
+  options, 
+  value = [], 
+  onValueChange, 
+  placeholder = "Choose fields..." 
+}) {
+  const [open, setOpen] = React.useState(false)
+
+  const handleSelect = (optionValue) => {
+    const newValue = value.includes(optionValue)
+      ? value.filter(v => v !== optionValue)
+      : [...value, optionValue]
+    onValueChange(newValue)
+  }
+
+  const handleRemoveChip = (optionValue) => {
+    onValueChange(value.filter(v => v !== optionValue))
+  }
+
+  const getOptionLabel = (optionValue) => {
+    return options.find(opt => opt.value === optionValue)?.label || optionValue
+  }
+
+  return (
+    <div className="space-y-2">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className="h-9 min-w-40 justify-between"
+            role="combobox"
+            aria-expanded={open}
+          >
+            {placeholder}
+            <ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-80 p-0" align="start">
+          <Command>
+            <CommandInput placeholder="Search fields..." />
+            <CommandEmpty>No fields found.</CommandEmpty>
+            <CommandList>
+              <CommandGroup>
+                {options.map((option) => (
+                  <CommandItem
+                    key={option.value}
+                    value={option.value}
+                    onSelect={() => handleSelect(option.value)}
+                  >
+                    <CheckIcon
+                      className={`mr-2 h-4 w-4 ${
+                        value.includes(option.value) ? "opacity-100" : "opacity-0"
+                      }`}
+                    />
+                    {option.label}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      
+      {/* Selected chips */}
+      {value.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {value.map((optionValue) => (
+            <Badge 
+              key={optionValue} 
+              variant="outline" 
+              className="text-xs px-2 py-1"
+            >
+              {getOptionLabel(optionValue)}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-1 h-auto p-0 text-muted-foreground hover:text-foreground"
+                onClick={() => handleRemoveChip(optionValue)}
+              >
+                <XIcon className="h-3 w-3" />
+              </Button>
+            </Badge>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function FilterBar({ filters, onFiltersChange }) {
   const { user } = useAuth()
@@ -165,7 +264,7 @@ export default function FilterBar({ filters, onFiltersChange }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Global Search */}
               <div className="space-y-2">
-                <Label htmlFor="search">Search</Label>
+                <Label htmlFor="search" className="text-[13px] font-medium text-muted-foreground">Search</Label>
                 <div className="relative">
                   <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -173,17 +272,17 @@ export default function FilterBar({ filters, onFiltersChange }) {
                     placeholder="Search prospects..."
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
-                    className="pl-9"
+                    className="pl-9 h-9"
                   />
                 </div>
               </div>
 
               {/* Apply Filters Button */}
               <div className="space-y-2">
-                <Label>&nbsp;</Label>
+                <Label className="text-[13px] font-medium text-muted-foreground">&nbsp;</Label>
                 <Button 
                   onClick={handleApplyFilters}
-                  className="w-full"
+                  className="w-full h-9"
                 >
                   Apply Filters
                 </Button>
@@ -192,171 +291,160 @@ export default function FilterBar({ filters, onFiltersChange }) {
 
             {/* Search Fields Selection */}
             <div className="space-y-2">
-              <Label>Search Fields (leave empty to search all fields)</Label>
-              <ToggleGroup
-                type="multiple"
+              <Label className="text-[13px] font-medium text-muted-foreground">
+                Search Fields (leave empty to search all fields)
+              </Label>
+              <MultiSelectChipPicker
+                options={SEARCH_FIELD_OPTIONS}
                 value={selectedFields}
                 onValueChange={setSelectedFields}
-                className="flex-wrap justify-start"
-              >
-                {SEARCH_FIELD_OPTIONS.map((field) => (
-                  <ToggleGroupItem
-                    key={field.value}
-                    value={field.value}
-                    variant="outline"
-                    size="sm"
-                    className="text-xs"
-                  >
-                    {field.label}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
+                placeholder="Choose search fields..."
+              />
             </div>
 
-            {/* Other Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-
-            {/* Status Filter */}
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <Select
-                value={filters.status || ''}
-                onValueChange={(value) => handleFilterChange('status', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All Statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  {STATUS_OPTIONS.map((option) => (
+            {/* Other Filters - Responsive Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {/* Status Filter */}
+              <div className="space-y-2">
+                <Label className="text-[13px] font-medium text-muted-foreground">Status</Label>
+                <Select
+                  value={filters.status || ''}
+                  onValueChange={(value) => handleFilterChange('status', value)}
+                >
+                  <SelectTrigger className="h-9 min-w-[180px]">
+                    <SelectValue placeholder="All Statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STATUS_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* Group Membership */}
-            <div className="space-y-2">
-              <Label>In Group</Label>
-              <Select
-                value={filters.in_group || ''}
-                onValueChange={(value) => handleFilterChange('in_group', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All" />
-                </SelectTrigger>
-                <SelectContent>
-                  {BOOLEAN_OPTIONS.map((option) => (
+              {/* Group Membership */}
+              <div className="space-y-2">
+                <Label className="text-[13px] font-medium text-muted-foreground">In Group</Label>
+                <Select
+                  value={filters.in_group || ''}
+                  onValueChange={(value) => handleFilterChange('in_group', value)}
+                >
+                  <SelectTrigger className="h-9 min-w-[180px]">
+                    <SelectValue placeholder="All" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BOOLEAN_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* Specific Group */}
-            <div className="space-y-2">
-              <Label>Group Name</Label>
-              <Select
-                value={filters.group_name || ''}
-                onValueChange={(value) => handleFilterChange('group_name', value)}
-                disabled={!groups.length}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={groups.length ? "All Groups" : "No groups available"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {groupOptions.map((option) => (
+              {/* Specific Group */}
+              <div className="space-y-2">
+                <Label className="text-[13px] font-medium text-muted-foreground">Group Name</Label>
+                <Select
+                  value={filters.group_name || ''}
+                  onValueChange={(value) => handleFilterChange('group_name', value)}
+                  disabled={!groups.length}
+                >
+                  <SelectTrigger className="h-9 min-w-[180px]">
+                    <SelectValue placeholder={groups.length ? "All Groups" : "No groups available"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {groupOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* Campaign Membership */}
-            <div className="space-y-2">
-              <Label>In Campaign</Label>
-              <Select
-                value={filters.in_campaign || ''}
-                onValueChange={(value) => handleFilterChange('in_campaign', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All" />
-                </SelectTrigger>
-                <SelectContent>
-                  {BOOLEAN_OPTIONS.map((option) => (
+              {/* Campaign Membership */}
+              <div className="space-y-2">
+                <Label className="text-[13px] font-medium text-muted-foreground">In Campaign</Label>
+                <Select
+                  value={filters.in_campaign || ''}
+                  onValueChange={(value) => handleFilterChange('in_campaign', value)}
+                >
+                  <SelectTrigger className="h-9 min-w-[180px]">
+                    <SelectValue placeholder="All" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BOOLEAN_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* Specific Campaign */}
-            <div className="space-y-2">
-              <Label>Campaign Name</Label>
-              <Select
-                value={filters.campaign_name || ''}
-                onValueChange={(value) => handleFilterChange('campaign_name', value)}
-                disabled={!campaigns.length}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={campaigns.length ? "All Campaigns" : "No campaigns available"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {campaignOptions.map((option) => (
+              {/* Specific Campaign */}
+              <div className="space-y-2">
+                <Label className="text-[13px] font-medium text-muted-foreground">Campaign Name</Label>
+                <Select
+                  value={filters.campaign_name || ''}
+                  onValueChange={(value) => handleFilterChange('campaign_name', value)}
+                  disabled={!campaigns.length}
+                >
+                  <SelectTrigger className="h-9 min-w-[180px]">
+                    <SelectValue placeholder={campaigns.length ? "All Campaigns" : "No campaigns available"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {campaignOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* BD Scrape */}
-            <div className="space-y-2">
-              <Label>BD Enrichment</Label>
-              <Select
-                value={filters.has_bd_scrape || ''}
-                onValueChange={(value) => handleFilterChange('has_bd_scrape', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All" />
-                </SelectTrigger>
-                <SelectContent>
-                  {BOOLEAN_OPTIONS.map((option) => (
+              {/* BD Enrichment */}
+              <div className="space-y-2">
+                <Label className="text-[13px] font-medium text-muted-foreground">BD Enrichment</Label>
+                <Select
+                  value={filters.has_bd_scrape || ''}
+                  onValueChange={(value) => handleFilterChange('has_bd_scrape', value)}
+                >
+                  <SelectTrigger className="h-9 min-w-[180px]">
+                    <SelectValue placeholder="All" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BOOLEAN_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* Deep Search */}
-            <div className="space-y-2">
-              <Label>Deep Search</Label>
-              <Select
-                value={filters.has_deep_search || ''}
-                onValueChange={(value) => handleFilterChange('has_deep_search', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All" />
-                </SelectTrigger>
-                <SelectContent>
-                  {BOOLEAN_OPTIONS.map((option) => (
+              {/* Deep Search */}
+              <div className="space-y-2">
+                <Label className="text-[13px] font-medium text-muted-foreground">Deep Search</Label>
+                <Select
+                  value={filters.has_deep_search || ''}
+                  onValueChange={(value) => handleFilterChange('has_deep_search', value)}
+                >
+                  <SelectTrigger className="h-9 min-w-[180px]">
+                    <SelectValue placeholder="All" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BOOLEAN_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </div>
