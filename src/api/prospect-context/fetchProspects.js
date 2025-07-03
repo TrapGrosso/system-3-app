@@ -66,7 +66,13 @@ export const useProspectsQuery = ({ userId, ...query }) => {
  * - page_size (optional): Results per page, default 10, max 100
  * - sort_by (optional): Column to sort by (first_name, last_name, status, etc.)
  * - sort_dir (optional): Sort direction, 'asc' or 'desc', default 'asc'
- * - q (optional): Global search across name, title, company, email
+ * - q (optional): Global search term across specified fields
+ * - search_fields (optional): Comma-separated list of fields to search in. 
+ *   Available fields:
+ *   - Prospect fields: first_name, last_name, headline, location, email, title
+ *   - Company fields: company_name, company_website, company_industry, company_size, company_location
+ *   - Related data: notes, task_titles, task_descriptions, group_names, campaign_names, enrichment_data
+ *   Default: all fields if q is provided
  * - status (optional): Filter by prospect status
  * - in_group (optional): 'yes' or 'no' to filter by group membership
  * - group_name (optional): Filter by specific group name
@@ -75,8 +81,25 @@ export const useProspectsQuery = ({ userId, ...query }) => {
  * - has_bd_scrape (optional): Filter by BD scrape enrichment flag
  * - has_deep_search (optional): Filter by deep search enrichment flag
  * 
- * Example Request:
- * GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&page=2&page_size=20&sort_by=first_name&sort_dir=asc&status=new
+ * Example Requests:
+ * 
+ * Basic search:
+ * GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&page=1&page_size=10
+ * 
+ * Search with enrichment filters:
+ * GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&has_deep_search=true&has_bd_scrape=false
+ * 
+ * Search in specific fields:
+ * GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&q=john&search_fields=first_name,last_name
+ * 
+ * Search in company data:
+ * GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&q=tech&search_fields=company_name,company_industry
+ * 
+ * Search in notes and tasks:
+ * GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&q=meeting&search_fields=notes,task_titles,task_descriptions
+ * 
+ * Combined filters:
+ * GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&q=manager&search_fields=title,headline&status=new&sort_by=created_at&sort_dir=desc
  * 
  * Example Success Response (200):
  * {
@@ -90,11 +113,11 @@ export const useProspectsQuery = ({ userId, ...query }) => {
  *       "status": "new",
  *       "location": "Poland",
  *       "email": null,
- *       "company_name": null,
+ *       "company_name": "FTECH",
  *       "has_bd_scrape": true,
  *       "has_deep_search": false,
- *       "note_count": 0,
- *       "task_count": 0,
+ *       "note_count": 2,
+ *       "task_count": 1,
  *       "groups": [
  *         {
  *           "id": "3ecaa693-ee42-4e1a-82a9-7a959d719b15",
@@ -105,12 +128,21 @@ export const useProspectsQuery = ({ userId, ...query }) => {
  *     }
  *   ],
  *   "total": 523,
- *   "page": 2,
- *   "page_size": 20
+ *   "page": 1,
+ *   "page_size": 10
  * }
  * 
- * Example Error Response (400):
+ * Example Error Responses:
+ * 
+ * Missing user_id (400):
  * {"error": "Missing required query param: user_id"}
+ * 
+ * Invalid search field (400):
+ * {"error": "Parameter validation failed: Invalid search field \"invalid_field\". Must be one of: first_name, last_name, headline, location, email, title, company_name, company_website, company_industry, company_size, company_location, notes, task_titles, task_descriptions, group_names, campaign_names, enrichment_data"}
+ * 
+ * Invalid page size (400):
  * {"error": "Parameter validation failed: Value 150 exceeds maximum of 100"}
- * {"error": "Parameter validation failed: Invalid value \"invalid_column\". Must be one of: first_name, last_name, status, company_name, created_at, title, location, email, note_count, task_count"}
+ * 
+ * Database error (500):
+ * {"error": "Database error: [specific error message]"}
  */

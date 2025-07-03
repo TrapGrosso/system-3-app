@@ -23,6 +23,7 @@ export default function Dashboard() {
         sort_dir: 'desc',
         // Filter options
         q: '',
+        search_fields: '',
         status: '',
         in_group: '',
         group_name: '',

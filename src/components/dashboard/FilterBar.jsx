@@ -20,33 +20,39 @@ import { useGroups } from '@/contexts/GroupsContext'
 import { useFetchCampaigns } from '@/api/campaign-context/fetchCampaigns'
 import { useAuth } from '@/contexts/AuthContext'
 
-const useDebounce = (value, delay) => {
-  const [debouncedValue, setDebouncedValue] = React.useState(value)
-
-  React.useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-
-    return () => {
-      clearTimeout(handler)
-    }
-  }, [value, delay])
-
-  return debouncedValue
-}
-
 const STATUS_OPTIONS = [
-  { value: 'all', label: 'All Statuses' },
+  { value: null, label: 'All Statuses' },
   { value: 'new', label: 'New' },
-  { value: 'contacted', label: 'Contacted' },
-  { value: 'qualified', label: 'Qualified' },
+  { value: 'queued', label: 'Queued' },
+  { value: 'researching', label: 'Researching' },
+  { value: 'ready', label: 'Ready' },
+  { value: 'archived', label: 'Archived' },
 ]
 
 const BOOLEAN_OPTIONS = [
-  { value: 'all', label: 'All' },
+  { value: null, label: 'All' },
   { value: 'yes', label: 'Yes' },
   { value: 'no', label: 'No' },
+]
+
+const SEARCH_FIELD_OPTIONS = [
+  { value: 'first_name', label: 'First Name' },
+  { value: 'last_name', label: 'Last Name' },
+  { value: 'headline', label: 'Headline' },
+  { value: 'location', label: 'Location' },
+  { value: 'email', label: 'Email' },
+  { value: 'title', label: 'Title' },
+  { value: 'company_name', label: 'Company Name' },
+  { value: 'company_website', label: 'Company Website' },
+  { value: 'company_industry', label: 'Company Industry' },
+  { value: 'company_size', label: 'Company Size' },
+  { value: 'company_location', label: 'Company Location' },
+  { value: 'notes', label: 'Notes' },
+  { value: 'task_titles', label: 'Task Titles' },
+  { value: 'task_descriptions', label: 'Task Descriptions' },
+  { value: 'group_names', label: 'Group Names' },
+  { value: 'campaign_names', label: 'Campaign Names' },
+  { value: 'enrichment_data', label: 'Enrichment Data' },
 ]
 
 export default function FilterBar({ filters, onFiltersChange }) {
@@ -54,16 +60,11 @@ export default function FilterBar({ filters, onFiltersChange }) {
   const { groups = [] } = useGroups()
   const { data: campaigns = [] } = useFetchCampaigns(user?.id)
 
-  // Local state for search input to enable debouncing
+  // Local state for search input and selected fields
   const [searchInput, setSearchInput] = React.useState(filters.q || '')
-  const debouncedSearch = useDebounce(searchInput, 300)
-
-  // Update filters when debounced search changes
-  React.useEffect(() => {
-    if (debouncedSearch !== filters.q) {
-      onFiltersChange({ q: debouncedSearch })
-    }
-  }, [debouncedSearch, filters.q, onFiltersChange])
+  const [selectedFields, setSelectedFields] = React.useState(
+    filters.search_fields ? filters.search_fields.split(',') : []
+  )
 
   // Sync local search input with external filter changes
   React.useEffect(() => {
@@ -72,14 +73,31 @@ export default function FilterBar({ filters, onFiltersChange }) {
     }
   }, [filters.q])
 
+  // Sync selected fields with external filter changes
+  React.useEffect(() => {
+    const fieldsFromFilter = filters.search_fields ? filters.search_fields.split(',') : []
+    if (JSON.stringify(fieldsFromFilter) !== JSON.stringify(selectedFields)) {
+      setSelectedFields(fieldsFromFilter)
+    }
+  }, [filters.search_fields])
+
   const handleFilterChange = (key, value) => {
     onFiltersChange({ [key]: value })
   }
 
+  const handleApplyFilters = () => {
+    onFiltersChange({
+      q: searchInput.trim(),
+      search_fields: selectedFields.length ? selectedFields.join(',') : ''
+    })
+  }
+
   const handleReset = () => {
     setSearchInput('')
+    setSelectedFields([])
     onFiltersChange({
       q: '',
+      search_fields: '',
       status: '',
       in_group: '',
       group_name: '',
@@ -142,21 +160,61 @@ export default function FilterBar({ filters, onFiltersChange }) {
           </div>
 
           {/* Filter controls */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Global Search */}
-            <div className="space-y-2">
-              <Label htmlFor="search">Search</Label>
-              <div className="relative">
-                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="search"
-                  placeholder="Search prospects..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  className="pl-9"
-                />
+          <div className="space-y-4">
+            {/* Search Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Global Search */}
+              <div className="space-y-2">
+                <Label htmlFor="search">Search</Label>
+                <div className="relative">
+                  <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="search"
+                    placeholder="Search prospects..."
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+
+              {/* Apply Filters Button */}
+              <div className="space-y-2">
+                <Label>&nbsp;</Label>
+                <Button 
+                  onClick={handleApplyFilters}
+                  className="w-full"
+                >
+                  Apply Filters
+                </Button>
               </div>
             </div>
+
+            {/* Search Fields Selection */}
+            <div className="space-y-2">
+              <Label>Search Fields (leave empty to search all fields)</Label>
+              <ToggleGroup
+                type="multiple"
+                value={selectedFields}
+                onValueChange={setSelectedFields}
+                className="flex-wrap justify-start"
+              >
+                {SEARCH_FIELD_OPTIONS.map((field) => (
+                  <ToggleGroupItem
+                    key={field.value}
+                    value={field.value}
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                  >
+                    {field.label}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </div>
+
+            {/* Other Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
             {/* Status Filter */}
             <div className="space-y-2">
@@ -298,6 +356,7 @@ export default function FilterBar({ filters, onFiltersChange }) {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
             </div>
           </div>
         </div>
