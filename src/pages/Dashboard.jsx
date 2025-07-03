@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { useProspectsQuery } from '@/api/prospect-context/fetchProspects'
+import { ProspectsProvider, useProspects } from '@/contexts/ProspectsContext'
 import { useNavigate } from 'react-router-dom'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
@@ -8,40 +8,12 @@ import { DataTable } from "@/components/data-table"
 import { SectionCards } from "@/components/section-cards"
 import ProspectsTable from '@/components/dashboard/ProspectsTable'
 import FilterBar from '@/components/dashboard/FilterBar'
-import { Spinner } from '@/components/ui/spinner'
 import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
 
-export default function Dashboard() {
-    const { user, signOut } = useAuth()
+function DashboardContent() {
+    const { user } = useAuth()
     const navigate = useNavigate()
-
-    // Query state for server-side filtering, sorting, and pagination
-    const [query, setQuery] = useState({
-        page: 1,
-        page_size: 10,
-        sort_by: 'created_at',
-        sort_dir: 'desc',
-        // Filter options
-        q: '',
-        search_fields: '',
-        status: '',
-        in_group: '',
-        group_name: '',
-        in_campaign: '',
-        campaign_name: '',
-        has_bd_scrape: '',
-        has_deep_search: '',
-    })
-
-    // Use new query hook
-    const { data: queryResult, isLoading, isError, refetch: refetchProspects } = useProspectsQuery({ 
-        userId: user?.id, 
-        ...query 
-    })
-
-    // Extract data from query result
-    const prospects = queryResult?.data || []
-    const total = queryResult?.total || 0
+    const { refetch } = useProspects()
 
     // State for HandleGroupsDialog
     const [addGroupOpen, setAddGroupOpen] = useState(false)
@@ -88,15 +60,6 @@ export default function Dashboard() {
         alert(`Adding ${linkedinIds.length} prospects to deep search queue`)
     }
 
-    // Filter change handler
-    const handleFiltersChange = (newFilters) => {
-        setQuery(prevQuery => ({
-            ...prevQuery,
-            ...newFilters,
-            page: 1, // Reset to first page when filters change
-        }))
-    }
-
   return (
     <DashboardLayout headerText="Dashboard">
       <SectionCards />
@@ -110,51 +73,16 @@ export default function Dashboard() {
           <p className="text-muted-foreground">View and manage your prospects</p>
         </div>
         
-        {isLoading && (
-          <div className="flex justify-center py-8">
-            <Spinner size="lg" />
-          </div>
-        )}
-        
-        {isError && (
-          <div className="text-center py-8">
-            <p className="text-destructive">Failed to load prospects. Please try again.</p>
-          </div>
-        )}
-        
-        {!isLoading && !isError && (
-          <>
-            <FilterBar
-              filters={query}
-              onFiltersChange={handleFiltersChange}
-            />
-            <ProspectsTable 
-              prospects={prospects}
-              total={total}
-              pageIndex={query.page - 1}
-              pageSize={query.page_size}
-              sorting={[{ id: query.sort_by, desc: query.sort_dir === 'desc' }]}
-              onPaginationChange={({ pageIndex, pageSize }) => 
-                setQuery(q => ({ ...q, page: pageIndex + 1, page_size: pageSize }))
-              }
-              onSortingChange={(sorting) => {
-                const s = sorting[0] || {}
-                setQuery(q => ({ 
-                  ...q, 
-                  sort_by: s.id || 'created_at', 
-                  sort_dir: s.desc ? 'desc' : 'asc' 
-                }))
-              }}
-              onRowClick={handleRowClick}
-              onAddToGroup={handleAddToGroup}
-              onAddToCampaign={handleAddToCampaign}
-              onAddToDeepSearch={handleAddToDeepSearch}
-              onBulkAddToGroup={handleBulkAddToGroup}
-              onBulkAddToCampaign={handleBulkAddToCampaign}
-              onBulkAddToDeepSearch={handleBulkAddToDeepSearch}
-            />
-          </>
-        )}
+        <FilterBar />
+        <ProspectsTable 
+          onRowClick={handleRowClick}
+          onAddToGroup={handleAddToGroup}
+          onAddToCampaign={handleAddToCampaign}
+          onAddToDeepSearch={handleAddToDeepSearch}
+          onBulkAddToGroup={handleBulkAddToGroup}
+          onBulkAddToCampaign={handleBulkAddToCampaign}
+          onBulkAddToDeepSearch={handleBulkAddToDeepSearch}
+        />
       </div>
       
       {/* HandleGroupsDialog - controlled by Dashboard state */}
@@ -164,11 +92,19 @@ export default function Dashboard() {
         open={addGroupOpen}
         onOpenChange={setAddGroupOpen}
         onSuccess={() => {
-          refetchProspects() // Refresh prospects list after successful group addition
+          refetch() // Refresh prospects list after successful group addition
           setAddGroupOpen(false)
           setProspectIdsForGroup([])
         }}
       />
     </DashboardLayout>
+  )
+}
+
+export default function Dashboard() {
+  return (
+    <ProspectsProvider>
+      <DashboardContent />
+    </ProspectsProvider>
   )
 }

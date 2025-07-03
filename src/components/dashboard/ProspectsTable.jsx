@@ -34,6 +34,8 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from '@/components/ui/pagination'
+import { Spinner } from '@/components/ui/spinner'
+import { useProspects } from '@/contexts/ProspectsContext'
 
 const getStatusVariant = (status) => {
   switch (status?.toLowerCase()) {
@@ -53,13 +55,6 @@ const getBooleanVariant = (value) => {
 }
 
 export default function ProspectsTable({ 
-  prospects = [], 
-  total = 0,
-  pageIndex = 0,
-  pageSize = 10,
-  sorting = [],
-  onPaginationChange,
-  onSortingChange,
   onRowClick,
   onAddToGroup,
   onAddToCampaign,
@@ -69,6 +64,15 @@ export default function ProspectsTable({
   onBulkAddToDeepSearch
 }) {
   
+  // Get data and state from context
+  const { 
+    data: prospects, 
+    total, 
+    query, 
+    setQuery, 
+    isLoading 
+  } = useProspects()
+
   const columns = React.useMemo(() => [
     {
       id: "select",
@@ -286,7 +290,11 @@ export default function ProspectsTable({
 
   const [rowSelection, setRowSelection] = React.useState({})
 
-  // Convert props to TanStack Table format
+  // Convert context data to TanStack Table format
+  const pageIndex = query.page - 1
+  const pageSize = query.page_size
+  const sorting = [{ id: query.sort_by, desc: query.sort_dir === 'desc' }]
+
   const pagination = React.useMemo(() => ({
     pageIndex,
     pageSize,
@@ -306,8 +314,16 @@ export default function ProspectsTable({
     manualSorting: true,
     pageCount: Math.ceil(total / pageSize),
     onRowSelectionChange: setRowSelection,
-    onSortingChange,
-    onPaginationChange,
+    onSortingChange: (sorting) => {
+      const s = sorting[0] || {}
+      setQuery({ 
+        sort_by: s.id || 'created_at', 
+        sort_dir: s.desc ? 'desc' : 'asc' 
+      })
+    },
+    onPaginationChange: ({ pageIndex, pageSize }) => {
+      setQuery({ page: pageIndex + 1, page_size: pageSize })
+    },
     getCoreRowModel: getCoreRowModel(),
   })
 
@@ -361,14 +377,6 @@ export default function ProspectsTable({
     }
   }
 
-  if (!prospects || prospects.length === 0) {
-    return (
-      <div className="text-center py-8 text-muted-foreground">
-        No prospects found
-      </div>
-    )
-  }
-
   const totalPages = table.getPageCount()
   const currentPage = table.getState().pagination.pageIndex
   const canPreviousPage = table.getCanPreviousPage()
@@ -403,6 +411,67 @@ export default function ProspectsTable({
     }
 
     return rangeWithDots
+  }
+
+  // Show loading overlay while loading
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        {/* Table structure with loading overlay */}
+        <div className="relative rounded-md border min-h-[400px]">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+          </Table>
+          
+          {/* Loading overlay */}
+          <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-2">
+              <Spinner size="lg" />
+              <p className="text-sm text-muted-foreground">Loading prospects...</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Disabled pagination controls */}
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between opacity-50 pointer-events-none">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>Loading...</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-medium">Rows per page:</Label>
+              <Select disabled>
+                <SelectTrigger className="w-20">
+                  <SelectValue placeholder="10" />
+                </SelectTrigger>
+              </Select>
+            </div>
+            <div className="text-sm font-medium">Page - of -</div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show no results message
+  if (!prospects || prospects.length === 0) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        No prospects found
+      </div>
+    )
   }
 
   return (
@@ -513,7 +582,7 @@ export default function ProspectsTable({
             <Select
               value={`${pageSize}`}
               onValueChange={(value) => {
-                onPaginationChange({ pageIndex: 0, pageSize: Number(value) })
+                setQuery({ page: 1, page_size: Number(value) })
               }}
             >
               <SelectTrigger className="w-20" id="page-size">
@@ -536,7 +605,7 @@ export default function ProspectsTable({
           <Pagination>
             <PaginationContent>
               <PaginationPrevious 
-                onClick={() => onPaginationChange({ pageIndex: currentPage - 1, pageSize })}
+                onClick={() => setQuery({ page: currentPage })}
                 className={canPreviousPage ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}
               />
               
@@ -549,7 +618,7 @@ export default function ProspectsTable({
                   <PaginationItem key={page}>
                     <PaginationLink
                       isActive={page === currentPage}
-                      onClick={() => onPaginationChange({ pageIndex: page, pageSize })}
+                      onClick={() => setQuery({ page: page + 1 })}
                       className="cursor-pointer"
                     >
                       {page + 1}
@@ -559,7 +628,7 @@ export default function ProspectsTable({
               ))}
               
               <PaginationNext 
-                onClick={() => onPaginationChange({ pageIndex: currentPage + 1, pageSize })}
+                onClick={() => setQuery({ page: currentPage + 2 })}
                 className={canNextPage ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}
               />
             </PaginationContent>

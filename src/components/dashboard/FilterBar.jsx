@@ -28,6 +28,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useGroups } from '@/contexts/GroupsContext'
 import { useFetchCampaigns } from '@/api/campaign-context/fetchCampaigns'
 import { useAuth } from '@/contexts/AuthContext'
+import { useProspects } from '@/contexts/ProspectsContext'
 
 const STATUS_OPTIONS = [
   { value: null, label: 'All Statuses' },
@@ -154,61 +155,53 @@ function MultiSelectChipPicker({
   )
 }
 
-export default function FilterBar({ filters, onFiltersChange }) {
+export default function FilterBar() {
   const { user } = useAuth()
   const { groups = [] } = useGroups()
   const { data: campaigns = [] } = useFetchCampaigns(user?.id)
+  const { query, setQuery, resetFilters, isLoading } = useProspects()
 
   // Local state for search input and selected fields
-  const [searchInput, setSearchInput] = React.useState(filters.q || '')
+  const [searchInput, setSearchInput] = React.useState(query.q || '')
   const [selectedFields, setSelectedFields] = React.useState(
-    filters.search_fields ? filters.search_fields.split(',') : []
+    query.search_fields ? query.search_fields.split(',') : []
   )
 
   // Sync local search input with external filter changes
   React.useEffect(() => {
-    if (filters.q !== searchInput) {
-      setSearchInput(filters.q || '')
+    if (query.q !== searchInput) {
+      setSearchInput(query.q || '')
     }
-  }, [filters.q])
+  }, [query.q])
 
   // Sync selected fields with external filter changes
   React.useEffect(() => {
-    const fieldsFromFilter = filters.search_fields ? filters.search_fields.split(',') : []
+    const fieldsFromFilter = query.search_fields ? query.search_fields.split(',') : []
     if (JSON.stringify(fieldsFromFilter) !== JSON.stringify(selectedFields)) {
       setSelectedFields(fieldsFromFilter)
     }
-  }, [filters.search_fields])
+  }, [query.search_fields])
 
   const handleFilterChange = (key, value) => {
-    onFiltersChange({ [key]: value })
+    setQuery({ [key]: value })
   }
 
   const handleApplyFilters = () => {
-    onFiltersChange({
+    setQuery({
       q: searchInput.trim(),
-      search_fields: selectedFields.length ? selectedFields.join(',') : ''
+      search_fields: selectedFields.length ? selectedFields.join(',') : '',
+      page: 1 // Reset to first page when applying filters
     })
   }
 
   const handleReset = () => {
     setSearchInput('')
     setSelectedFields([])
-    onFiltersChange({
-      q: '',
-      search_fields: '',
-      status: '',
-      in_group: '',
-      group_name: '',
-      in_campaign: '',
-      campaign_name: '',
-      has_bd_scrape: '',
-      has_deep_search: '',
-    })
+    resetFilters()
   }
 
   // Count active filters
-  const activeFilters = Object.entries(filters).filter(([key, value]) => 
+  const activeFilters = Object.entries(query).filter(([key, value]) => 
     key !== 'page' && key !== 'page_size' && key !== 'sort_by' && key !== 'sort_dir' && value
   ).length
 
@@ -233,221 +226,223 @@ export default function FilterBar({ filters, onFiltersChange }) {
   return (
     <Card className="mb-6">
       <CardContent className="pt-6">
-        <div className="space-y-4">
-          {/* Header with filter count and reset */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FilterIcon className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">Filters</span>
+        <fieldset disabled={isLoading}>
+          <div className="space-y-4">
+            {/* Header with filter count and reset */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FilterIcon className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">Filters</span>
+                {activeFilters > 0 && (
+                  <Badge variant="secondary">
+                    {activeFilters} active
+                  </Badge>
+                )}
+              </div>
               {activeFilters > 0 && (
-                <Badge variant="secondary">
-                  {activeFilters} active
-                </Badge>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleReset}
+                  className="h-8 px-2"
+                >
+                  <XIcon className="h-3 w-3 mr-1" />
+                  Clear all
+                </Button>
               )}
             </div>
-            {activeFilters > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleReset}
-                className="h-8 px-2"
-              >
-                <XIcon className="h-3 w-3 mr-1" />
-                Clear all
-              </Button>
-            )}
-          </div>
 
-          {/* Filter controls */}
-          <div className="space-y-4">
-            {/* Search Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Global Search */}
-              <div className="space-y-2">
-                <Label htmlFor="search" className="text-[13px] font-medium text-muted-foreground">Search</Label>
-                <div className="relative">
-                  <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="search"
-                    placeholder="Search prospects..."
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    className="pl-9 h-9"
-                  />
+            {/* Filter controls */}
+            <div className="space-y-4">
+              {/* Search Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Global Search */}
+                <div className="space-y-2">
+                  <Label htmlFor="search" className="text-[13px] font-medium text-muted-foreground">Search</Label>
+                  <div className="relative">
+                    <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="search"
+                      placeholder="Search prospects..."
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
+                      className="pl-9 h-9"
+                    />
+                  </div>
+                </div>
+
+                {/* Apply Filters Button */}
+                <div className="space-y-2">
+                  <Label className="text-[13px] font-medium text-muted-foreground">&nbsp;</Label>
+                  <Button 
+                    onClick={handleApplyFilters}
+                    className="w-full h-9"
+                  >
+                    Apply Filters
+                  </Button>
                 </div>
               </div>
 
-              {/* Apply Filters Button */}
+              {/* Search Fields Selection */}
               <div className="space-y-2">
-                <Label className="text-[13px] font-medium text-muted-foreground">&nbsp;</Label>
-                <Button 
-                  onClick={handleApplyFilters}
-                  className="w-full h-9"
-                >
-                  Apply Filters
-                </Button>
-              </div>
-            </div>
-
-            {/* Search Fields Selection */}
-            <div className="space-y-2">
-              <Label className="text-[13px] font-medium text-muted-foreground">
-                Search Fields (leave empty to search all fields)
-              </Label>
-              <MultiSelectChipPicker
-                options={SEARCH_FIELD_OPTIONS}
-                value={selectedFields}
-                onValueChange={setSelectedFields}
-                placeholder="Choose search fields..."
-              />
-            </div>
-
-            {/* Other Filters - Responsive Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {/* Status Filter */}
-              <div className="space-y-2">
-                <Label className="text-[13px] font-medium text-muted-foreground">Status</Label>
-                <Select
-                  value={filters.status || ''}
-                  onValueChange={(value) => handleFilterChange('status', value)}
-                >
-                  <SelectTrigger className="h-9 min-w-[180px]">
-                    <SelectValue placeholder="All Statuses" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STATUS_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label className="text-[13px] font-medium text-muted-foreground">
+                  Search Fields (leave empty to search all fields)
+                </Label>
+                <MultiSelectChipPicker
+                  options={SEARCH_FIELD_OPTIONS}
+                  value={selectedFields}
+                  onValueChange={setSelectedFields}
+                  placeholder="Choose search fields..."
+                />
               </div>
 
-              {/* Group Membership */}
-              <div className="space-y-2">
-                <Label className="text-[13px] font-medium text-muted-foreground">In Group</Label>
-                <Select
-                  value={filters.in_group || ''}
-                  onValueChange={(value) => handleFilterChange('in_group', value)}
-                >
-                  <SelectTrigger className="h-9 min-w-[180px]">
-                    <SelectValue placeholder="All" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BOOLEAN_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Other Filters - Responsive Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {/* Status Filter */}
+                <div className="space-y-2">
+                  <Label className="text-[13px] font-medium text-muted-foreground">Status</Label>
+                  <Select
+                    value={query.status || ''}
+                    onValueChange={(value) => handleFilterChange('status', value)}
+                  >
+                    <SelectTrigger className="h-9 min-w-[180px]">
+                      <SelectValue placeholder="All Statuses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STATUS_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {/* Specific Group */}
-              <div className="space-y-2">
-                <Label className="text-[13px] font-medium text-muted-foreground">Group Name</Label>
-                <Select
-                  value={filters.group_name || ''}
-                  onValueChange={(value) => handleFilterChange('group_name', value)}
-                  disabled={!groups.length}
-                >
-                  <SelectTrigger className="h-9 min-w-[180px]">
-                    <SelectValue placeholder={groups.length ? "All Groups" : "No groups available"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {groupOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                {/* Group Membership */}
+                <div className="space-y-2">
+                  <Label className="text-[13px] font-medium text-muted-foreground">In Group</Label>
+                  <Select
+                    value={query.in_group || ''}
+                    onValueChange={(value) => handleFilterChange('in_group', value)}
+                  >
+                    <SelectTrigger className="h-9 min-w-[180px]">
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BOOLEAN_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {/* Campaign Membership */}
-              <div className="space-y-2">
-                <Label className="text-[13px] font-medium text-muted-foreground">In Campaign</Label>
-                <Select
-                  value={filters.in_campaign || ''}
-                  onValueChange={(value) => handleFilterChange('in_campaign', value)}
-                >
-                  <SelectTrigger className="h-9 min-w-[180px]">
-                    <SelectValue placeholder="All" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BOOLEAN_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                {/* Specific Group */}
+                <div className="space-y-2">
+                  <Label className="text-[13px] font-medium text-muted-foreground">Group Name</Label>
+                  <Select
+                    value={query.group_name || ''}
+                    onValueChange={(value) => handleFilterChange('group_name', value)}
+                    disabled={!groups.length}
+                  >
+                    <SelectTrigger className="h-9 min-w-[180px]">
+                      <SelectValue placeholder={groups.length ? "All Groups" : "No groups available"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {groupOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {/* Specific Campaign */}
-              <div className="space-y-2">
-                <Label className="text-[13px] font-medium text-muted-foreground">Campaign Name</Label>
-                <Select
-                  value={filters.campaign_name || ''}
-                  onValueChange={(value) => handleFilterChange('campaign_name', value)}
-                  disabled={!campaigns.length}
-                >
-                  <SelectTrigger className="h-9 min-w-[180px]">
-                    <SelectValue placeholder={campaigns.length ? "All Campaigns" : "No campaigns available"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {campaignOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                {/* Campaign Membership */}
+                <div className="space-y-2">
+                  <Label className="text-[13px] font-medium text-muted-foreground">In Campaign</Label>
+                  <Select
+                    value={query.in_campaign || ''}
+                    onValueChange={(value) => handleFilterChange('in_campaign', value)}
+                  >
+                    <SelectTrigger className="h-9 min-w-[180px]">
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BOOLEAN_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {/* BD Enrichment */}
-              <div className="space-y-2">
-                <Label className="text-[13px] font-medium text-muted-foreground">BD Enrichment</Label>
-                <Select
-                  value={filters.has_bd_scrape || ''}
-                  onValueChange={(value) => handleFilterChange('has_bd_scrape', value)}
-                >
-                  <SelectTrigger className="h-9 min-w-[180px]">
-                    <SelectValue placeholder="All" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BOOLEAN_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                {/* Specific Campaign */}
+                <div className="space-y-2">
+                  <Label className="text-[13px] font-medium text-muted-foreground">Campaign Name</Label>
+                  <Select
+                    value={query.campaign_name || ''}
+                    onValueChange={(value) => handleFilterChange('campaign_name', value)}
+                    disabled={!campaigns.length}
+                  >
+                    <SelectTrigger className="h-9 min-w-[180px]">
+                      <SelectValue placeholder={campaigns.length ? "All Campaigns" : "No campaigns available"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {campaignOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {/* Deep Search */}
-              <div className="space-y-2">
-                <Label className="text-[13px] font-medium text-muted-foreground">Deep Search</Label>
-                <Select
-                  value={filters.has_deep_search || ''}
-                  onValueChange={(value) => handleFilterChange('has_deep_search', value)}
-                >
-                  <SelectTrigger className="h-9 min-w-[180px]">
-                    <SelectValue placeholder="All" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BOOLEAN_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* BD Enrichment */}
+                <div className="space-y-2">
+                  <Label className="text-[13px] font-medium text-muted-foreground">BD Enrichment</Label>
+                  <Select
+                    value={query.has_bd_scrape || ''}
+                    onValueChange={(value) => handleFilterChange('has_bd_scrape', value)}
+                  >
+                    <SelectTrigger className="h-9 min-w-[180px]">
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BOOLEAN_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Deep Search */}
+                <div className="space-y-2">
+                  <Label className="text-[13px] font-medium text-muted-foreground">Deep Search</Label>
+                  <Select
+                    value={query.has_deep_search || ''}
+                    onValueChange={(value) => handleFilterChange('has_deep_search', value)}
+                  >
+                    <SelectTrigger className="h-9 min-w-[180px]">
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BOOLEAN_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </fieldset>
       </CardContent>
     </Card>
   )

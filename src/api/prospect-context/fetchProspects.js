@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
-// Updated fetchProspects to accept a params object for server-side filtering, sorting, and pagination
-const fetchProspects = async (params) => {
+// Internal fetch function for the actual API call
+const innerFetch = async (params) => {
   // Build query string, omitting undefined/null values
   const searchParams = new URLSearchParams()
   Object.entries(params).forEach(([key, value]) => {
@@ -20,13 +20,29 @@ const fetchProspects = async (params) => {
   })
 
   if (!response.ok) {
-    throw new Error('Failed to fetch prospects')
+    const error = await response.json()
+    throw new Error(error.error)
   }
 
   const result = await response.json()
   
   // Return the API payload unmodified: { data, total, page, page_size }
   return result
+}
+
+// Updated fetchProspects with error fallback logic
+const fetchProspects = async (params) => {
+  try {
+    return await innerFetch(params)
+  } catch (error) {
+    // If we have filters/params beyond user_id, try fallback with only user_id
+    if (params.user_id && Object.keys(params).length > 1) {
+      console.warn('Fetch with filters failed, retrying with only user_id:', error.message)
+      return await innerFetch({ user_id: params.user_id })
+    }
+    // Re-throw error if it's already a minimal request or no user_id
+    throw error
+  }
 }
 
 // Legacy hook for backward compatibility (will be deprecated)
@@ -43,11 +59,41 @@ export const useFetchProspects = (userId) => {
   })
 }
 
-// New hook for server-side filtered/sorted/paginated prospects
+// New hook for server-side filtered/sorted/paginated prospects with fallback
 export const useProspectsQuery = ({ userId, ...query }) => {
   return useQuery({
     queryKey: ['prospects', userId, query],
-    queryFn: () => fetchProspects({ user_id: userId, ...query }),
+    queryFn: async () => {
+      try {
+        // Try with all filters first
+        return await fetchProspects({ user_id: userId, ...query })
+      } catch (error) {
+        // If it fails and we have filters, fallback to just user_id
+        const hasFilters = Object.keys(query).some(key => 
+          query[key] !== '' && query[key] !== null && query[key] !== undefined
+        )
+        
+        if (hasFilters) {
+          console.warn('Query with filters failed, falling back to user_id only:', error.message)
+          
+          try {
+            const fallbackResult = await fetchProspects({ user_id: userId })
+            
+            // Mark the result to indicate it's fallback data
+            fallbackResult._isFallback = true
+            fallbackResult._originalError = error.message
+            
+            return fallbackResult
+          } catch (fallbackError) {
+            // If even the fallback fails, throw the original error
+            throw error
+          }
+        } else {
+          // If no filters were applied, just throw the error
+          throw error
+        }
+      }
+    },
     keepPreviousData: true, // Keep old data visible while refetching
     staleTime: 60000, // 60 seconds - prospects data is relatively stable
     cacheTime: 300000, // 5 minutes cache
