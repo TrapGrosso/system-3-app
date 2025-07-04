@@ -207,7 +207,7 @@ export default function FilterBar() {
 
   // Group options for select
   const groupOptions = [
-    { value: 'all', label: 'All Groups' },
+    { value: null, label: 'All Groups' },
     ...groups.map(group => ({
       value: group.name,
       label: group.name

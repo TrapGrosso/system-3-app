@@ -26,17 +26,51 @@ export const ProspectsProvider = ({ children }) => {
     has_deep_search: '',
   })
 
+  // Track if we've already attempted a fallback to prevent infinite loops
+  const [didFallback, setDidFallback] = useState(false)
+
   // Use the prospects query hook
   const queryApi = useProspectsQuery({ userId: user?.id, ...query })
 
-  // Show toast on error or when fallback data is returned
+  // Centralized error handling with fallback logic
   useEffect(() => {
-    if (queryApi.isError && queryApi.error) {
-      toast.error(queryApi.error.message || 'Failed to fetch prospects')
-    } else if (queryApi.data?._isFallback) {
-      toast.warning(`Filter failed: ${queryApi.data._originalError}. Showing all prospects instead.`)
+    if (!queryApi.isError || queryApi.isFetching) return
+
+    const hasExtraFilters = Object.values(query).some(
+      v => v !== '' && v !== null && v !== undefined
+    )
+
+    if (hasExtraFilters && !didFallback) {
+      // Show warning toast and attempt fallback by clearing filters
+      toast.warning(
+        `Filters failed (${queryApi.error?.message ?? 'unknown error'}). Showing all prospects instead.`
+      )
+      // Clear filters and reset page to 1
+      setQuery(prev => ({
+        ...prev,
+        q: '',
+        search_fields: '',
+        status: '',
+        in_group: '',
+        group_name: '',
+        in_campaign: '',
+        campaign_name: '',
+        has_bd_scrape: '',
+        has_deep_search: '',
+        page: 1,
+      }))
+      setDidFallback(true) // Prevent infinite fallback attempts
+      // React-Query will automatically refetch because queryKey changed
+    } else {
+      // Show error toast for cases where fallback isn't appropriate or already attempted
+      toast.error(queryApi.error?.message ?? 'Failed to fetch prospects')
     }
-  }, [queryApi.isError, queryApi.error, queryApi.data?._isFallback, queryApi.data?._originalError])
+  }, [queryApi.isError, queryApi.isFetching, queryApi.error, query, didFallback])
+
+  // Reset didFallback flag when user manually changes filters
+  useEffect(() => {
+    setDidFallback(false)
+  }, [query])
 
   const value = useMemo(() => ({
     // React Query data and states

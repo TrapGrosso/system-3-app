@@ -30,70 +30,14 @@ const innerFetch = async (params) => {
   return result
 }
 
-// Updated fetchProspects with error fallback logic
-const fetchProspects = async (params) => {
-  try {
-    return await innerFetch(params)
-  } catch (error) {
-    // If we have filters/params beyond user_id, try fallback with only user_id
-    if (params.user_id && Object.keys(params).length > 1) {
-      console.warn('Fetch with filters failed, retrying with only user_id:', error.message)
-      return await innerFetch({ user_id: params.user_id })
-    }
-    // Re-throw error if it's already a minimal request or no user_id
-    throw error
-  }
-}
+// Simple fetchProspects function - no internal fallback logic
+const fetchProspects = innerFetch
 
-// Legacy hook for backward compatibility (will be deprecated)
-export const useFetchProspects = (userId) => {
-  return useQuery({
-    queryKey: ['prospects', userId],
-    queryFn: () => fetchProspects({ user_id: userId }),
-    staleTime: 60000, // 60 seconds - prospects data is relatively stable
-    cacheTime: 300000, // 5 minutes cache
-    refetchInterval: 120000, // Refetch every 2 minutes to get latest prospects
-    refetchOnWindowFocus: true,
-    retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-  })
-}
-
-// New hook for server-side filtered/sorted/paginated prospects with fallback
+// Hook for server-side filtered/sorted/paginated prospects
 export const useProspectsQuery = ({ userId, ...query }) => {
   return useQuery({
     queryKey: ['prospects', userId, query],
-    queryFn: async () => {
-      try {
-        // Try with all filters first
-        return await fetchProspects({ user_id: userId, ...query })
-      } catch (error) {
-        // If it fails and we have filters, fallback to just user_id
-        const hasFilters = Object.keys(query).some(key => 
-          query[key] !== '' && query[key] !== null && query[key] !== undefined
-        )
-        
-        if (hasFilters) {
-          console.warn('Query with filters failed, falling back to user_id only:', error.message)
-          
-          try {
-            const fallbackResult = await fetchProspects({ user_id: userId })
-            
-            // Mark the result to indicate it's fallback data
-            fallbackResult._isFallback = true
-            fallbackResult._originalError = error.message
-            
-            return fallbackResult
-          } catch (fallbackError) {
-            // If even the fallback fails, throw the original error
-            throw error
-          }
-        } else {
-          // If no filters were applied, just throw the error
-          throw error
-        }
-      }
-    },
+    queryFn: () => fetchProspects({ user_id: userId, ...query }),
     keepPreviousData: true, // Keep old data visible while refetching
     staleTime: 60000, // 60 seconds - prospects data is relatively stable
     cacheTime: 300000, // 5 minutes cache
