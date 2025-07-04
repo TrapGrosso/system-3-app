@@ -1,10 +1,46 @@
 import React from 'react'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ExternalLinkIcon, BuildingIcon, UsersIcon, MapPinIcon } from 'lucide-react'
+import { ExternalLinkIcon, BuildingIcon, UsersIcon, MapPinIcon, PlusIcon } from 'lucide-react'
+import { toast } from 'sonner'
 
-export default function CompanyCard({ company }) {
-  if (!company) return null
+export default function CompanyCard({ company, onAddCompany }) {
+  const handleAddCompany = () => {
+    if (onAddCompany) {
+      onAddCompany()
+    } else {
+      toast.info('Add company functionality not implemented yet')
+    }
+  }
+
+  if (!company) {
+    return (
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-muted rounded-lg">
+              <BuildingIcon className="h-6 w-6" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-xl">No company associated with prospect was found</CardTitle>
+            </div>
+          </div>
+        </CardHeader>
+        
+        <CardContent className="space-y-4">
+          <div className="text-center py-8">
+            <BuildingIcon className="h-12 w-12 mx-auto mb-4 opacity-50 text-muted-foreground" />
+            <p className="text-muted-foreground mb-4">This prospect is not currently associated with any company.</p>
+            <Button onClick={handleAddCompany} variant="outline">
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Add a company
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const { name, website, industry, size, location } = company
 

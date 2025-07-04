@@ -1,16 +1,42 @@
 import React from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { CheckSquareIcon, CalendarIcon } from 'lucide-react'
+import { CheckSquareIcon, CalendarIcon, PlusIcon, PencilIcon, TrashIcon } from 'lucide-react'
+import { toast } from 'sonner'
 
-export default function TasksList({ tasks = [] }) {
+export default function TasksList({ tasks = [], onAddTask, onEditTask, onDeleteTask }) {
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
     })
+  }
+
+  const handleAddTask = () => {
+    if (onAddTask) {
+      onAddTask()
+    } else {
+      toast.info('Add task functionality not implemented yet')
+    }
+  }
+
+  const handleEditTask = (task) => {
+    if (onEditTask) {
+      onEditTask(task)
+    } else {
+      toast.info('Edit task functionality not implemented yet')
+    }
+  }
+
+  const handleDeleteTask = (taskId) => {
+    if (onDeleteTask) {
+      onDeleteTask(taskId)
+    } else {
+      toast.info('Delete task functionality not implemented yet')
+    }
   }
 
   const getStatusVariant = (status) => {
@@ -34,6 +60,18 @@ export default function TasksList({ tasks = [] }) {
   if (tasks.length === 0) {
     return (
       <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <CheckSquareIcon className="h-5 w-5" />
+              Tasks (0)
+            </CardTitle>
+            <Button onClick={handleAddTask} size="sm">
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Create Task
+            </Button>
+          </div>
+        </CardHeader>
         <CardContent className="py-12">
           <div className="text-center text-muted-foreground">
             <CheckSquareIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -48,10 +86,16 @@ export default function TasksList({ tasks = [] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CheckSquareIcon className="h-5 w-5" />
-          Tasks ({tasks.length})
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <CheckSquareIcon className="h-5 w-5" />
+            Tasks ({tasks.length})
+          </CardTitle>
+          <Button onClick={handleAddTask} size="sm">
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Create Task
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <Table>
@@ -61,6 +105,7 @@ export default function TasksList({ tasks = [] }) {
               <TableHead>Description</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-32">Due Date</TableHead>
+              <TableHead className="w-20">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -85,6 +130,28 @@ export default function TasksList({ tasks = [] }) {
                     <div className="flex items-center gap-1">
                       <CalendarIcon className="h-3 w-3" />
                       {formatDate(task.due_date)}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditTask(task)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                        <span className="sr-only">Edit task</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteTask(task.id)}
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                        <span className="sr-only">Delete task</span>
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>

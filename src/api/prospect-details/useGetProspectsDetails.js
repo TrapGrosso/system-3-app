@@ -34,7 +34,7 @@ export const usegetProspectDetails = (userId, prospect_id) => {
 }
 
 /**
- * Fetches detailed information for a specific prospect, including associated company, enrichments, notes, tasks, and campaigns.
+ * Fetches detailed information for a specific prospect, including associated company, enrichments, notes, tasks, campaigns, and groups.
  * 
  * Example Request:
  * GET /getProspectDetails?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&prospect_id=annvanino
@@ -121,6 +121,14 @@ export const usegetProspectDetails = (userId, prospect_id) => {
  *           "start_at": "2025-07-01",
  *           "created_at": "2025-06-29T15:17:34.198751"
  *         }
+ *       }
+ *     ],
+ *     "groups": [
+ *       {
+ *         "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+ *         "name": "My Awesome Group",
+ *         "description": "A group for awesome prospects",
+ *         "created_at": "2025-06-29T15:17:34.198751"
  *       }
  *     ]
  *   }

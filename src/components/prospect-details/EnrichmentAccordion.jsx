@@ -2,9 +2,10 @@ import React, { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ChevronDownIcon, ChevronRightIcon, DatabaseIcon } from 'lucide-react'
+import { ChevronDownIcon, ChevronRightIcon, DatabaseIcon, PencilIcon, TrashIcon } from 'lucide-react'
+import { toast } from 'sonner'
 
-export default function EnrichmentAccordion({ enrichment = {} }) {
+export default function EnrichmentAccordion({ enrichment = {}, onEditEnrichment, onDeleteEnrichment }) {
   const [expandedSections, setExpandedSections] = useState({})
 
   const toggleSection = (section) => {
@@ -12,6 +13,22 @@ export default function EnrichmentAccordion({ enrichment = {} }) {
       ...prev,
       [section]: !prev[section]
     }))
+  }
+
+  const handleEditEnrichment = (item) => {
+    if (onEditEnrichment) {
+      onEditEnrichment(item)
+    } else {
+      toast.info('Edit enrichment functionality not implemented yet')
+    }
+  }
+
+  const handleDeleteEnrichment = (itemId) => {
+    if (onDeleteEnrichment) {
+      onDeleteEnrichment(itemId)
+    } else {
+      toast.info('Delete enrichment functionality not implemented yet')
+    }
   }
 
   const formatDate = (dateString) => {
@@ -77,17 +94,39 @@ export default function EnrichmentAccordion({ enrichment = {} }) {
               {isExpanded && (
                 <div className="px-4 pb-4 space-y-3">
                   {items.map((item, index) => (
-                    <div key={item.id || index} className="border-l-2 border-muted pl-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="outline" className="text-xs">
-                          {item.type}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          {item.source}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDate(item.created_at)}
-                        </span>
+                    <div key={item.id || index} className="border-l-2 border-muted pl-4 relative group">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs">
+                            {item.type}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs">
+                            {item.source}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {formatDate(item.created_at)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditEnrichment(item)}
+                            className="h-6 w-6 p-0"
+                          >
+                            <PencilIcon className="h-3 w-3" />
+                            <span className="sr-only">Edit enrichment</span>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteEnrichment(item.id)}
+                            className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                          >
+                            <TrashIcon className="h-3 w-3" />
+                            <span className="sr-only">Delete enrichment</span>
+                          </Button>
+                        </div>
                       </div>
                       
                       {item.summary && (

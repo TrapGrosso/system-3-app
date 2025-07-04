@@ -1,9 +1,11 @@
 import React from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { MessageSquareIcon } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { MessageSquareIcon, PlusIcon, PencilIcon, TrashIcon } from 'lucide-react'
+import { toast } from 'sonner'
 
-export default function NotesList({ notes = [] }) {
+export default function NotesList({ notes = [], onAddNote, onEditNote, onDeleteNote }) {
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -14,9 +16,45 @@ export default function NotesList({ notes = [] }) {
     })
   }
 
+  const handleAddNote = () => {
+    if (onAddNote) {
+      onAddNote()
+    } else {
+      toast.info('Add note functionality not implemented yet')
+    }
+  }
+
+  const handleEditNote = (note) => {
+    if (onEditNote) {
+      onEditNote(note)
+    } else {
+      toast.info('Edit note functionality not implemented yet')
+    }
+  }
+
+  const handleDeleteNote = (noteId) => {
+    if (onDeleteNote) {
+      onDeleteNote(noteId)
+    } else {
+      toast.info('Delete note functionality not implemented yet')
+    }
+  }
+
   if (notes.length === 0) {
     return (
       <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquareIcon className="h-5 w-5" />
+              Notes (0)
+            </CardTitle>
+            <Button onClick={handleAddNote} size="sm">
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Add Note
+            </Button>
+          </div>
+        </CardHeader>
         <CardContent className="py-12">
           <div className="text-center text-muted-foreground">
             <MessageSquareIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -31,10 +69,16 @@ export default function NotesList({ notes = [] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MessageSquareIcon className="h-5 w-5" />
-          Notes ({notes.length})
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <MessageSquareIcon className="h-5 w-5" />
+            Notes ({notes.length})
+          </CardTitle>
+          <Button onClick={handleAddNote} size="sm">
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Add Note
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <Table>
@@ -42,6 +86,7 @@ export default function NotesList({ notes = [] }) {
             <TableRow>
               <TableHead>Note</TableHead>
               <TableHead className="w-48">Created At</TableHead>
+              <TableHead className="w-20">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -54,6 +99,28 @@ export default function NotesList({ notes = [] }) {
                 </TableCell>
                 <TableCell className="text-muted-foreground">
                   {formatDate(note.created_at)}
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditNote(note)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <PencilIcon className="h-4 w-4" />
+                      <span className="sr-only">Edit note</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteNote(note.id)}
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                      <span className="sr-only">Delete note</span>
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

@@ -5,6 +5,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useAuth } from '@/contexts/AuthContext'
+import { GroupsProvider } from '@/contexts/GroupsContext'
 import { usegetProspectDetails } from '@/api/prospect-details/useGetProspectsDetails'
 import {
   ProspectHeader,
@@ -69,44 +70,54 @@ export default function ProspectDetails() {
 
   return (
     <DashboardLayout headerText="Prospect Details">
-      <ProspectHeader prospect={data.prospect} />
-      
-      <div className="grid gap-6 px-4 lg:px-6 lg:grid-cols-3 mb-6">
-        <CompanyCard company={data.company} />
+      <GroupsProvider>
+        <ProspectHeader prospect={data.prospect} />
         
-        {/* Optional stats cards can go here in the future */}
-        <Card className="lg:col-span-1">
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">
-                  {data.notes?.length || 0}
+        <div className="grid gap-6 px-4 lg:px-6 lg:grid-cols-3 mb-6">
+          <CompanyCard company={data.company} />
+          
+          {/* Optional stats cards can go here in the future */}
+          <Card className="lg:col-span-1">
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">
+                    {data.notes?.length || 0}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Notes</p>
                 </div>
-                <p className="text-sm text-muted-foreground">Notes</p>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">
-                  {data.tasks?.length || 0}
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">
+                    {data.tasks?.length || 0}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Tasks</p>
                 </div>
-                <p className="text-sm text-muted-foreground">Tasks</p>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">
-                  {data.campaigns?.length || 0}
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">
+                    {data.campaigns?.length || 0}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Campaigns</p>
                 </div>
-                <p className="text-sm text-muted-foreground">Campaigns</p>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">
+                    {data.groups?.length || 0}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Groups</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      <TabsPanel
-        notes={data.notes}
-        tasks={data.tasks}
-        enrichment={data.enrichment}
-        campaigns={data.campaigns}
-      />
+        <TabsPanel
+          notes={data.notes}
+          tasks={data.tasks}
+          enrichment={data.enrichment}
+          campaigns={data.campaigns}
+          groups={data.groups}
+          prospect={data.prospect}
+        />
+      </GroupsProvider>
     </DashboardLayout>
   )
 }
