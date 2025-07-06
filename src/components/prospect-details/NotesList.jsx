@@ -3,9 +3,16 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { MessageSquareIcon, PlusIcon, PencilIcon, TrashIcon } from 'lucide-react'
-import { toast } from 'sonner'
+import { useNotes } from '@/contexts/NotesContext'
 
-export default function NotesList({ notes = [], onAddNote, onEditNote, onDeleteNote }) {
+export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
+  const { 
+    updateProspectNote, 
+    deleteNotes, 
+    isUpdatingNote, 
+    isDeletingNote 
+  } = useNotes()
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -19,24 +26,22 @@ export default function NotesList({ notes = [], onAddNote, onEditNote, onDeleteN
   const handleAddNote = () => {
     if (onAddNote) {
       onAddNote()
-    } else {
-      toast.info('Add note functionality not implemented yet')
     }
   }
 
   const handleEditNote = (note) => {
-    if (onEditNote) {
-      onEditNote(note)
-    } else {
-      toast.info('Edit note functionality not implemented yet')
+    // For table-based editing, we'll open the dialog with the note pre-filled
+    // The ProspectNotesDialog already handles editing
+    if (onAddNote) {
+      onAddNote()
     }
   }
 
   const handleDeleteNote = (noteId) => {
-    if (onDeleteNote) {
-      onDeleteNote(noteId)
-    } else {
-      toast.info('Delete note functionality not implemented yet')
+    deleteNotes([noteId])
+    if (onNotesChanged) {
+      // Call after a brief delay to allow for the mutation to complete
+      setTimeout(() => onNotesChanged(), 100)
     }
   }
 
@@ -107,6 +112,7 @@ export default function NotesList({ notes = [], onAddNote, onEditNote, onDeleteN
                       size="sm"
                       onClick={() => handleEditNote(note)}
                       className="h-8 w-8 p-0"
+                      disabled={isUpdatingNote || isDeletingNote}
                     >
                       <PencilIcon className="h-4 w-4" />
                       <span className="sr-only">Edit note</span>
@@ -116,6 +122,7 @@ export default function NotesList({ notes = [], onAddNote, onEditNote, onDeleteN
                       size="sm"
                       onClick={() => handleDeleteNote(note.id)}
                       className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                      disabled={isDeletingNote}
                     >
                       <TrashIcon className="h-4 w-4" />
                       <span className="sr-only">Delete note</span>
