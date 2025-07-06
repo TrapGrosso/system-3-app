@@ -1,3 +1,5 @@
+import { useQuery } from '@tanstack/react-query'
+
 const getAllProspectNotes = async (user_id, prospect_id) => {
   const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getAllProspectNotes?user_id=${user_id}&prospect_id=${prospect_id}`, {
     method: 'GET',

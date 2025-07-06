@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { ProspectsProvider, useProspects } from '@/contexts/ProspectsContext'
+import { NotesProvider } from '@/contexts/NotesContext'
 import { useNavigate } from 'react-router-dom'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
@@ -9,6 +10,7 @@ import { SectionCards } from "@/components/section-cards"
 import ProspectsTable from '@/components/dashboard/ProspectsTable'
 import FilterBar from '@/components/dashboard/FilterBar'
 import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
+import ProspectNotesDialog from '@/components/dialogs/ProspectNotesDialog'
 
 function DashboardContent() {
     const { user } = useAuth()
@@ -18,6 +20,10 @@ function DashboardContent() {
     // State for HandleGroupsDialog
     const [addGroupOpen, setAddGroupOpen] = useState(false)
     const [prospectIdsForGroup, setProspectIdsForGroup] = useState([])
+
+    // State for ProspectNotesDialog
+    const [notesDialogOpen, setNotesDialogOpen] = useState(false)
+    const [selectedProspectForNotes, setSelectedProspectForNotes] = useState(null)
 
     const handleRowClick = (linkedinId) => {
         navigate(`/prospects/${linkedinId}`)
@@ -39,6 +45,12 @@ function DashboardContent() {
         // TODO: Implement actual API call
         console.log('Add to deep search queue:', linkedinId)
         alert(`Adding prospect ${linkedinId} to deep search queue`)
+    }
+
+    // Notes handler
+    const handleAddNote = (linkedinId, prospect) => {
+        setSelectedProspectForNotes(prospect)
+        setNotesDialogOpen(true)
     }
 
     // Bulk action handlers
@@ -76,6 +88,7 @@ function DashboardContent() {
         <FilterBar />
         <ProspectsTable 
           onRowClick={handleRowClick}
+          onAddNote={handleAddNote}
           onAddToGroup={handleAddToGroup}
           onAddToCampaign={handleAddToCampaign}
           onAddToDeepSearch={handleAddToDeepSearch}
@@ -97,6 +110,19 @@ function DashboardContent() {
           setProspectIdsForGroup([])
         }}
       />
+      
+      {/* ProspectNotesDialog - controlled by Dashboard state */}
+      {selectedProspectForNotes && (
+        <ProspectNotesDialog
+          prospect_id={selectedProspectForNotes.linkedin_id}
+          prospect_name={`${selectedProspectForNotes.first_name} ${selectedProspectForNotes.last_name}`.trim()}
+          open={notesDialogOpen}
+          onOpenChange={setNotesDialogOpen}
+          onSuccess={() => {
+            refetch() // Refresh prospects list to update note count
+          }}
+        />
+      )}
     </DashboardLayout>
   )
 }
@@ -104,7 +130,9 @@ function DashboardContent() {
 export default function Dashboard() {
   return (
     <ProspectsProvider>
-      <DashboardContent />
+      <NotesProvider>
+        <DashboardContent />
+      </NotesProvider>
     </ProspectsProvider>
   )
 }

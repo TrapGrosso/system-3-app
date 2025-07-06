@@ -56,6 +56,7 @@ const getBooleanVariant = (value) => {
 
 export default function ProspectsTable({ 
   onRowClick,
+  onAddNote,
   onAddToGroup,
   onAddToCampaign,
   onAddToDeepSearch,
@@ -220,7 +221,11 @@ export default function ProspectsTable({
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation()
-                alert(`Add note for ${row.original.first_name} ${row.original.last_name}`)
+                if (onAddNote) {
+                  onAddNote(row.original.linkedin_id, row.original)
+                } else {
+                  alert(`Add note for ${row.original.first_name} ${row.original.last_name}`)
+                }
               }}
             >
               Add Note
