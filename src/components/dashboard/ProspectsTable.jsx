@@ -57,6 +57,7 @@ const getBooleanVariant = (value) => {
 export default function ProspectsTable({ 
   onRowClick,
   onAddNote,
+  onCreateTask,
   onAddToGroup,
   onAddToCampaign,
   onAddToDeepSearch,
@@ -233,7 +234,11 @@ export default function ProspectsTable({
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation()
-                alert(`Create task for ${row.original.first_name} ${row.original.last_name}`)
+                if (onCreateTask) {
+                  onCreateTask(row.original.linkedin_id, row.original)
+                } else {
+                  alert(`Create task for ${row.original.first_name} ${row.original.last_name}`)
+                }
               }}
             >
               Create Task
@@ -291,7 +296,7 @@ export default function ProspectsTable({
       enableSorting: false,
       enableHiding: false,
     },
-  ], [onAddToGroup, onAddToCampaign, onAddToDeepSearch])
+  ], [onAddNote, onCreateTask, onAddToGroup, onAddToCampaign, onAddToDeepSearch])
 
   const [rowSelection, setRowSelection] = React.useState({})
 

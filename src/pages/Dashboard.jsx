@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { ProspectsProvider, useProspects } from '@/contexts/ProspectsContext'
 import { NotesProvider } from '@/contexts/NotesContext'
+import { TaskProvider } from '@/contexts/TaskContext'
 import { useNavigate } from 'react-router-dom'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
@@ -11,6 +12,7 @@ import ProspectsTable from '@/components/dashboard/ProspectsTable'
 import FilterBar from '@/components/dashboard/FilterBar'
 import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
 import ProspectNotesDialog from '@/components/dialogs/ProspectNotesDialog'
+import ProspectTasksDialog from '@/components/dialogs/ProspectTasksDialog'
 
 function DashboardContent() {
     const { user } = useAuth()
@@ -24,6 +26,10 @@ function DashboardContent() {
     // State for ProspectNotesDialog
     const [notesDialogOpen, setNotesDialogOpen] = useState(false)
     const [selectedProspectForNotes, setSelectedProspectForNotes] = useState(null)
+
+    // State for ProspectTasksDialog
+    const [tasksDialogOpen, setTasksDialogOpen] = useState(false)
+    const [selectedProspectForTasks, setSelectedProspectForTasks] = useState(null)
 
     const handleRowClick = (linkedinId) => {
         navigate(`/prospects/${linkedinId}`)
@@ -51,6 +57,12 @@ function DashboardContent() {
     const handleAddNote = (linkedinId, prospect) => {
         setSelectedProspectForNotes(prospect)
         setNotesDialogOpen(true)
+    }
+
+    // Tasks handler
+    const handleCreateTask = (linkedinId, prospect) => {
+        setSelectedProspectForTasks(prospect)
+        setTasksDialogOpen(true)
     }
 
     // Bulk action handlers
@@ -89,6 +101,7 @@ function DashboardContent() {
         <ProspectsTable 
           onRowClick={handleRowClick}
           onAddNote={handleAddNote}
+          onCreateTask={handleCreateTask}
           onAddToGroup={handleAddToGroup}
           onAddToCampaign={handleAddToCampaign}
           onAddToDeepSearch={handleAddToDeepSearch}
@@ -123,6 +136,19 @@ function DashboardContent() {
           }}
         />
       )}
+      
+      {/* ProspectTasksDialog - controlled by Dashboard state */}
+      {selectedProspectForTasks && (
+        <ProspectTasksDialog
+          prospect_id={selectedProspectForTasks.linkedin_id}
+          prospect_name={`${selectedProspectForTasks.first_name} ${selectedProspectForTasks.last_name}`.trim()}
+          open={tasksDialogOpen}
+          onOpenChange={setTasksDialogOpen}
+          onSuccess={() => {
+            refetch() // Refresh prospects list to update task count
+          }}
+        />
+      )}
     </DashboardLayout>
   )
 }
@@ -131,7 +157,9 @@ export default function Dashboard() {
   return (
     <ProspectsProvider>
       <NotesProvider>
-        <DashboardContent />
+        <TaskProvider>
+          <DashboardContent />
+        </TaskProvider>
       </NotesProvider>
     </ProspectsProvider>
   )
