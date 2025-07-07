@@ -7,8 +7,10 @@ import { Card, CardContent } from '@/components/ui/card'
 import { useAuth } from '@/contexts/AuthContext'
 import { GroupsProvider } from '@/contexts/GroupsContext'
 import { NotesProvider } from '@/contexts/NotesContext'
+import { TaskProvider } from '@/contexts/TaskContext'
 import { usegetProspectDetails } from '@/api/prospect-details/useGetProspectsDetails'
 import ProspectNotesDialog from '@/components/dialogs/ProspectNotesDialog'
+import ProspectTasksDialog from '@/components/dialogs/ProspectTasksDialog'
 import {
   ProspectHeader,
   CompanyCard,
@@ -19,6 +21,7 @@ export default function ProspectDetails() {
   const { user } = useAuth()
   const { linkedinId } = useParams()
   const [notesDialogOpen, setNotesDialogOpen] = useState(false)
+  const [tasksDialogOpen, setTasksDialogOpen] = useState(false)
 
   const { data, isLoading, isError, refetch } = usegetProspectDetails(user?.id, linkedinId)
   console.log(data)
@@ -29,6 +32,14 @@ export default function ProspectDetails() {
 
   const handleNotesDialogSuccess = () => {
     refetch() // Refresh prospect details to update notes count and data
+  }
+
+  const handleOpenTasksDialog = () => {
+    setTasksDialogOpen(true)
+  }
+
+  const handleTasksDialogSuccess = () => {
+    refetch() // Refresh prospect details to update tasks count and data
   }
 
   if (isLoading) {
@@ -83,10 +94,12 @@ export default function ProspectDetails() {
     <DashboardLayout headerText="Prospect Details">
       <GroupsProvider>
         <NotesProvider>
-          <ProspectHeader 
-            prospect={data.prospect} 
-            onAddNote={handleOpenNotesDialog}
-          />
+          <TaskProvider>
+            <ProspectHeader 
+              prospect={data.prospect} 
+              onAddNote={handleOpenNotesDialog}
+              onCreateTask={handleOpenTasksDialog}
+            />
           
           <div className="grid gap-6 px-4 lg:px-6 lg:grid-cols-3 mb-6">
             <CompanyCard company={data.company} />
@@ -133,6 +146,8 @@ export default function ProspectDetails() {
             prospect={data.prospect}
             onAddNote={handleOpenNotesDialog}
             onNotesChanged={handleNotesDialogSuccess}
+            onAddTask={handleOpenTasksDialog}
+            onTasksChanged={handleTasksDialogSuccess}
           />
 
           {/* ProspectNotesDialog - controlled by ProspectDetails state */}
@@ -145,6 +160,18 @@ export default function ProspectDetails() {
               onSuccess={handleNotesDialogSuccess}
             />
           )}
+
+          {/* ProspectTasksDialog - controlled by ProspectDetails state */}
+          {data.prospect && (
+            <ProspectTasksDialog
+              prospect_id={data.prospect.linkedin_id}
+              prospect_name={`${data.prospect.first_name} ${data.prospect.last_name}`.trim()}
+              open={tasksDialogOpen}
+              onOpenChange={setTasksDialogOpen}
+              onSuccess={handleTasksDialogSuccess}
+            />
+          )}
+          </TaskProvider>
         </NotesProvider>
       </GroupsProvider>
     </DashboardLayout>

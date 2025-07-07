@@ -4,9 +4,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CheckSquareIcon, CalendarIcon, PlusIcon, PencilIcon, TrashIcon } from 'lucide-react'
-import { toast } from 'sonner'
+import { useTasks } from '@/contexts/TaskContext'
 
-export default function TasksList({ tasks = [], onAddTask, onEditTask, onDeleteTask }) {
+export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
+  const { 
+    deleteTasks, 
+    isDeletingTask 
+  } = useTasks()
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -18,24 +23,22 @@ export default function TasksList({ tasks = [], onAddTask, onEditTask, onDeleteT
   const handleAddTask = () => {
     if (onAddTask) {
       onAddTask()
-    } else {
-      toast.info('Add task functionality not implemented yet')
     }
   }
 
   const handleEditTask = (task) => {
-    if (onEditTask) {
-      onEditTask(task)
-    } else {
-      toast.info('Edit task functionality not implemented yet')
+    // For table-based editing, we'll open the dialog with the task pre-filled
+    // The ProspectTasksDialog already handles editing
+    if (onAddTask) {
+      onAddTask()
     }
   }
 
   const handleDeleteTask = (taskId) => {
-    if (onDeleteTask) {
-      onDeleteTask(taskId)
-    } else {
-      toast.info('Delete task functionality not implemented yet')
+    deleteTasks([taskId])
+    if (onTasksChanged) {
+      // Call after a brief delay to allow for the mutation to complete
+      setTimeout(() => onTasksChanged(), 100)
     }
   }
 
@@ -139,6 +142,7 @@ export default function TasksList({ tasks = [], onAddTask, onEditTask, onDeleteT
                         size="sm"
                         onClick={() => handleEditTask(task)}
                         className="h-8 w-8 p-0"
+                        disabled={isDeletingTask}
                       >
                         <PencilIcon className="h-4 w-4" />
                         <span className="sr-only">Edit task</span>
@@ -148,6 +152,7 @@ export default function TasksList({ tasks = [], onAddTask, onEditTask, onDeleteT
                         size="sm"
                         onClick={() => handleDeleteTask(task.id)}
                         className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                        disabled={isDeletingTask}
                       >
                         <TrashIcon className="h-4 w-4" />
                         <span className="sr-only">Delete task</span>
