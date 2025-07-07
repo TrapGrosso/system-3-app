@@ -6,7 +6,7 @@ import { usePrompts } from "@/contexts/PromptContext"
 import PromptFormDialog from "@/components/dialogs/PromptFormDialog"
 import PromptCardBody from "./PromptCardBody"
 import PromptPreviewDialog from "./PromptPreviewDialog"
-import PromptDeleteDialog from "./PromptDeleteDialog"
+import PromptDeleteDialog from "../dialogs/PromptDeleteDialog"
 
 function PromptCard({ prompt, onEdit, onDuplicate }) {
   const [showPreview, setShowPreview] = useState(false)
