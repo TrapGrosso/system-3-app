@@ -288,7 +288,6 @@ function PromptFormDialog({
                 <SelectValue placeholder="Select agent type..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={null}>No specific type</SelectItem>
                 {AGENT_TYPES.map((type) => (
                   <SelectItem key={type} value={type}>
                     {type.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
@@ -297,7 +296,7 @@ function PromptFormDialog({
               </SelectContent>
             </Select>
             <span className="text-xs text-muted-foreground">
-              Optional agent type for specialized prompts
+              Agent type for specialized prompts
             </span>
           </div>
 
