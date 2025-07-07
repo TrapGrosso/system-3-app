@@ -36,6 +36,7 @@ function PromptFormDialog({
   onOpenChange: controlledOnOpenChange
 }) {
   const [internalOpen, setInternalOpen] = useState(false)
+  const [hasSubmitted, setHasSubmitted] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -99,6 +100,9 @@ function PromptFormDialog({
       .map(tag => tag.trim())
       .filter(tag => tag.length > 0)
 
+    // Mark that we've submitted to track success state
+    setHasSubmitted(true)
+
     if (mode === "create") {
       createPrompt({
         prompt_name: formData.name.trim(),
@@ -135,6 +139,8 @@ function PromptFormDialog({
       if (Object.keys(updates).length > 0) {
         updatePrompt(prompt.id, updates)
       } else {
+        // No changes, just close without marking as submitted
+        setHasSubmitted(false)
         handleOpenChange(false)
       }
     }
@@ -160,23 +166,22 @@ function PromptFormDialog({
 
   // Handle successful creation/update
   useEffect(() => {
-    if (mode === "create" && !isCreatingPrompt) {
-      // Close dialog after successful creation
-      const timer = setTimeout(() => {
-        handleOpenChange(false)
-        onSuccess?.()
-      }, 100)
-      return () => clearTimeout(timer)
+    if (!hasSubmitted) return // ignore initial render
+    
+    const finished = mode === "create" ? !isCreatingPrompt : !isUpdatingPrompt
+    if (finished) {
+      handleOpenChange(false)
+      onSuccess?.()
+      setHasSubmitted(false) // reset for next time
     }
-    if (mode === "edit" && !isUpdatingPrompt) {
-      // Close dialog after successful update
-      const timer = setTimeout(() => {
-        handleOpenChange(false)
-        onSuccess?.()
-      }, 100)
-      return () => clearTimeout(timer)
+  }, [hasSubmitted, isCreatingPrompt, isUpdatingPrompt, mode, onSuccess])
+
+  // Reset hasSubmitted when dialog closes
+  useEffect(() => {
+    if (!dialogOpen) {
+      setHasSubmitted(false)
     }
-  }, [isCreatingPrompt, isUpdatingPrompt, mode, onSuccess])
+  }, [dialogOpen])
 
   const isSubmitting = mode === "create" ? isCreatingPrompt : isUpdatingPrompt
   const isFormValid = formData.name.trim() && formData.prompt_text.trim()

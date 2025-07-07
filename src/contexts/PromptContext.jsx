@@ -143,18 +143,20 @@ export const PromptProvider = ({ children }) => {
       // Agent types enum
       AGENT_TYPES,
 
-      // Mutations
-      createPrompt: createPromptMutation,
-      updatePrompt: updatePromptMutation,
-      deletePrompt: deletePromptMutation,
+      // Mutation objects (raw)
+      createPromptMutation,
+      updatePromptMutation,
+      deletePromptMutation,
 
       // Helper functions
       getPromptById,
       invalidateAllPrompts,
       duplicatePrompt,
-      createPrompt: createPrompt,
-      updatePrompt: updatePrompt,
-      deletePrompt: deletePrompt,
+      
+      // Wrapper functions
+      createPrompt,
+      updatePrompt,
+      deletePrompt,
 
       // Loading states
       isCreatingPrompt: createPromptMutation.isPending,
