@@ -1,135 +1,107 @@
-import { useAuth } from '@/contexts/AuthContext'
+import * as React from "react"
+import { useState } from "react"
+import { Plus } from "lucide-react"
+
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
+import { Button } from "@/components/ui/button"
+
+import { PromptProvider, useAllPrompts } from "@/contexts/PromptContext"
+import { useFilteredPrompts } from "@/hooks/use-filtered-prompts"
+import PromptFilters from "@/components/prompts/PromptFilters"
+import PromptsGrid from "@/components/prompts/PromptsGrid"
+import PromptFormDialog from "@/components/dialogs/PromptFormDialog"
+
+function PromptsContent() {
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedTags, setSelectedTags] = useState([])
+  const [selectedAgentType, setSelectedAgentType] = useState("")
+
+  // Get prompts data
+  const { data: prompts = [], isLoading, error } = useAllPrompts()
+
+  // Filter prompts based on search and filters
+  const filteredPrompts = useFilteredPrompts(
+    prompts,
+    searchTerm,
+    selectedTags,
+    selectedAgentType
+  )
+
+  const handlePromptEdit = (prompt) => {
+    // Optional callback for when a prompt is edited
+    console.log("Prompt edited:", prompt)
+  }
+
+  const handlePromptDuplicate = (prompt) => {
+    // Optional callback for when a prompt is duplicated
+    console.log("Prompt duplicated:", prompt)
+  }
+
+  return (
+    <DashboardLayout headerText="Prompts">
+      <div className="px-4 lg:px-6 space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold">Prompt Management</h2>
+            <p className="text-muted-foreground">
+              Create and manage AI prompts for your campaigns
+            </p>
+          </div>
+          
+          <PromptFormDialog
+            mode="create"
+            trigger={
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Prompt
+              </Button>
+            }
+          />
+        </div>
+
+        {/* Filters */}
+        <PromptFilters
+          prompts={prompts}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          selectedTags={selectedTags}
+          onTagsChange={setSelectedTags}
+          selectedAgentType={selectedAgentType}
+          onAgentTypeChange={setSelectedAgentType}
+        />
+
+        {/* Results Summary */}
+        {!isLoading && prompts.length > 0 && (
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <span>
+              Showing {filteredPrompts.length} of {prompts.length} prompts
+            </span>
+            {filteredPrompts.length !== prompts.length && (
+              <span className="font-medium">
+                {prompts.length - filteredPrompts.length} filtered out
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Prompts Grid */}
+        <PromptsGrid
+          prompts={filteredPrompts}
+          isLoading={isLoading}
+          error={error}
+          onPromptEdit={handlePromptEdit}
+          onPromptDuplicate={handlePromptDuplicate}
+        />
+      </div>
+    </DashboardLayout>
+  )
+}
 
 export default function Prompts() {
-    const { user } = useAuth()
-    const firstName = "Fabio"
-    const industry = "Trap"
-    const topic = "Rap"
-
-    return (
-        <DashboardLayout headerText="Prompts">
-            <div className="px-4 lg:px-6">
-                <div className="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 className="text-2xl font-bold">Prompt Management</h2>
-                        <p className="text-muted-foreground">Create and manage AI prompts for your campaigns</p>
-                    </div>
-                    <button className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90">
-                        Create Prompt
-                    </button>
-                </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 className="text-lg font-semibold">LinkedIn Outreach</h3>
-                                <p className="text-sm text-muted-foreground">Cold outreach template</p>
-                            </div>
-                            <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Active</span>
-                        </div>
-                        
-                        <div className="space-y-2 mb-4">
-                            <div className="flex justify-between">
-                                <span className="text-sm">Type:</span>
-                                <span className="text-sm font-medium">Outreach</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-sm">Uses:</span>
-                                <span className="text-sm font-medium">1,240</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-sm">Success Rate:</span>
-                                <span className="text-sm font-medium">18.5%</span>
-                            </div>
-                        </div>
-                        
-                        <div className="mb-4">
-                            <p className="text-sm text-muted-foreground">
-                                "Hi {firstName}, I noticed you're working in {industry}. I'd love to connect and discuss..."
-                            </p>
-                        </div>
-                        
-                        <div className="flex gap-2">
-                            <button className="text-sm px-3 py-1 border rounded hover:bg-accent">Edit</button>
-                            <button className="text-sm px-3 py-1 border rounded hover:bg-accent">Use</button>
-                        </div>
-                    </div>
-                    
-                    <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 className="text-lg font-semibold">Follow-up Message</h3>
-                                <p className="text-sm text-muted-foreground">Second touchpoint</p>
-                            </div>
-                            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Draft</span>
-                        </div>
-                        
-                        <div className="space-y-2 mb-4">
-                            <div className="flex justify-between">
-                                <span className="text-sm">Type:</span>
-                                <span className="text-sm font-medium">Follow-up</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-sm">Uses:</span>
-                                <span className="text-sm font-medium">0</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-sm">Last Modified:</span>
-                                <span className="text-sm font-medium">Dec 15, 2024</span>
-                            </div>
-                        </div>
-                        
-                        <div className="mb-4">
-                            <p className="text-sm text-muted-foreground">
-                                "Hi {firstName}, Following up on my previous message about {topic}..."
-                            </p>
-                        </div>
-                        
-                        <div className="flex gap-2">
-                            <button className="text-sm px-3 py-1 border rounded hover:bg-accent">Edit</button>
-                            <button className="text-sm px-3 py-1 border rounded hover:bg-accent">Test</button>
-                        </div>
-                    </div>
-                    
-                    <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 className="text-lg font-semibold">Product Demo Invite</h3>
-                                <p className="text-sm text-muted-foreground">Demo invitation template</p>
-                            </div>
-                            <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">Archived</span>
-                        </div>
-                        
-                        <div className="space-y-2 mb-4">
-                            <div className="flex justify-between">
-                                <span className="text-sm">Type:</span>
-                                <span className="text-sm font-medium">Demo</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-sm">Uses:</span>
-                                <span className="text-sm font-medium">856</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-sm">Success Rate:</span>
-                                <span className="text-sm font-medium">24.7%</span>
-                            </div>
-                        </div>
-                        
-                        <div className="mb-4">
-                            <p className="text-sm text-muted-foreground">
-                                "Hi {firstName}, Would you be interested in a 15-minute demo of our platform..."
-                            </p>
-                        </div>
-                        
-                        <div className="flex gap-2">
-                            <button className="text-sm px-3 py-1 border rounded hover:bg-accent">View</button>
-                            <button className="text-sm px-3 py-1 border rounded hover:bg-accent">Restore</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </DashboardLayout>
-    )
+  return (
+    <PromptProvider>
+      <PromptsContent />
+    </PromptProvider>
+  )
 }
