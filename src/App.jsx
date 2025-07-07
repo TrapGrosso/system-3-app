@@ -5,6 +5,9 @@ import Dashboard from './pages/Dashboard'
 import AddLeads from './pages/AddLeads'
 import Marketing from './pages/Marketing'
 import Campaigns from './pages/Campaigns'
+import Tasks from './pages/Tasks'
+import Prompts from './pages/Prompts'
+import CustomActions from './pages/CustomActions'
 import ProspectDetails from './pages/ProspectDetails'
 import ProtectedRoute from './components/ProtectedRoute'
 import { useAuth } from './contexts/AuthContext'
@@ -59,6 +62,30 @@ function App() {
           element={
             <ProtectedRoute>
               <Campaigns />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/tasks" 
+          element={
+            <ProtectedRoute>
+              <Tasks />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/prompts" 
+          element={
+            <ProtectedRoute>
+              <Prompts />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/custom-actions" 
+          element={
+            <ProtectedRoute>
+              <CustomActions />
             </ProtectedRoute>
           } 
         />

@@ -11,6 +11,7 @@ import {
 
 import { NavMain } from "@/components/navigation/nav-main"
 import { NavSecondary } from "@/components/navigation/nav-secondary"
+import { NavPrimary } from "./nav-primary"
 import { NavUser } from "@/components/navigation/nav-user"
 import {
   Sidebar,
@@ -44,6 +45,7 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
+        <NavPrimary items={data.navPrimary} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

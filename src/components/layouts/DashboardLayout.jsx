@@ -5,6 +5,9 @@ import {
   IconListDetails,
   IconSettings,
   IconMailSpark,
+  IconChecklist,
+  IconMessageCircle,
+  IconBolt,
 } from "@tabler/icons-react"
 
 import { AppSidebar } from "@/components/navigation/app-sidebar"
@@ -45,6 +48,38 @@ export function DashboardLayout({ children, headerText = "Dashboard" }) {
         title: "Campaigns",
         url: "/campaigns",
         icon: IconMailSpark,
+      }
+    ],
+    navPrimary: [
+      {
+        name: "Tasks",
+        url: "/tasks",
+        icon: IconChecklist,
+        dropdownItems: [
+          { label: "All Tasks", action: "view-all" },
+          { label: "My Tasks", action: "view-mine" },
+          { label: "Overdue", action: "view-overdue" }
+        ]
+      },
+      {
+        name: "Prompts",
+        url: "/prompts",
+        icon: IconMessageCircle,
+        dropdownItems: [
+          { label: "Create New", action: "create" },
+          { label: "Templates", action: "templates" },
+          { label: "Export", action: "export" }
+        ]
+      },
+      {
+        name: "Custom Actions",
+        url: "/custom-actions",
+        icon: IconBolt,
+        dropdownItems: [
+          { label: "Create Action", action: "create" },
+          { label: "View Logs", action: "logs" },
+          { label: "Settings", action: "settings" }
+        ]
       }
     ],
     navSecondary: [
