@@ -13,6 +13,9 @@ import FilterBar from '@/components/dashboard/FilterBar'
 import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
 import ProspectNotesDialog from '@/components/dialogs/ProspectNotesDialog'
 import ProspectTasksDialog from '@/components/dialogs/ProspectTasksDialog'
+import DeepSearchQueueDialog from '@/components/dialogs/DeepSearchQueueDialog'
+import { DeepSearchQueueProvider } from '@/contexts/DeepSearchQueueContext'
+import { PromptProvider } from '@/contexts/PromptContext'
 
 function DashboardContent() {
     const { user } = useAuth()
@@ -31,6 +34,10 @@ function DashboardContent() {
     const [tasksDialogOpen, setTasksDialogOpen] = useState(false)
     const [selectedProspectForTasks, setSelectedProspectForTasks] = useState(null)
 
+    // State for DeepSearchQueueDialog
+    const [deepSearchDialogOpen, setDeepSearchDialogOpen] = useState(false)
+    const [prospectIdsForDeepSearch, setProspectIdsForDeepSearch] = useState([])
+
     const handleRowClick = (linkedinId) => {
         navigate(`/prospects/${linkedinId}`)
     }
@@ -48,9 +55,8 @@ function DashboardContent() {
     }
 
     const handleAddToDeepSearch = (linkedinId) => {
-        // TODO: Implement actual API call
-        console.log('Add to deep search queue:', linkedinId)
-        alert(`Adding prospect ${linkedinId} to deep search queue`)
+        setProspectIdsForDeepSearch([linkedinId])
+        setDeepSearchDialogOpen(true)
     }
 
     // Notes handler
@@ -79,9 +85,9 @@ function DashboardContent() {
     }
 
     const handleBulkAddToDeepSearch = (linkedinIds) => {
-        // TODO: Implement actual API call
-        console.log('Bulk add to deep search queue:', linkedinIds)
-        alert(`Adding ${linkedinIds.length} prospects to deep search queue`)
+        if (!linkedinIds.length) return
+        setProspectIdsForDeepSearch(linkedinIds)
+        setDeepSearchDialogOpen(true)
     }
 
   return (
@@ -149,18 +155,34 @@ function DashboardContent() {
           }}
         />
       )}
+      
+      {/* DeepSearchQueueDialog - controlled by Dashboard state */}
+      <DeepSearchQueueDialog
+        prospect_ids={prospectIdsForDeepSearch}
+        open={deepSearchDialogOpen}
+        onOpenChange={setDeepSearchDialogOpen}
+        onSuccess={() => {
+          refetch() // Refresh prospects list after successful addition
+          setDeepSearchDialogOpen(false)
+          setProspectIdsForDeepSearch([])
+        }}
+      />
     </DashboardLayout>
   )
 }
 
 export default function Dashboard() {
   return (
-    <ProspectsProvider>
-      <NotesProvider>
-        <TaskProvider>
-          <DashboardContent />
-        </TaskProvider>
-      </NotesProvider>
-    </ProspectsProvider>
+    <PromptProvider>
+      <DeepSearchQueueProvider>
+        <ProspectsProvider>
+          <NotesProvider>
+            <TaskProvider>
+              <DashboardContent />
+            </TaskProvider>
+          </NotesProvider>
+        </ProspectsProvider>
+      </DeepSearchQueueProvider>
+    </PromptProvider>
   )
 }

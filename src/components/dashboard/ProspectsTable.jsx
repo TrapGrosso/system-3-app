@@ -273,8 +273,6 @@ export default function ProspectsTable({
                 e.stopPropagation()
                 if (onAddToDeepSearch) {
                   onAddToDeepSearch(row.original.linkedin_id)
-                } else {
-                  alert(`Add ${row.original.first_name} ${row.original.last_name} to deep search queue`)
                 }
               }}
             >
@@ -378,8 +376,6 @@ export default function ProspectsTable({
       case 'addToDeepSearch':
         if (onBulkAddToDeepSearch) {
           onBulkAddToDeepSearch(selectedLinkedinIds)
-        } else {
-          alert(`Add ${selectedCount} prospects to deep search queue`)
         }
         break
       default:
