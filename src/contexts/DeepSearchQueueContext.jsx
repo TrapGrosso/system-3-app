@@ -134,6 +134,22 @@ export const DeepSearchQueueProvider = ({ children }) => {
     [deleteQueueMutation, user_id]
   )
 
+  // Resolve functions (stubs for now)
+  const resolveProspects = React.useCallback(
+    (prospect_prompt_ids) => {
+      const count = Array.isArray(prospect_prompt_ids) ? prospect_prompt_ids.length : 1
+      toast.info(`Resolve ${count} item(s) - not yet implemented`)
+    },
+    []
+  )
+
+  const resolveAll = React.useCallback(
+    () => {
+      toast.info("Resolve entire queue - not yet implemented")
+    },
+    []
+  )
+
   const value = React.useMemo(
     () => ({
       // Data
@@ -157,6 +173,8 @@ export const DeepSearchQueueProvider = ({ children }) => {
       addSingleProspectToQueue,
       removeSingleProspectFromQueue,
       refetchQueue,
+      resolveProspects,
+      resolveAll,
 
       // Loading states
       isAddingToQueue: addToQueueMutation.isPending,
@@ -180,6 +198,8 @@ export const DeepSearchQueueProvider = ({ children }) => {
       addSingleProspectToQueue,
       removeSingleProspectFromQueue,
       refetchQueue,
+      resolveProspects,
+      resolveAll,
     ]
   )
 
