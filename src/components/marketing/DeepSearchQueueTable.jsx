@@ -6,7 +6,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import { ChevronDownIcon, MoreHorizontalIcon } from "lucide-react"
-import { useNavigate } from 'react-router-dom'
 
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
@@ -37,48 +36,21 @@ import {
 } from '@/components/ui/pagination'
 import { Spinner } from '@/components/ui/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { useDeepSearchQueue } from '@/contexts/DeepSearchQueueContext'
-import { PromptSelectDialog } from './PromptSelectDialog'
 
-export default function DeepSearchQueueTable() {
-  const { 
-    queueItems,
-    isLoadingQueue,
-    deleteProspects,
-    updateProspects,
-    resolveProspects,
-    isUpdatingQueue,
-    isDeletingQueue,
-  } = useDeepSearchQueue()
-
-  const navigate = useNavigate()
+export default function DeepSearchQueueTable({ 
+  queueItems,
+  isLoading,
+  onChangePrompt,
+  onRemove,
+  onResolve,
+  onRowClick,
+}) {
 
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: 10,
   })
   const [rowSelection, setRowSelection] = React.useState({})
-  const [promptDialogOpen, setPromptDialogOpen] = React.useState(false)
-  const [selectedItems, setSelectedItems] = React.useState([])
-  const [currentPromptId, setCurrentPromptId] = React.useState(null)
-
-  const handleChangePrompt = React.useCallback((items, currentPrompt = null) => {
-    setSelectedItems(items)
-    setCurrentPromptId(currentPrompt)
-    setPromptDialogOpen(true)
-  }, [])
-
-  const handleRemove = React.useCallback((items) => {
-    deleteProspects(items)
-  }, [deleteProspects])
-
-  const handleResolve = React.useCallback((items) => {
-    resolveProspects(items)
-  }, [resolveProspects])
-
-  const handleRowClick = React.useCallback((row) => {
-    navigate(`/prospects/${row.original.prospect_id}`)
-  }, [navigate])
 
   const columns = React.useMemo(() => [
     {
@@ -185,7 +157,7 @@ export default function DeepSearchQueueTable() {
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation()
-                handleChangePrompt([{
+                onChangePrompt([{
                   prospect_id: row.original.prospect_id,
                   prompt_id: row.original.prompt_id
                 }], row.original.prompt_id)
@@ -196,7 +168,7 @@ export default function DeepSearchQueueTable() {
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation()
-                handleResolve([{
+                onResolve([{
                   prospect_id: row.original.prospect_id,
                   prompt_id: row.original.prompt_id
                 }])
@@ -209,7 +181,7 @@ export default function DeepSearchQueueTable() {
               className="text-destructive"
               onClick={(e) => {
                 e.stopPropagation()
-                handleRemove([{
+                onRemove([{
                   prospect_id: row.original.prospect_id,
                   prompt_id: row.original.prompt_id
                 }])
@@ -223,7 +195,7 @@ export default function DeepSearchQueueTable() {
       enableSorting: false,
       enableHiding: false,
     },
-  ], [handleChangePrompt, handleRemove, handleResolve])
+  ], [onChangePrompt, onRemove, onResolve])
 
   const table = useReactTable({
     data: queueItems || [],
@@ -243,16 +215,6 @@ export default function DeepSearchQueueTable() {
   const selectedRows = table.getSelectedRowModel().rows
   const selectedCount = selectedRows.length
 
-  const handlePromptConfirm = React.useCallback((newPromptId) => {
-    if (selectedItems.length > 0) {
-      const prospectIds = selectedItems.map(item => item.prospect_id)
-      updateProspects(prospectIds, newPromptId)
-      setPromptDialogOpen(false)
-      setSelectedItems([])
-      setCurrentPromptId(null)
-    }
-  }, [selectedItems, updateProspects])
-
   const handleBulkAction = (action) => {
     const selectedItems = selectedRows.map(row => ({
       prospect_id: row.original.prospect_id,
@@ -261,13 +223,13 @@ export default function DeepSearchQueueTable() {
     
     switch (action) {
       case 'changePrompt':
-        handleChangePrompt(selectedItems)
+        onChangePrompt(selectedItems)
         break
       case 'remove':
-        handleRemove(selectedItems)
+        onRemove(selectedItems)
         break
       case 'resolve':
-        handleResolve(selectedItems)
+        onResolve(selectedItems)
         break
       default:
         break
@@ -311,7 +273,7 @@ export default function DeepSearchQueueTable() {
   }
 
   // Show loading overlay while loading
-  if (isLoadingQueue) {
+  if (isLoading) {
     return (
       <div className="space-y-4">
         <div className="relative rounded-md border min-h-[400px]">
@@ -433,7 +395,7 @@ export default function DeepSearchQueueTable() {
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className="cursor-pointer"
-                  onClick={() => handleRowClick(row)}
+                  onClick={() => onRowClick(row.original.prospect_id)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -525,15 +487,6 @@ export default function DeepSearchQueueTable() {
         </div>
       </div>
 
-      {/* Prompt Select Dialog */}
-      <PromptSelectDialog
-        open={promptDialogOpen}
-        onOpenChange={setPromptDialogOpen}
-        onConfirm={handlePromptConfirm}
-        isLoading={isUpdatingQueue}
-        selectedCount={selectedItems.length}
-        currentPromptId={currentPromptId}
-      />
     </div>
   )
 }

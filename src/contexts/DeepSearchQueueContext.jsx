@@ -58,26 +58,7 @@ export const DeepSearchQueueProvider = ({ children }) => {
     },
   })
 
-  // Helper functions
-  const getQueueItemByProspect = React.useCallback(
-    (prospect_id) => {
-      return queueItems.find((item) => item.prospect_id === prospect_id)
-    },
-    [queueItems]
-  )
-
-  const getQueueItemsByPrompt = React.useCallback(
-    (prompt_id) => {
-      return queueItems.filter((item) => item.prompt_id === prompt_id)
-    },
-    [queueItems]
-  )
-
-  const invalidateQueue = React.useCallback(
-    () => queryClient.invalidateQueries(['getDeepSearchQueueItems', user_id]),
-    [queryClient, user_id]
-  )
-
+  // Core mutation wrappers
   const addProspects = React.useCallback(
     (prospect_ids, prompt_id) => {
       return addToQueueMutation.mutate({
@@ -110,30 +91,6 @@ export const DeepSearchQueueProvider = ({ children }) => {
     [deleteQueueMutation, user_id]
   )
 
-  const addSingleProspectToQueue = React.useCallback(
-    (prospect_id, prompt_id) => {
-      return addToQueueMutation.mutate({
-        user_id,
-        prospect_ids: [prospect_id],
-        prompt_id
-      })
-    },
-    [addToQueueMutation, user_id]
-  )
-
-  const removeSingleProspectFromQueue = React.useCallback(
-    (prospect_id, prompt_id) => {
-      return deleteQueueMutation.mutate({
-        user_id,
-        prospect_prompt_ids: [{
-          prospect_id,
-          prompt_id
-        }]
-      })
-    },
-    [deleteQueueMutation, user_id]
-  )
-
   // Resolve functions (stubs for now)
   const resolveProspects = React.useCallback(
     (prospect_prompt_ids) => {
@@ -158,20 +115,10 @@ export const DeepSearchQueueProvider = ({ children }) => {
       isErrorQueue,
       user_id,
 
-      // Mutations
-      addToQueue: addToQueueMutation,
-      updateQueue: updateQueueMutation,
-      deleteQueue: deleteQueueMutation,
-
-      // Helper functions
-      getQueueItemByProspect,
-      getQueueItemsByPrompt,
-      invalidateQueue,
+      // Core mutations
       addProspects,
       updateProspects,
       deleteProspects,
-      addSingleProspectToQueue,
-      removeSingleProspectFromQueue,
       refetchQueue,
       resolveProspects,
       resolveAll,
@@ -186,20 +133,15 @@ export const DeepSearchQueueProvider = ({ children }) => {
       isLoadingQueue,
       isErrorQueue,
       user_id,
-      addToQueueMutation,
-      updateQueueMutation,
-      deleteQueueMutation,
-      getQueueItemByProspect,
-      getQueueItemsByPrompt,
-      invalidateQueue,
       addProspects,
       updateProspects,
       deleteProspects,
-      addSingleProspectToQueue,
-      removeSingleProspectFromQueue,
       refetchQueue,
       resolveProspects,
       resolveAll,
+      addToQueueMutation.isPending,
+      updateQueueMutation.isPending,
+      deleteQueueMutation.isPending,
     ]
   )
 
@@ -216,28 +158,4 @@ export const useDeepSearchQueue = () => {
     throw new Error("useDeepSearchQueue must be used within a DeepSearchQueueProvider")
   }
   return context
-}
-
-// Hook for getting queue items with caching
-export const useUserDeepSearchQueueItems = (userIdOverride) => {
-  const { user_id } = useDeepSearchQueue()
-  return useGetDeepSearchQueueItems(userIdOverride || user_id)
-}
-
-// Hook for getting queue item for a specific prospect
-export const useProspectQueueItem = (prospect_id) => {
-  const { getQueueItemByProspect } = useDeepSearchQueue()
-  return React.useMemo(
-    () => getQueueItemByProspect(prospect_id),
-    [getQueueItemByProspect, prospect_id]
-  )
-}
-
-// Hook for checking if a prospect is in queue for a specific prompt
-export const useIsProspectInQueue = (prospect_id, prompt_id) => {
-  const { queueItems } = useDeepSearchQueue()
-  return React.useMemo(
-    () => queueItems.some(item => item.prospect_id === prospect_id && item.prompt_id === prompt_id),
-    [queueItems, prospect_id, prompt_id]
-  )
 }

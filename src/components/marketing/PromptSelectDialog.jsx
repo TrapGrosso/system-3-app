@@ -16,22 +16,19 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { useAllPrompts } from "@/contexts/PromptContext"
 
 export function PromptSelectDialog({ 
   open, 
   onOpenChange, 
-  onConfirm, 
-  isLoading = false,
+  prompts = [],
+  isLoadingPrompts = false,
+  isUpdating = false,
+  currentPromptId = null,
   selectedCount = 0,
-  currentPromptId = null 
+  onConfirm,
+  onCancel
 }) {
   const [selectedPromptId, setSelectedPromptId] = React.useState(currentPromptId)
-    const { 
-      data: prompts = [], 
-      isLoading: isLoadingPrompts, 
-      isError: isErrorPrompts,
-    } = useAllPrompts()
 
   React.useEffect(() => {
     if (open) {
@@ -47,7 +44,11 @@ export function PromptSelectDialog({
 
   const handleCancel = () => {
     setSelectedPromptId(currentPromptId)
-    onOpenChange(false)
+    if (onCancel) {
+      onCancel()
+    } else {
+      onOpenChange(false)
+    }
   }
 
   return (
@@ -69,7 +70,7 @@ export function PromptSelectDialog({
             <Select
               value={selectedPromptId || ""}
               onValueChange={setSelectedPromptId}
-              disabled={isLoadingPrompts || isLoading}
+              disabled={isLoadingPrompts || isUpdating}
             >
               <SelectTrigger id="prompt-select">
                 <SelectValue placeholder="Select a prompt..." />
@@ -96,15 +97,15 @@ export function PromptSelectDialog({
           <Button 
             variant="outline" 
             onClick={handleCancel}
-            disabled={isLoading}
+            disabled={isUpdating}
           >
             Cancel
           </Button>
           <Button 
             onClick={handleConfirm}
-            disabled={!selectedPromptId || isLoading || selectedPromptId === currentPromptId}
+            disabled={!selectedPromptId || isUpdating || selectedPromptId === currentPromptId}
           >
-            {isLoading ? "Updating..." : "Update Prompt"}
+            {isUpdating ? "Updating..." : "Update Prompt"}
           </Button>
         </DialogFooter>
       </DialogContent>
