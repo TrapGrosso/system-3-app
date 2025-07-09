@@ -2,12 +2,12 @@ import React from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { UsersIcon, TrashIcon } from 'lucide-react'
+import { UsersIcon, TrashIcon, PlusIcon } from 'lucide-react'
 import { useGroups } from '@/contexts/GroupsContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 
-export default function GroupsTable({ groups = [], prospect }) {
+export default function GroupsTable({ groups = [], prospect, onAddToGroup }) {
   const { user } = useAuth()
   const { removeFromGroup } = useGroups()
 
@@ -17,6 +17,12 @@ export default function GroupsTable({ groups = [], prospect }) {
       month: 'short',
       day: 'numeric'
     })
+  }
+
+  const handleAddToGroup = () => {
+    if (onAddToGroup) {
+      onAddToGroup()
+    }
   }
 
   const handleRemoveFromGroup = async (groupId) => {
@@ -39,6 +45,18 @@ export default function GroupsTable({ groups = [], prospect }) {
   if (groups.length === 0) {
     return (
       <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <UsersIcon className="h-5 w-5" />
+              Groups (0)
+            </CardTitle>
+            <Button onClick={handleAddToGroup} size="sm">
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Add to Group
+            </Button>
+          </div>
+        </CardHeader>
         <CardContent className="py-12">
           <div className="text-center text-muted-foreground">
             <UsersIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -53,10 +71,16 @@ export default function GroupsTable({ groups = [], prospect }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <UsersIcon className="h-5 w-5" />
-          Groups ({groups.length})
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <UsersIcon className="h-5 w-5" />
+            Groups ({groups.length})
+          </CardTitle>
+          <Button onClick={handleAddToGroup} size="sm">
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Add to Group
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <Table>

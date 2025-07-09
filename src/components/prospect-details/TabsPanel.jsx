@@ -6,7 +6,7 @@ import EnrichmentAccordion from './EnrichmentAccordion'
 import CampaignsTable from './CampaignsTable'
 import GroupsTable from './GroupsTable'
 
-export default function TabsPanel({ notes, tasks, enrichment, campaigns, groups, prospect, onAddNote, onNotesChanged, onAddTask, onTasksChanged }) {
+export default function TabsPanel({ notes, tasks, enrichment, campaigns, groups, prospect, onAddNote, onNotesChanged, onAddTask, onTasksChanged, onAddToGroup }) {
   return (
     <div className="px-4 lg:px-6 pb-6">
       <Tabs defaultValue="notes" className="w-full">
@@ -53,7 +53,7 @@ export default function TabsPanel({ notes, tasks, enrichment, campaigns, groups,
         </TabsContent>
         
         <TabsContent value="groups" className="mt-6">
-          <GroupsTable groups={groups} prospect={prospect} />
+          <GroupsTable groups={groups} prospect={prospect} onAddToGroup={onAddToGroup} />
         </TabsContent>
       </Tabs>
     </div>

@@ -27,12 +27,10 @@ import {
   UsersIcon,
   ChevronDownIcon
 } from 'lucide-react'
-import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
 import { toast } from 'sonner'
 
-export default function ProspectHeader({ prospect, onUpdateProspect, onDeleteProspect, onAddNote, onCreateTask, onAddToCampaign, onAddToDeepResearch }) {
+export default function ProspectHeader({ prospect, onUpdateProspect, onDeleteProspect, onAddNote, onCreateTask, onAddToCampaign, onAddToDeepResearch, onAddToGroup }) {
   const [open, setOpen] = useState(false)
-  const [groupsDialogOpen, setGroupsDialogOpen] = useState(false)
 
   if (!prospect) return null
 
@@ -97,7 +95,7 @@ export default function ProspectHeader({ prospect, onUpdateProspect, onDeletePro
       value: 'add-to-group',
       label: 'Add to group',
       icon: UsersIcon,
-      onSelect: () => setGroupsDialogOpen(true)
+      onSelect: onAddToGroup
     }
   ]
 
@@ -111,89 +109,80 @@ export default function ProspectHeader({ prospect, onUpdateProspect, onDeletePro
   }
 
   return (
-    <>
-      <Card className="mx-4 lg:mx-6 mb-6">
-        <CardHeader>
-          <div className="flex items-start gap-4">
-            <Avatar className="h-16 w-16">
-              <AvatarFallback className="text-lg">
-                {getInitials(first_name, last_name)}
-              </AvatarFallback>
-            </Avatar>
+    <Card className="mx-4 lg:mx-6 mb-6">
+      <CardHeader>
+        <div className="flex items-start gap-4">
+          <Avatar className="h-16 w-16">
+            <AvatarFallback className="text-lg">
+              {getInitials(first_name, last_name)}
+            </AvatarFallback>
+          </Avatar>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 mb-2">
+              <CardTitle className="text-2xl">
+                {first_name} {last_name}
+              </CardTitle>
+              <Badge variant={getStatusVariant(status)}>
+                {status}
+              </Badge>
+            </div>
             
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-2">
-                <CardTitle className="text-2xl">
-                  {first_name} {last_name}
-                </CardTitle>
-                <Badge variant={getStatusVariant(status)}>
-                  {status}
-                </Badge>
-              </div>
-              
-              {headline && (
-                <CardDescription className="text-base mb-2">
-                  {headline}
-                </CardDescription>
-              )}
-              
-              {location && (
-                <CardDescription className="text-sm text-muted-foreground">
-                  📍 {location}
-                </CardDescription>
-              )}
-            </div>
-
-            <div className="flex gap-2">
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={open}
-                    className="justify-between"
-                  >
-                    <MoreHorizontalIcon className="h-4 w-4 mr-2" />
-                    Actions
-                    <ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-56 p-0" align="end">
-                  <Command>
-                    <CommandInput placeholder="Search actions..." className="h-9" />
-                    <CommandEmpty>No actions found.</CommandEmpty>
-                    <CommandList>
-                      <CommandGroup>
-                        {actions.map((action) => {
-                          const Icon = action.icon
-                          return (
-                            <CommandItem
-                              key={action.value}
-                              value={action.value}
-                              onSelect={() => handleActionSelect(action)}
-                              className={action.variant === 'destructive' ? 'text-destructive' : ''}
-                            >
-                              <Icon className="mr-2 h-4 w-4" />
-                              {action.label}
-                            </CommandItem>
-                          )
-                        })}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
+            {headline && (
+              <CardDescription className="text-base mb-2">
+                {headline}
+              </CardDescription>
+            )}
+            
+            {location && (
+              <CardDescription className="text-sm text-muted-foreground">
+                📍 {location}
+              </CardDescription>
+            )}
           </div>
-        </CardHeader>
-      </Card>
 
-      <HandleGroupsDialog
-        open={groupsDialogOpen}
-        onOpenChange={setGroupsDialogOpen}
-        prospect_ids={[linkedin_id]}
-        user_id={prospect.user_id}
-      />
-    </>
+          <div className="flex gap-2">
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="justify-between"
+                >
+                  <MoreHorizontalIcon className="h-4 w-4 mr-2" />
+                  Actions
+                  <ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-0" align="end">
+                <Command>
+                  <CommandInput placeholder="Search actions..." className="h-9" />
+                  <CommandEmpty>No actions found.</CommandEmpty>
+                  <CommandList>
+                    <CommandGroup>
+                      {actions.map((action) => {
+                        const Icon = action.icon
+                        return (
+                          <CommandItem
+                            key={action.value}
+                            value={action.value}
+                            onSelect={() => handleActionSelect(action)}
+                            className={action.variant === 'destructive' ? 'text-destructive' : ''}
+                          >
+                            <Icon className="mr-2 h-4 w-4" />
+                            {action.label}
+                          </CommandItem>
+                        )
+                      })}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+      </CardHeader>
+    </Card>
   )
 }

@@ -11,6 +11,8 @@ import { TaskProvider } from '@/contexts/TaskContext'
 import { usegetProspectDetails } from '@/api/prospect-details/useGetProspectsDetails'
 import ProspectNotesDialog from '@/components/dialogs/ProspectNotesDialog'
 import ProspectTasksDialog from '@/components/dialogs/ProspectTasksDialog'
+import DeepSearchQueueDialog from '@/components/dialogs/DeepSearchQueueDialog'
+import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
 import {
   ProspectHeader,
   CompanyCard,
@@ -22,6 +24,8 @@ export default function ProspectDetails() {
   const { linkedinId } = useParams()
   const [notesDialogOpen, setNotesDialogOpen] = useState(false)
   const [tasksDialogOpen, setTasksDialogOpen] = useState(false)
+  const [deepSearchDialogOpen, setDeepSearchDialogOpen] = useState(false)
+  const [groupsDialogOpen, setGroupsDialogOpen] = useState(false)
 
   const { data, isLoading, isError, refetch } = usegetProspectDetails(user?.id, linkedinId)
   console.log(data)
@@ -40,6 +44,23 @@ export default function ProspectDetails() {
 
   const handleTasksDialogSuccess = () => {
     refetch() // Refresh prospect details to update tasks count and data
+  }
+
+  const handleOpenDeepSearchDialog = () => {
+    setDeepSearchDialogOpen(true)
+  }
+
+  const handleDeepSearchDialogSuccess = () => {
+    refetch() // Refresh prospect details to update data
+    setDeepSearchDialogOpen(false)
+  }
+
+  const handleOpenGroupsDialog = () => {
+    setGroupsDialogOpen(true)
+  }
+
+  const handleGroupsDialogSuccess = () => {
+    refetch() // Refresh prospect details to update groups count and data
   }
 
   if (isLoading) {
@@ -99,6 +120,8 @@ export default function ProspectDetails() {
               prospect={data.prospect} 
               onAddNote={handleOpenNotesDialog}
               onCreateTask={handleOpenTasksDialog}
+              onAddToDeepResearch={handleOpenDeepSearchDialog}
+              onAddToGroup={handleOpenGroupsDialog}
             />
           
           <div className="grid gap-6 px-4 lg:px-6 lg:grid-cols-3 mb-6">
@@ -148,6 +171,7 @@ export default function ProspectDetails() {
             onNotesChanged={handleNotesDialogSuccess}
             onAddTask={handleOpenTasksDialog}
             onTasksChanged={handleTasksDialogSuccess}
+            onAddToGroup={handleOpenGroupsDialog}
           />
 
           {/* ProspectNotesDialog - controlled by ProspectDetails state */}
@@ -169,6 +193,27 @@ export default function ProspectDetails() {
               open={tasksDialogOpen}
               onOpenChange={setTasksDialogOpen}
               onSuccess={handleTasksDialogSuccess}
+            />
+          )}
+
+          {/* DeepSearchQueueDialog - controlled by ProspectDetails state */}
+          {data.prospect && (
+            <DeepSearchQueueDialog
+              prospect_ids={[data.prospect.linkedin_id]}
+              open={deepSearchDialogOpen}
+              onOpenChange={setDeepSearchDialogOpen}
+              onSuccess={handleDeepSearchDialogSuccess}
+            />
+          )}
+
+          {/* HandleGroupsDialog - controlled by ProspectDetails state */}
+          {data.prospect && (
+            <HandleGroupsDialog
+              prospect_ids={[data.prospect.linkedin_id]}
+              user_id={data.prospect.user_id}
+              open={groupsDialogOpen}
+              onOpenChange={setGroupsDialogOpen}
+              onSuccess={handleGroupsDialogSuccess}
             />
           )}
           </TaskProvider>
