@@ -80,6 +80,11 @@ function DeepSearchQueueDialog({
     }
   }
 
+  const truncateString = (string, end = 40) => {
+    if (string.split('').length < end) return string
+    return string.split('').splice(0, end).concat(['...'])
+  }
+
   const selectedPrompt = prompts.find(prompt => prompt.id === selectedPromptId)
   const prospectCount = prospect_ids.length
 
@@ -88,7 +93,7 @@ function DeepSearchQueueDialog({
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="flex flex-col gap-5 sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Brain className="h-5 w-5" />
@@ -140,12 +145,12 @@ function DeepSearchQueueDialog({
                   <SelectContent>
                     {prompts.map((prompt) => (
                       <SelectItem key={prompt.id} value={prompt.id}>
-                        <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center justify-between">
                           <div className="flex flex-col items-start">
-                            <span className="truncate font-medium">{prompt.name}</span>
+                            <span className="truncate font-medium">{truncateString(prompt.name)}</span>
                             {prompt.description && (
-                              <span className="text-xs text-muted-foreground truncate">
-                                {prompt.description}
+                              <span className="text-xs text-muted-foreground">
+                                {truncateString(prompt.description)}
                               </span>
                             )}
                           </div>
@@ -163,7 +168,7 @@ function DeepSearchQueueDialog({
                   </SelectContent>
                 </Select>
                 {selectedPrompt && (
-                  <div className="text-xs text-muted-foreground space-y-1">
+                  <div className="text-xs text-muted-foreground space-y-3 mt-5">
                     {selectedPrompt.description && (
                       <p>{selectedPrompt.description}</p>
                     )}

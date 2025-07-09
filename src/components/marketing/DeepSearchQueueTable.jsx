@@ -105,7 +105,7 @@ export default function DeepSearchQueueTable({
           {row.original.prompt?.description && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="text-xs text-muted-foreground truncate cursor-help inline-block">
+                <span className="flex text-xs text-muted-foreground truncate cursor-help max-w-fit">
                   {row.original.prompt?.description}
                 </span>
               </TooltipTrigger>
