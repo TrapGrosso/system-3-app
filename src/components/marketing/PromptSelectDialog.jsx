@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { usePrompts } from "@/contexts/PromptContext"
+import { useAllPrompts } from "@/contexts/PromptContext"
 
 export function PromptSelectDialog({ 
   open, 
@@ -26,8 +26,12 @@ export function PromptSelectDialog({
   selectedCount = 0,
   currentPromptId = null 
 }) {
-  const { prompts, isLoadingPrompts } = usePrompts()
   const [selectedPromptId, setSelectedPromptId] = React.useState(currentPromptId)
+    const { 
+      data: prompts = [], 
+      isLoading: isLoadingPrompts, 
+      isError: isErrorPrompts,
+    } = useAllPrompts()
 
   React.useEffect(() => {
     if (open) {

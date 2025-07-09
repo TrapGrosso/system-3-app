@@ -2,9 +2,11 @@ import * as React from "react"
 import {
   flexRender,
   getCoreRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table"
 import { ChevronDownIcon, MoreHorizontalIcon } from "lucide-react"
+import { useNavigate } from 'react-router-dom'
 
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
@@ -34,6 +36,7 @@ import {
   PaginationEllipsis,
 } from '@/components/ui/pagination'
 import { Spinner } from '@/components/ui/spinner'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useDeepSearchQueue } from '@/contexts/DeepSearchQueueContext'
 import { PromptSelectDialog } from './PromptSelectDialog'
 
@@ -47,6 +50,8 @@ export default function DeepSearchQueueTable() {
     isUpdatingQueue,
     isDeletingQueue,
   } = useDeepSearchQueue()
+
+  const navigate = useNavigate()
 
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
@@ -70,6 +75,10 @@ export default function DeepSearchQueueTable() {
   const handleResolve = React.useCallback((items) => {
     resolveProspects(items)
   }, [resolveProspects])
+
+  const handleRowClick = React.useCallback((row) => {
+    navigate(`/prospects/${row.original.prospect_id}`)
+  }, [navigate])
 
   const columns = React.useMemo(() => [
     {
@@ -122,10 +131,29 @@ export default function DeepSearchQueueTable() {
             {row.original.prompt?.name || '—'}
           </div>
           {row.original.prompt?.description && (
-            <div className="text-xs text-muted-foreground truncate" title={row.original.prompt?.description}>
-              {row.original.prompt?.description}
-            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="text-xs text-muted-foreground truncate cursor-help inline-block">
+                  {row.original.prompt?.description}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">{row.original.prompt?.description}</p>
+              </TooltipContent>
+            </Tooltip>
           )}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "groups",
+      header: "Groups",
+      cell: ({ row }) => (
+        <div className="text-sm">
+          {row.original.groups && row.original.groups.length > 0 
+            ? row.original.groups.map(group => group.name).join(', ')
+            : '—'
+          }
         </div>
       ),
     },
@@ -206,11 +234,10 @@ export default function DeepSearchQueueTable() {
     },
     getRowId: (row) => `${row.prospect_id}-${row.prompt_id}`,
     enableRowSelection: true,
-    manualPagination: true,
-    pageCount: Math.ceil((queueItems?.length || 0) / pagination.pageSize),
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
   })
 
   const selectedRows = table.getSelectedRowModel().rows
@@ -346,33 +373,42 @@ export default function DeepSearchQueueTable() {
   return (
     <div className="space-y-4">
       {/* Bulk Actions */}
-      {selectedCount > 0 && (
-        <div className="flex justify-end">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                Selected ({selectedCount})
-                <ChevronDownIcon className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleBulkAction('changePrompt')}>
-                Change Prompt
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleBulkAction('resolve')}>
-                Resolve Selected
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                className="text-destructive"
-                onClick={() => handleBulkAction('remove')}
-              >
-                Remove Selected
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      )}
+      <div className="flex justify-end">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="sm"
+              disabled={selectedCount === 0}
+            >
+              Selected ({selectedCount})
+              <ChevronDownIcon className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem 
+              disabled={selectedCount === 0}
+              onClick={() => handleBulkAction('changePrompt')}
+            >
+              Change Prompt
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              disabled={selectedCount === 0}
+              onClick={() => handleBulkAction('resolve')}
+            >
+              Resolve Selected
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              className="text-destructive"
+              disabled={selectedCount === 0}
+              onClick={() => handleBulkAction('remove')}
+            >
+              Remove Selected
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
 
       {/* Table */}
       <div className="rounded-md border">
@@ -397,6 +433,7 @@ export default function DeepSearchQueueTable() {
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className="cursor-pointer"
+                  onClick={() => handleRowClick(row)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
