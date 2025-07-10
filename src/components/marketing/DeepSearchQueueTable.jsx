@@ -40,6 +40,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 export default function DeepSearchQueueTable({ 
   queueItems,
   isLoading,
+  isResolving = false,
   onChangePrompt,
   onRemove,
   onResolve,
@@ -166,6 +167,7 @@ export default function DeepSearchQueueTable({
               Change Prompt
             </DropdownMenuItem>
             <DropdownMenuItem
+              disabled={isResolving}
               onClick={(e) => {
                 e.stopPropagation()
                 onResolve([{
@@ -174,7 +176,7 @@ export default function DeepSearchQueueTable({
                 }])
               }}
             >
-              Resolve
+              {isResolving ? "Resolving..." : "Resolve"}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -195,7 +197,7 @@ export default function DeepSearchQueueTable({
       enableSorting: false,
       enableHiding: false,
     },
-  ], [onChangePrompt, onRemove, onResolve])
+  ], [onChangePrompt, onRemove, onResolve, isResolving])
 
   const table = useReactTable({
     data: queueItems || [],
@@ -355,10 +357,10 @@ export default function DeepSearchQueueTable({
               Change Prompt
             </DropdownMenuItem>
             <DropdownMenuItem 
-              disabled={selectedCount === 0}
+              disabled={selectedCount === 0 || isResolving}
               onClick={() => handleBulkAction('resolve')}
             >
-              Resolve Selected
+              {isResolving ? "Resolving..." : "Resolve Selected"}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem 

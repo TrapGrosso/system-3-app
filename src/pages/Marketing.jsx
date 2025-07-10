@@ -18,9 +18,9 @@ export default function Marketing() {
         deleteProspects,
         updateProspects,
         resolveProspects,
-        resolveAll,
         isUpdatingQueue,
         isDeletingQueue,
+        isResolvingQueue,
     } = useDeepSearchQueue()
 
     const { 
@@ -78,14 +78,24 @@ export default function Marketing() {
                             Manage and process your deep search queue items
                         </p>
                     </div>
-                    <Button onClick={resolveAll}>
-                        Resolve Entire Queue
+                    <Button 
+                        onClick={() => {
+                            const allItems = queueItems.map(({ prospect_id, prompt_id }) => ({
+                                prospect_id,
+                                prompt_id,
+                            }))
+                            resolveProspects(allItems)
+                        }}
+                        disabled={queueItems.length === 0 || isResolvingQueue}
+                    >
+                        {isResolvingQueue ? "Resolving..." : "Resolve Entire Queue"}
                     </Button>
                 </div>
                 
                 <DeepSearchQueueTable 
                     queueItems={queueItems}
                     isLoading={isLoadingQueue}
+                    isResolving={isResolvingQueue}
                     onChangePrompt={handleChangePrompt}
                     onRemove={handleRemove}
                     onResolve={handleResolve}

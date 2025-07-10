@@ -5,6 +5,7 @@ import { useGetDeepSearchQueueItems } from "@/api/deepSearchQueue-context/getDee
 import { useAddToDeepSearchQueue } from "@/api/deepSearchQueue-context/addToDeepSearchQueue"
 import { useUpdateDeepSearchQueueItems } from "@/api/deepSearchQueue-context/updateDeepSearchQueueItems"
 import { useDeleteDeepSearchQueueItems } from "@/api/deepSearchQueue-context/deleteDeepSearchQueueItems"
+import { useResolveDeepSearchQueue } from "@/api/deepSearchQueue-context/resolveDeepSearchQueue"
 import { useAuth } from "./AuthContext"
 
 const DeepSearchQueueContext = React.createContext(null)
@@ -58,6 +59,18 @@ export const DeepSearchQueueProvider = ({ children }) => {
     },
   })
 
+  // Resolve queue mutation
+  const resolveQueueMutation = useResolveDeepSearchQueue({
+    onSuccess: (data) => {
+      const message = data.message || 'Queue resolved successfully'
+      toast.success(message)
+      queryClient.invalidateQueries(['getDeepSearchQueueItems', user_id])
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to resolve queue")
+    },
+  })
+
   // Core mutation wrappers
   const addProspects = React.useCallback(
     (prospect_ids, prompt_id) => {
@@ -91,20 +104,15 @@ export const DeepSearchQueueProvider = ({ children }) => {
     [deleteQueueMutation, user_id]
   )
 
-  // Resolve functions (stubs for now)
+  // Resolve prospects wrapper
   const resolveProspects = React.useCallback(
     (prospect_prompt_ids) => {
-      const count = Array.isArray(prospect_prompt_ids) ? prospect_prompt_ids.length : 1
-      toast.info(`Resolve ${count} item(s) - not yet implemented`)
+      return resolveQueueMutation.mutate({
+        user_id,
+        prospect_prompt_ids: Array.isArray(prospect_prompt_ids) ? prospect_prompt_ids : [prospect_prompt_ids]
+      })
     },
-    []
-  )
-
-  const resolveAll = React.useCallback(
-    () => {
-      toast.info("Resolve entire queue - not yet implemented")
-    },
-    []
+    [resolveQueueMutation, user_id]
   )
 
   const value = React.useMemo(
@@ -121,12 +129,12 @@ export const DeepSearchQueueProvider = ({ children }) => {
       deleteProspects,
       refetchQueue,
       resolveProspects,
-      resolveAll,
 
       // Loading states
       isAddingToQueue: addToQueueMutation.isPending,
       isUpdatingQueue: updateQueueMutation.isPending,
       isDeletingQueue: deleteQueueMutation.isPending,
+      isResolvingQueue: resolveQueueMutation.isPending,
     }),
     [
       queueItems,
@@ -138,10 +146,10 @@ export const DeepSearchQueueProvider = ({ children }) => {
       deleteProspects,
       refetchQueue,
       resolveProspects,
-      resolveAll,
       addToQueueMutation.isPending,
       updateQueueMutation.isPending,
       deleteQueueMutation.isPending,
+      resolveQueueMutation.isPending,
     ]
   )
 
