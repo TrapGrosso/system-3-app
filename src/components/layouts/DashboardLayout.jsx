@@ -8,6 +8,7 @@ import {
   IconChecklist,
   IconMessageCircle,
   IconBolt,
+  IconUsersGroup
 } from "@tabler/icons-react"
 
 import { AppSidebar } from "@/components/navigation/app-sidebar"
@@ -51,6 +52,15 @@ export function DashboardLayout({ children, headerText = "Dashboard" }) {
       }
     ],
     navPrimary: [
+      {
+        name: "Groups",
+        url: "/groups",
+        icon: IconUsersGroup,
+        dropdownItems: [
+          { label: "All Groups", action: "view-all" },
+          { label: "My Groups", action: "view-mine" }
+        ]
+      },
       {
         name: "Tasks",
         url: "/tasks",

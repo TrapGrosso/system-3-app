@@ -10,6 +10,7 @@ import Prompts from './pages/Prompts'
 import CustomActions from './pages/CustomActions'
 import ProspectDetails from './pages/ProspectDetails'
 import ProtectedRoute from './components/ProtectedRoute'
+import Groups from './pages/Groups'
 import { useAuth } from './contexts/AuthContext'
 import { RoundSpinner } from './components/ui/spinner'
 import { Toaster } from './components/ui/sonner'
@@ -70,6 +71,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Tasks />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/groups" 
+          element={
+            <ProtectedRoute>
+              <Groups />
             </ProtectedRoute>
           } 
         />
