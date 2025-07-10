@@ -7,6 +7,8 @@ import { useCreateGroup } from "@/api/groups-context/createGroup"
 import { useDeleteGroup } from "@/api/groups-context/deleteGroup"
 import { useRemoveFromGroup } from "@/api/groups-context/removeFromGroup"
 import { useRemoveFromAllGroups } from "@/api/groups-context/removeFromAllGroups"
+import { useEmptyGroup } from "@/api/groups-context/emptyGroup"
+import { useFetchProspectsFromGroup } from "@/api/groups-context/fetchProspectsFromGroup"
 import { useAuth } from "./AuthContext"
 
 const GroupsContext = React.createContext(null)
@@ -84,6 +86,19 @@ export const GroupsProvider = ({ children }) => {
     },
   })
 
+  // Empty group mutation
+  const emptyGroupMutation = useEmptyGroup({
+    onSuccess: (data) => {
+      const message = data.message || 'Group emptied successfully'
+      toast.success(message)
+      queryClient.invalidateQueries(['fetchGroups', user_id])
+      queryClient.invalidateQueries(['fetchProspectsFromGroup', user_id])
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to empty group")
+    },
+  })
+
   // Helper functions
   const getGroupById = React.useCallback(
     (id) => groups.find((g) => g.id === id),
@@ -109,6 +124,7 @@ export const GroupsProvider = ({ children }) => {
       addToGroup: addToGroupMutation,
       removeFromGroup: removeFromGroupMutation,
       removeFromAllGroups: removeFromAllGroupsMutation,
+      emptyGroup: emptyGroupMutation,
 
       // Helpers
       refetchGroups,
@@ -125,6 +141,7 @@ export const GroupsProvider = ({ children }) => {
       addToGroupMutation,
       removeFromGroupMutation,
       removeFromAllGroupsMutation,
+      emptyGroupMutation,
       refetchGroups,
       invalidateGroups,
       getGroupById,
@@ -144,4 +161,10 @@ export const useGroups = () => {
     throw new Error("useGroups must be used within a GroupsProvider")
   }
   return context
+}
+
+// Wrapper hook for fetching prospects from a specific group
+export const useGroupProspects = (groupId) => {
+  const { user_id } = useGroups()
+  return useFetchProspectsFromGroup(user_id, groupId)
 }
