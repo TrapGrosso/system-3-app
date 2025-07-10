@@ -129,164 +129,6 @@ function HandleGroupsDialog({
   const isCreating = createGroup.isPending
   const isDeleting = deleteGroup.isPending
 
-  // Inner component for Add to Group tab
-  const AddToGroupTab = () => (
-    <div className="space-y-4">
-      {isLoadingGroups ? (
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-10 w-full" />
-        </div>
-      ) : isErrorGroups ? (
-        <div className="space-y-2">
-          <p className="text-sm text-destructive">Failed to load groups</p>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => refetchGroups()}
-          >
-            Retry
-          </Button>
-        </div>
-      ) : groups.length === 0 ? (
-        <div className="text-center py-4">
-          <p className="text-sm text-muted-foreground mb-2">No groups found</p>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setActiveTab("manage")}
-          >
-            Create your first group
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          <div className="space-y-2">
-            <Label htmlFor="group-select" className="text-sm font-medium">
-              Select group
-            </Label>
-            <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
-              <SelectTrigger id="group-select">
-                <SelectValue placeholder="Choose a group..." />
-              </SelectTrigger>
-              <SelectContent>
-                {groups.map((group) => (
-                  <SelectItem key={group.id} value={group.id}>
-                    <div className="flex items-center justify-between w-full">
-                      <span className="truncate">{group.name}</span>
-                      <Badge variant="secondary" className="ml-2">
-                        {group.prospect_count}
-                      </Badge>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {selectedGroup && (
-              <p className="text-xs text-muted-foreground">
-                {selectedGroup.description}
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-
-  // Inner component for Manage Groups tab
-  const ManageGroupsTab = () => (
-    <div className="space-y-4">
-      {/* Create Group Form */}
-      <div className="space-y-3">
-        <h4 className="text-sm font-medium">Create new group</h4>
-        <div className="space-y-3">
-          <div className="space-y-2">
-            <Label htmlFor="group-name">Group name</Label>
-            <Input
-              id="group-name"
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-              placeholder="Enter group name..."
-              disabled={isCreating}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="group-description">Description</Label>
-            <Input
-              id="group-description"
-              value={groupDescription}
-              onChange={(e) => setGroupDescription(e.target.value)}
-              placeholder="Enter group description..."
-              disabled={isCreating}
-            />
-          </div>
-          <Button 
-            onClick={handleCreateGroup}
-            disabled={!groupName.trim() || isCreating}
-            className="w-full"
-          >
-            {isCreating && <Spinner size="sm" className="mr-2" />}
-            Create Group
-          </Button>
-        </div>
-      </div>
-
-      <Separator />
-
-      {/* Groups List */}
-      <div className="space-y-3">
-        <h4 className="text-sm font-medium">Existing groups</h4>
-        
-        {isLoadingGroups ? (
-          <div className="space-y-2">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="flex items-center justify-between p-3 border rounded-md">
-                <div className="space-y-1 flex-1">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-3 w-32" />
-                </div>
-                <Skeleton className="h-8 w-8" />
-              </div>
-            ))}
-          </div>
-        ) : groups.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-4">
-            No groups created yet
-          </p>
-        ) : (
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {groups.map((group) => (
-              <div key={group.id} className="flex items-center justify-between p-3 border rounded-md hover:bg-accent/50 transition-colors group">
-                <div className="space-y-1 flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm truncate">{group.name}</span>
-                    <Badge variant="secondary" className="text-xs">
-                      {group.prospect_count}
-                    </Badge>
-                  </div>
-                  {group.description && (
-                    <p className="text-xs text-muted-foreground truncate">
-                      {group.description}
-                    </p>
-                  )}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => handleDeleteGroup(group.id)}
-                  disabled={isDeleting}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  <span className="sr-only">Delete group</span>
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  )
 
   return (
     <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
@@ -315,11 +157,31 @@ function HandleGroupsDialog({
           </TabsList>
           
           <TabsContent value="add" className="mt-4">
-            <AddToGroupTab />
+            <AddToGroupTab 
+              isLoadingGroups={isLoadingGroups}
+              isErrorGroups={isErrorGroups}
+              refetchGroups={refetchGroups}
+              groups={groups}
+              selectedGroupId={selectedGroupId}
+              setSelectedGroupId={setSelectedGroupId}
+              selectedGroup={selectedGroup}
+              setActiveTab={setActiveTab}
+            />
           </TabsContent>
           
           <TabsContent value="manage" className="mt-4">
-            <ManageGroupsTab />
+            <ManageGroupsTab 
+              groupName={groupName}
+              setGroupName={setGroupName}
+              groupDescription={groupDescription}
+              setGroupDescription={setGroupDescription}
+              handleCreateGroup={handleCreateGroup}
+              isCreating={isCreating}
+              isLoadingGroups={isLoadingGroups}
+              groups={groups}
+              handleDeleteGroup={handleDeleteGroup}
+              isDeleting={isDeleting}
+            />
           </TabsContent>
         </Tabs>
 
@@ -348,5 +210,184 @@ function HandleGroupsDialog({
     </Dialog>
   )
 }
+
+// Component for Add to Group tab
+const AddToGroupTab = ({ 
+  isLoadingGroups, 
+  isErrorGroups, 
+  refetchGroups, 
+  groups, 
+  selectedGroupId, 
+  setSelectedGroupId, 
+  selectedGroup, 
+  setActiveTab 
+}) => (
+  <div className="space-y-4">
+    {isLoadingGroups ? (
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-20" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    ) : isErrorGroups ? (
+      <div className="space-y-2">
+        <p className="text-sm text-destructive">Failed to load groups</p>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => refetchGroups()}
+        >
+          Retry
+        </Button>
+      </div>
+    ) : groups.length === 0 ? (
+      <div className="text-center py-4">
+        <p className="text-sm text-muted-foreground mb-2">No groups found</p>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => setActiveTab("manage")}
+        >
+          Create your first group
+        </Button>
+      </div>
+    ) : (
+      <div className="space-y-3">
+        <div className="space-y-2">
+          <Label htmlFor="group-select" className="text-sm font-medium">
+            Select group
+          </Label>
+          <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
+            <SelectTrigger id="group-select">
+              <SelectValue placeholder="Choose a group..." />
+            </SelectTrigger>
+            <SelectContent>
+              {groups.map((group) => (
+                <SelectItem key={group.id} value={group.id}>
+                  <div className="flex items-center justify-between w-full">
+                    <span className="truncate">{group.name}</span>
+                    <Badge variant="secondary" className="ml-2">
+                      {group.prospect_count}
+                    </Badge>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {selectedGroup && (
+            <p className="text-xs text-muted-foreground">
+              {selectedGroup.description}
+            </p>
+          )}
+        </div>
+      </div>
+    )}
+  </div>
+)
+
+// Component for Manage Groups tab
+const ManageGroupsTab = ({ 
+  groupName, 
+  setGroupName, 
+  groupDescription, 
+  setGroupDescription, 
+  handleCreateGroup, 
+  isCreating, 
+  isLoadingGroups, 
+  groups, 
+  handleDeleteGroup, 
+  isDeleting 
+}) => (
+  <div className="space-y-4">
+    {/* Create Group Form */}
+    <div className="space-y-3">
+      <h4 className="text-sm font-medium">Create new group</h4>
+      <div className="space-y-3">
+        <div className="space-y-2">
+          <Label htmlFor="group-name">Group name</Label>
+          <Input
+            id="group-name"
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
+            placeholder="Enter group name..."
+            disabled={isCreating}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="group-description">Description</Label>
+          <Input
+            id="group-description"
+            value={groupDescription}
+            onChange={(e) => setGroupDescription(e.target.value)}
+            placeholder="Enter group description..."
+            disabled={isCreating}
+          />
+        </div>
+        <Button 
+          onClick={handleCreateGroup}
+          disabled={!groupName.trim() || isCreating}
+          className="w-full"
+        >
+          {isCreating && <Spinner size="sm" className="mr-2" />}
+          Create Group
+        </Button>
+      </div>
+    </div>
+
+    <Separator />
+
+    {/* Groups List */}
+    <div className="space-y-3">
+      <h4 className="text-sm font-medium">Existing groups</h4>
+      
+      {isLoadingGroups ? (
+        <div className="space-y-2">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex items-center justify-between p-3 border rounded-md">
+              <div className="space-y-1 flex-1">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-3 w-32" />
+              </div>
+              <Skeleton className="h-8 w-8" />
+            </div>
+          ))}
+        </div>
+      ) : groups.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-4">
+          No groups created yet
+        </p>
+      ) : (
+        <div className="space-y-2 max-h-48 overflow-y-auto">
+          {groups.map((group) => (
+            <div key={group.id} className="flex items-center justify-between p-3 border rounded-md hover:bg-accent/50 transition-colors group">
+              <div className="space-y-1 flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-sm truncate">{group.name}</span>
+                  <Badge variant="secondary" className="text-xs">
+                    {group.prospect_count}
+                  </Badge>
+                </div>
+                {group.description && (
+                  <p className="text-xs text-muted-foreground truncate">
+                    {group.description}
+                  </p>
+                )}
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => handleDeleteGroup(group.id)}
+                disabled={isDeleting}
+              >
+                <Trash2 className="h-4 w-4" />
+                <span className="sr-only">Delete group</span>
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+)
 
 export default HandleGroupsDialog
