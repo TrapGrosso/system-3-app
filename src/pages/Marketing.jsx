@@ -34,33 +34,38 @@ export default function Marketing() {
     const [currentPromptId, setCurrentPromptId] = React.useState(null)
 
     // Business logic handlers
-    const handleChangePrompt = React.useCallback((items, currentPrompt = null) => {
-        setSelectedItems(items)
-        setCurrentPromptId(currentPrompt)
+    const handleChangePrompt = React.useCallback((queueItemIds) => {
+        setSelectedItems(queueItemIds)
+        setCurrentPromptId(null)
         setPromptDialogOpen(true)
     }, [])
 
-    const handleRemove = React.useCallback((items) => {
-        deleteProspects(items)
+    const handleRemove = React.useCallback((queueItemIds) => {
+        deleteProspects(queueItemIds)
     }, [deleteProspects])
 
-    const handleResolve = React.useCallback((items) => {
-        resolveProspects(items)
+    const handleResolve = React.useCallback((queueItemIds) => {
+        resolveProspects(queueItemIds)
     }, [resolveProspects])
 
     const handleRowClick = React.useCallback((prospectId) => {
         navigate(`/prospects/${prospectId}`)
     }, [navigate])
 
-    const handlePromptConfirm = React.useCallback((newPromptId) => {
+    const handlePromptConfirm = React.useCallback((newPromptIds) => {
         if (selectedItems.length > 0) {
-            const prospectIds = selectedItems.map(item => item.prospect_id)
-            updateProspects(prospectIds, newPromptId)
+            // Get prospect IDs from the selected queue items
+            const prospectIds = selectedItems.map(queueItemId => {
+                const queueItem = queueItems.find(item => item.id === queueItemId)
+                return queueItem?.prospect_id || queueItem?.prospect?.linkedin_id
+            }).filter(Boolean)
+            
+            updateProspects(prospectIds, newPromptIds)
             setPromptDialogOpen(false)
             setSelectedItems([])
             setCurrentPromptId(null)
         }
-    }, [selectedItems, updateProspects])
+    }, [selectedItems, queueItems, updateProspects])
 
     const handlePromptCancel = React.useCallback(() => {
         setPromptDialogOpen(false)
@@ -80,11 +85,8 @@ export default function Marketing() {
                     </div>
                     <Button 
                         onClick={() => {
-                            const allItems = queueItems.map(({ prospect_id, prompt_id }) => ({
-                                prospect_id,
-                                prompt_id,
-                            }))
-                            resolveProspects(allItems)
+                            const allQueueItemIds = queueItems.map(item => item.id)
+                            resolveProspects(allQueueItemIds)
                         }}
                         disabled={queueItems.length === 0 || isResolvingQueue}
                     >

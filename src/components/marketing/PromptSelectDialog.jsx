@@ -9,13 +9,23 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Separator } from "@/components/ui/separator"
+import { ChevronsUpDown, X } from "lucide-react"
 
 export function PromptSelectDialog({ 
   open, 
@@ -23,27 +33,27 @@ export function PromptSelectDialog({
   prompts = [],
   isLoadingPrompts = false,
   isUpdating = false,
-  currentPromptId = null,
   selectedCount = 0,
   onConfirm,
   onCancel
 }) {
-  const [selectedPromptId, setSelectedPromptId] = React.useState(currentPromptId)
+  const [selectedPromptIds, setSelectedPromptIds] = React.useState([])
+  const [popoverOpen, setPopoverOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (open) {
-      setSelectedPromptId(currentPromptId)
+      setSelectedPromptIds([])
     }
-  }, [open, currentPromptId])
+  }, [open])
 
   const handleConfirm = () => {
-    if (selectedPromptId && onConfirm) {
-      onConfirm(selectedPromptId)
+    if (selectedPromptIds.length > 0 && onConfirm) {
+      onConfirm(selectedPromptIds)
     }
   }
 
   const handleCancel = () => {
-    setSelectedPromptId(currentPromptId)
+    setSelectedPromptIds([])
     if (onCancel) {
       onCancel()
     } else {
@@ -51,46 +61,165 @@ export function PromptSelectDialog({
     }
   }
 
+  const handlePromptToggle = (promptId) => {
+    setSelectedPromptIds(prev => 
+      prev.includes(promptId) 
+        ? prev.filter(id => id !== promptId)
+        : [...prev, promptId]
+    )
+  }
+
+  const handleClearSelection = () => {
+    setSelectedPromptIds([])
+  }
+
+  const getAgentTypeVariant = (agentType) => {
+    switch (agentType?.toLowerCase()) {
+      case 'deep_research':
+        return 'default'
+      default:
+        return 'secondary'
+    }
+  }
+
+  const truncateString = (string, end = 40) => {
+    if (string.split('').length < end) return string
+    return string.split('').splice(0, end).concat(['...'])
+  }
+
+  const selectedPrompts = prompts.filter(prompt => selectedPromptIds.includes(prompt.id))
+
+  const getSelectionText = () => {
+    if (selectedPromptIds.length === 0) return "Choose prompts..."
+    if (selectedPromptIds.length === 1) return "1 prompt selected"
+    return `${selectedPromptIds.length} prompts selected`
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Change Prompt</DialogTitle>
           <DialogDescription>
             {selectedCount > 1 
-              ? `Select a new prompt for ${selectedCount} queue items`
-              : "Select a new prompt for this queue item"
+              ? `Select new prompts for ${selectedCount} queue items`
+              : "Select new prompts for this queue item"
             }
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="prompt-select">Prompt</Label>
-            <Select
-              value={selectedPromptId || ""}
-              onValueChange={setSelectedPromptId}
-              disabled={isLoadingPrompts || isUpdating}
-            >
-              <SelectTrigger id="prompt-select">
-                <SelectValue placeholder="Select a prompt..." />
-              </SelectTrigger>
-              <SelectContent>
-                {prompts?.map((prompt) => (
-                  <SelectItem key={prompt.id} value={prompt.id}>
-                    <div className="flex flex-col items-start">
+            <Label htmlFor="prompt-select">Prompts</Label>
+            <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={popoverOpen}
+                  className="w-full justify-between"
+                  disabled={isLoadingPrompts || isUpdating}
+                >
+                  {getSelectionText()}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Search prompts..." />
+                  <CommandList>
+                    <CommandEmpty>No prompts found.</CommandEmpty>
+                    <CommandGroup>
+                      {prompts.map((prompt) => (
+                        <CommandItem
+                          key={prompt.id}
+                          onSelect={() => handlePromptToggle(prompt.id)}
+                        >
+                          <div className="flex items-center space-x-2 flex-1">
+                            <Checkbox 
+                              checked={selectedPromptIds.includes(prompt.id)}
+                              onChange={() => handlePromptToggle(prompt.id)}
+                            />
+                            <div className="flex flex-col flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium truncate">
+                                  {truncateString(prompt.name, 30)}
+                                </span>
+                                {prompt.agent_type && (
+                                  <Badge 
+                                    variant={getAgentTypeVariant(prompt.agent_type)} 
+                                    className="text-xs"
+                                  >
+                                    {prompt.agent_type}
+                                  </Badge>
+                                )}
+                              </div>
+                              {prompt.description && (
+                                <span className="text-xs text-muted-foreground truncate">
+                                  {truncateString(prompt.description, 40)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                  {selectedPromptIds.length > 0 && (
+                    <>
+                      <Separator />
+                      <div className="p-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleClearSelection}
+                          className="w-full"
+                        >
+                          <X className="h-4 w-4 mr-2" />
+                          Clear selection
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {selectedPrompts.length > 0 && (
+            <div className="space-y-3 mt-5">
+              <Label className="text-sm font-medium">Selected prompts preview:</Label>
+              <div className="space-y-3">
+                {selectedPrompts.map((prompt, index) => (
+                  <div key={prompt.id} className="text-xs text-muted-foreground space-y-2 p-3 rounded-md border">
+                    <div className="flex items-center gap-2">
                       <span className="font-medium">{prompt.name}</span>
-                      {prompt.description && (
-                        <span className="text-xs text-muted-foreground truncate max-w-[200px]">
-                          {prompt.description}
-                        </span>
+                      {prompt.agent_type && (
+                        <Badge 
+                          variant={getAgentTypeVariant(prompt.agent_type)} 
+                          className="text-xs"
+                        >
+                          {prompt.agent_type}
+                        </Badge>
                       )}
                     </div>
-                  </SelectItem>
+                    {prompt.description && (
+                      <p>{prompt.description}</p>
+                    )}
+                    {prompt.tags && prompt.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {prompt.tags.map((tag, tagIndex) => (
+                          <Badge key={tagIndex} variant="outline" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <DialogFooter>
@@ -103,7 +232,7 @@ export function PromptSelectDialog({
           </Button>
           <Button 
             onClick={handleConfirm}
-            disabled={!selectedPromptId || isUpdating || selectedPromptId === currentPromptId}
+            disabled={!selectedPromptIds.length || isUpdating}
           >
             {isUpdating ? "Updating..." : "Update Prompt"}
           </Button>

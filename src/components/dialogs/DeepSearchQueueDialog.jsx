@@ -1,6 +1,6 @@
 import * as React from "react"
 import { useState } from "react"
-import { Search, Brain } from "lucide-react"
+import { Search, Brain, Check, ChevronsUpDown, X } from "lucide-react"
 
 import {
   Dialog,
@@ -12,17 +12,25 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Separator } from "@/components/ui/separator"
 
 import { useDeepSearchQueue } from "@/contexts/DeepSearchQueueContext"
 import { useAllPrompts } from "@/contexts/PromptContext"
@@ -37,7 +45,8 @@ function DeepSearchQueueDialog({
   onOpenChange: controlledOnOpenChange
 }) {
   const [internalOpen, setInternalOpen] = useState(false)
-  const [selectedPromptId, setSelectedPromptId] = useState("")
+  const [selectedPromptIds, setSelectedPromptIds] = useState([])
+  const [popoverOpen, setPopoverOpen] = useState(false)
   
   // Get contexts
   const { user } = useAuth()
@@ -55,9 +64,10 @@ function DeepSearchQueueDialog({
   const setDialogOpen = isControlled ? controlledOnOpenChange : setInternalOpen
 
   const handleSubmit = () => {
-    if (!selectedPromptId || !prospect_ids.length || !user?.id) return
+    if (!selectedPromptIds.length || !prospect_ids.length || !user?.id) return
     
-    addProspects(prospect_ids, selectedPromptId)
+    addProspects(prospect_ids, selectedPromptIds)
+    setSelectedPromptIds([])
     onSuccess?.()
   }
 
@@ -67,8 +77,21 @@ function DeepSearchQueueDialog({
     }
     if (!newOpen) {
       // Reset state when closing
-      setSelectedPromptId("")
+      setSelectedPromptIds([])
+      setPopoverOpen(false)
     }
+  }
+
+  const handlePromptToggle = (promptId) => {
+    setSelectedPromptIds(prev => 
+      prev.includes(promptId) 
+        ? prev.filter(id => id !== promptId)
+        : [...prev, promptId]
+    )
+  }
+
+  const handleClearSelection = () => {
+    setSelectedPromptIds([])
   }
 
   const getAgentTypeVariant = (agentType) => {
@@ -85,8 +108,14 @@ function DeepSearchQueueDialog({
     return string.split('').splice(0, end).concat(['...'])
   }
 
-  const selectedPrompt = prompts.find(prompt => prompt.id === selectedPromptId)
+  const selectedPrompts = prompts.filter(prompt => selectedPromptIds.includes(prompt.id))
   const prospectCount = prospect_ids.length
+
+  const getSelectionText = () => {
+    if (selectedPromptIds.length === 0) return "Choose prompts..."
+    if (selectedPromptIds.length === 1) return "1 prompt selected"
+    return `${selectedPromptIds.length} prompts selected`
+  }
 
   return (
     <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
@@ -135,55 +164,117 @@ function DeepSearchQueueDialog({
           ) : (
             <div className="space-y-3">
               <div className="space-y-2">
-                <Label htmlFor="prompt-select" className="text-sm font-medium">
-                  Select prompt
+                <Label className="text-sm font-medium">
+                  Select prompts
                 </Label>
-                <Select value={selectedPromptId} onValueChange={setSelectedPromptId}>
-                  <SelectTrigger id="prompt-select">
-                    <SelectValue placeholder="Choose a prompt..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {prompts.map((prompt) => (
-                      <SelectItem key={prompt.id} value={prompt.id}>
-                        <div className="flex items-center justify-between">
-                          <div className="flex flex-col items-start">
-                            <span className="truncate font-medium">{truncateString(prompt.name)}</span>
-                            {prompt.description && (
-                              <span className="text-xs text-muted-foreground">
-                                {truncateString(prompt.description)}
-                              </span>
-                            )}
+                <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={popoverOpen}
+                      className="w-full justify-between"
+                    >
+                      {getSelectionText()}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Search prompts..." />
+                      <CommandList>
+                        <CommandEmpty>No prompts found.</CommandEmpty>
+                        <CommandGroup>
+                          {prompts.map((prompt) => (
+                            <CommandItem
+                              key={prompt.id}
+                              onSelect={() => handlePromptToggle(prompt.id)}
+                            >
+                              <div className="flex items-center space-x-2 flex-1">
+                                <Checkbox 
+                                  checked={selectedPromptIds.includes(prompt.id)}
+                                  onChange={() => handlePromptToggle(prompt.id)}
+                                />
+                                <div className="flex flex-col flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium truncate">
+                                      {truncateString(prompt.name, 30)}
+                                    </span>
+                                    {prompt.agent_type && (
+                                      <Badge 
+                                        variant={getAgentTypeVariant(prompt.agent_type)} 
+                                        className="text-xs"
+                                      >
+                                        {prompt.agent_type}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  {prompt.description && (
+                                    <span className="text-xs text-muted-foreground truncate">
+                                      {truncateString(prompt.description, 40)}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                      {selectedPromptIds.length > 0 && (
+                        <>
+                          <Separator />
+                          <div className="p-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleClearSelection}
+                              className="w-full"
+                            >
+                              <X className="h-4 w-4 mr-2" />
+                              Clear selection
+                            </Button>
                           </div>
+                        </>
+                      )}
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {selectedPrompts.length > 0 && (
+                <div className="space-y-3 mt-5">
+                  <Label className="text-sm font-medium">Selected prompts preview:</Label>
+                  <div className="space-y-3">
+                    {selectedPrompts.map((prompt, index) => (
+                      <div key={prompt.id} className="text-xs text-muted-foreground space-y-2 p-3 rounded-md border">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{prompt.name}</span>
                           {prompt.agent_type && (
                             <Badge 
                               variant={getAgentTypeVariant(prompt.agent_type)} 
-                              className="ml-2 text-xs"
+                              className="text-xs"
                             >
                               {prompt.agent_type}
                             </Badge>
                           )}
                         </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {selectedPrompt && (
-                  <div className="text-xs text-muted-foreground space-y-3 mt-5">
-                    {selectedPrompt.description && (
-                      <p>{selectedPrompt.description}</p>
-                    )}
-                    {selectedPrompt.tags && selectedPrompt.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {selectedPrompt.tags.map((tag, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
+                        {prompt.description && (
+                          <p>{prompt.description}</p>
+                        )}
+                        {prompt.tags && prompt.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {prompt.tags.map((tag, tagIndex) => (
+                              <Badge key={tagIndex} variant="outline" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    )}
+                    ))}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -199,7 +290,7 @@ function DeepSearchQueueDialog({
             </Button>
             <Button 
               onClick={handleSubmit} 
-              disabled={!selectedPromptId || !prospect_ids.length || isAddingToQueue || prompts.length === 0}
+              disabled={!selectedPromptIds.length || !prospect_ids.length || isAddingToQueue || prompts.length === 0}
             >
               {isAddingToQueue && <Spinner size="sm" className="mr-2" />}
               Add to Queue

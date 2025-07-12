@@ -73,32 +73,32 @@ export const DeepSearchQueueProvider = ({ children }) => {
 
   // Core mutation wrappers
   const addProspects = React.useCallback(
-    (prospect_ids, prompt_id) => {
+    (prospect_ids, prompt_ids) => {
       return addToQueueMutation.mutate({
         user_id,
         prospect_ids: Array.isArray(prospect_ids) ? prospect_ids : [prospect_ids],
-        prompt_id
+        prompt_ids: Array.isArray(prompt_ids) ? prompt_ids : [prompt_ids]
       })
     },
     [addToQueueMutation, user_id]
   )
 
   const updateProspects = React.useCallback(
-    (prospect_ids, updated_prompt_id) => {
+    (prospect_ids, updated_prompt_ids) => {
       return updateQueueMutation.mutate({
         user_id,
         prospect_ids: Array.isArray(prospect_ids) ? prospect_ids : [prospect_ids],
-        updated_prompt_id
+        updated_prompt_ids: Array.isArray(updated_prompt_ids) ? updated_prompt_ids : [updated_prompt_ids]
       })
     },
     [updateQueueMutation, user_id]
   )
 
   const deleteProspects = React.useCallback(
-    (prospect_prompt_ids) => {
+    (queue_item_ids) => {
       return deleteQueueMutation.mutate({
         user_id,
-        prospect_prompt_ids: Array.isArray(prospect_prompt_ids) ? prospect_prompt_ids : [prospect_prompt_ids]
+        queue_item_ids: Array.isArray(queue_item_ids) ? queue_item_ids : [queue_item_ids]
       })
     },
     [deleteQueueMutation, user_id]
@@ -106,10 +106,10 @@ export const DeepSearchQueueProvider = ({ children }) => {
 
   // Resolve prospects wrapper
   const resolveProspects = React.useCallback(
-    (prospect_prompt_ids) => {
+    (queue_ids) => {
       return resolveQueueMutation.mutate({
         user_id,
-        prospect_prompt_ids: Array.isArray(prospect_prompt_ids) ? prospect_prompt_ids : [prospect_prompt_ids]
+        queue_item_ids: Array.isArray(queue_ids) ? queue_ids : [queue_ids]
       })
     },
     [resolveQueueMutation, user_id]

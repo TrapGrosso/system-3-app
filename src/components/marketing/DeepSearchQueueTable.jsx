@@ -10,6 +10,7 @@ import { ChevronDownIcon, MoreHorizontalIcon } from "lucide-react"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Badge } from '@/components/ui/badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +18,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -96,27 +102,65 @@ export default function DeepSearchQueueTable({
       ),
     },
     {
-      accessorKey: "prompt.name",
-      header: "Prompt",
-      cell: ({ row }) => (
-        <div className="max-w-xs">
-          <div className="truncate font-medium" title={row.original.prompt?.name}>
-            {row.original.prompt?.name || '—'}
+      id: "prompts",
+      header: "Prompts",
+      cell: ({ row }) => {
+        const prompts = row.original.prompts || []
+        if (prompts.length === 0) return <span className="text-muted-foreground">—</span>
+        
+        const displayPrompts = prompts.slice(0, 3)
+        const remainingCount = prompts.length - 3
+        
+        return (
+          <div className="flex flex-wrap gap-1 max-w-xs">
+            {displayPrompts.map((prompt) => (
+              <Tooltip key={prompt.id}>
+                <TooltipTrigger asChild>
+                  <Badge variant="secondary" className="text-xs cursor-help">
+                    {prompt.name}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="space-y-1">
+                    <p className="font-medium">{prompt.name}</p>
+                    {prompt.description && <p className="text-xs">{prompt.description}</p>}
+                    {prompt.agent_type && <p className="text-xs opacity-75">Type: {prompt.agent_type}</p>}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+            {remainingCount > 0 && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Badge variant="outline" className="text-xs cursor-pointer">
+                    +{remainingCount}
+                  </Badge>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <div className="space-y-2">
+                    <h4 className="font-medium">All Prompts ({prompts.length})</h4>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {prompts.map((prompt) => (
+                        <div key={prompt.id} className="p-2 rounded border">
+                          <div className="font-medium text-sm">{prompt.name}</div>
+                          {prompt.description && (
+                            <div className="text-xs text-muted-foreground mt-1">{prompt.description}</div>
+                          )}
+                          {prompt.agent_type && (
+                            <Badge variant="outline" className="text-xs mt-1">
+                              {prompt.agent_type}
+                            </Badge>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            )}
           </div>
-          {row.original.prompt?.description && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="flex text-xs text-muted-foreground truncate cursor-help max-w-fit">
-                  {row.original.prompt?.description}
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="max-w-xs">{row.original.prompt?.description}</p>
-              </TooltipContent>
-            </Tooltip>
-          )}
-        </div>
-      ),
+        )
+      },
     },
     {
       accessorKey: "groups",
@@ -158,10 +202,7 @@ export default function DeepSearchQueueTable({
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation()
-                onChangePrompt([{
-                  prospect_id: row.original.prospect_id,
-                  prompt_id: row.original.prompt_id
-                }], row.original.prompt_id)
+                onChangePrompt([row.original.id])
               }}
             >
               Change Prompt
@@ -170,10 +211,7 @@ export default function DeepSearchQueueTable({
               disabled={isResolving}
               onClick={(e) => {
                 e.stopPropagation()
-                onResolve([{
-                  prospect_id: row.original.prospect_id,
-                  prompt_id: row.original.prompt_id
-                }])
+                onResolve([row.original.id])
               }}
             >
               {isResolving ? "Resolving..." : "Resolve"}
@@ -183,10 +221,7 @@ export default function DeepSearchQueueTable({
               className="text-destructive"
               onClick={(e) => {
                 e.stopPropagation()
-                onRemove([{
-                  prospect_id: row.original.prospect_id,
-                  prompt_id: row.original.prompt_id
-                }])
+                onRemove([row.original.id])
               }}
             >
               Remove from Queue
@@ -206,7 +241,7 @@ export default function DeepSearchQueueTable({
       pagination,
       rowSelection,
     },
-    getRowId: (row) => `${row.prospect_id}-${row.prompt_id}`,
+    getRowId: (row) => row.id,
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
@@ -218,20 +253,17 @@ export default function DeepSearchQueueTable({
   const selectedCount = selectedRows.length
 
   const handleBulkAction = (action) => {
-    const selectedItems = selectedRows.map(row => ({
-      prospect_id: row.original.prospect_id,
-      prompt_id: row.original.prompt_id
-    }))
+    const selectedQueueItemIds = selectedRows.map(row => row.original.id)
     
     switch (action) {
       case 'changePrompt':
-        onChangePrompt(selectedItems)
+        onChangePrompt(selectedQueueItemIds)
         break
       case 'remove':
-        onRemove(selectedItems)
+        onRemove(selectedQueueItemIds)
         break
       case 'resolve':
-        onResolve(selectedItems)
+        onResolve(selectedQueueItemIds)
         break
       default:
         break
@@ -397,7 +429,7 @@ export default function DeepSearchQueueTable({
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className="cursor-pointer"
-                  onClick={() => onRowClick(row.original.prospect_id)}
+                  onClick={() => onRowClick(row.original.prospect?.linkedin_id || row.original.prospect_id)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

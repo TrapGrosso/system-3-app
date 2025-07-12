@@ -41,7 +41,7 @@ export const useResolveDeepSearchQueue = (options = {}) => {
  * Example Request Payload:
  * {
  *   "user_id": "a555dbda-15b9-41fb-96ed-1feb643f22e7",
- *   "queue_ids": [
+ *   "queue_item_ids": [
  *     "queue-uuid-1",
  *     "queue-uuid-2"
  *   ]
