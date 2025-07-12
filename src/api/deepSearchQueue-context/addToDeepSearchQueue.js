@@ -33,13 +33,15 @@ export const useAddToDeepSearchQueue = (options = {}) => {
   })
 }
 
+
 /**
- * Adds records to the deep_search_queue table with validation and duplicate handling.
+ * Adds records to the deep_search_queue table and links them to prompts via deep_search_prompt_link.
+ * Uses the new table structure where prompts are linked via a separate join table.
  * 
  * Example Payload:
  * {
  *   "user_id": "a555dbda-15b9-41fb-96ed-1feb643f22e7",
- *   "prompt_id": "b666eceb-26ca-52gc-a7fe-2gfc754g33f8",
+ *   "prompt_ids": ["b666eceb-26ca-52gc-a7fe-2gfc754g33f8", "c777fdfc-37db-63hd-b8gf-3hgd865h44g9"],
  *   "prospect_ids": ["john-doe-123", "jane-smith-456"]
  * }
  * 
@@ -49,23 +51,27 @@ export const useAddToDeepSearchQueue = (options = {}) => {
  *   "data": {
  *     "queue_items": [
  *       {
+ *         "id": "d888geec-48ec-74ie-c9hg-4ihe976i55h0",
  *         "user_id": "a555dbda-15b9-41fb-96ed-1feb643f22e7",
  *         "prospect_id": "john-doe-123",
- *         "prompt_id": "b666eceb-26ca-52gc-a7fe-2gfc754g33f8",
- *         "created_at": "2025-07-08T07:41:15.123456"
+ *         "created_at": "2025-07-08T07:41:15.123456",
+ *         "prompt_ids": ["b666eceb-26ca-52gc-a7fe-2gfc754g33f8", "c777fdfc-37db-63hd-b8gf-3hgd865h44g9"]
  *       },
  *       {
+ *         "id": "e999hffd-59fd-85jf-d0ih-5jif087j66i1",
  *         "user_id": "a555dbda-15b9-41fb-96ed-1feb643f22e7",
  *         "prospect_id": "jane-smith-456",
- *         "prompt_id": "b666eceb-26ca-52gc-a7fe-2gfc754g33f8",
- *         "created_at": "2025-07-08T07:41:15.234567"
+ *         "created_at": "2025-07-08T07:41:15.234567",
+ *         "prompt_ids": ["b666eceb-26ca-52gc-a7fe-2gfc754g33f8", "c777fdfc-37db-63hd-b8gf-3hgd865h44g9"]
  *       }
  *     ]
  *   },
- *   "message": "2 records added to deep_search_queue",
+ *   "message": "2 queue records processed, 4 prompt links created",
  *   "timestamp": "2025-07-08T07:41:15.345Z"
  * }
  * 
  * Example Error Response (400):
  * {"error": "Missing or invalid user_id. Must be a valid UUID string"}
+ * {"error": "prompt_ids cannot be empty"}
+ * {"error": "All prompt_ids must be UUID strings"}
  */

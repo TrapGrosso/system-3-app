@@ -33,25 +33,27 @@ export const useUpdateDeepSearchQueueItems = (options = {}) => {
   })
 }
 
+
 /**
- * Updates prompt_id for deep search queue items, skipping duplicates and returning both updated and skipped prospect IDs.
+ * Replaces all prompt links for specified deep search queue items. This function performs a complete 
+ * replacement - it deletes all existing prompt links for the queue items and creates new ones.
  * 
  * Example Payload:
  * {
  *   "user_id": "a555dbda-15b9-41fb-96ed-1feb643f22e7",
  *   "prospect_ids": ["john-doe-123", "jane-smith-456", "bob-wilson-789"],
- *   "updated_prompt_id": "5d3e2f36-8db3-49c2-93e6-96bf9f632d66"
+ *   "updated_prompt_ids": ["5d3e2f36-8db3-49c2-93e6-96bf9f632d66", "7f4g3h47-9ec4-50d3-a4f7-a7cg0g743e77"]
  * }
  * 
  * Example Success Response (200):
  * {
  *   "success": true,
  *   "data": {
- *     "updated_prospect_ids": ["john-doe-123", "bob-wilson-789"],
- *     "skipped_prospect_ids": ["jane-smith-456"]
+ *     "processed_prospect_ids": ["john-doe-123", "jane-smith-456"],
+ *     "skipped_prospect_ids": ["bob-wilson-789"]
  *   },
- *   "message": "Queue items processed successfully",
- *   "timestamp": "2025-07-08T19:30:45.123Z"
+ *   "message": "Prompts replaced successfully",
+ *   "timestamp": "2025-07-12T14:10:15.123Z"
  * }
  * 
  * Example Error Response (404):
@@ -61,5 +63,8 @@ export const useUpdateDeepSearchQueueItems = (options = {}) => {
  * {"error": "Missing or invalid user_id. Must be a valid UUID string"}
  * 
  * Example Error Response (400):
- * {"error": "prospect_ids cannot exceed 500 items"}
+ * {"error": "updated_prompt_ids cannot exceed 50 items"}
+ * 
+ * Example Error Response (400):
+ * {"error": "Operation would create 12000 rows, which exceeds the limit of 10,000"}
  */

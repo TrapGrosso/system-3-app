@@ -33,21 +33,23 @@ export const useDeleteDeepSearchQueueItems = (options = {}) => {
   })
 }
 
+
 /**
- * Deletes multiple deep search queue items after validating ownership and returns deletion confirmation.
+ * Deletes multiple deep search queue items by their IDs after validating ownership and returns deletion confirmation.
+ * 
+ * Table Structure (deep_search_queue):
+ * - id: uuid (primary key)
+ * - prospect_id: text (references prospect.linkedin_id)
+ * - user_id: uuid (references users.id)
+ * - created_at: timestamp
  * 
  * Example Payload:
  * {
  *   "user_id": "a555dbda-15b9-41fb-96ed-1feb643f22e7",
- *   "prospect_prompt_ids": [
- *     {
- *       "prospect_id": "john-doe-linkedin",
- *       "prompt_id": "5d3e2f36-8db3-49c2-93e6-96bf9f632d66"
- *     },
- *     {
- *       "prospect_id": "jane-smith-linkedin", 
- *       "prompt_id": "0c52c1f7-1b77-4d6f-9e0e-3e75baff7461"
- *     }
+ *   "queue_item_ids": [
+ *     "5d3e2f36-8db3-49c2-93e6-96bf9f632d66",
+ *     "0c52c1f7-1b77-4d6f-9e0e-3e75baff7461",
+ *     "8a1b2c3d-4e5f-6789-abcd-ef0123456789"
  *   ]
  * }
  * 
@@ -57,19 +59,14 @@ export const useDeleteDeepSearchQueueItems = (options = {}) => {
  *   "data": {
  *     "deleted": true,
  *     "items": [
- *       {
- *         "prospect_id": "john-doe-linkedin",
- *         "prompt_id": "5d3e2f36-8db3-49c2-93e6-96bf9f632d66"
- *       },
- *       {
- *         "prospect_id": "jane-smith-linkedin",
- *         "prompt_id": "0c52c1f7-1b77-4d6f-9e0e-3e75baff7461"
- *       }
+ *       "5d3e2f36-8db3-49c2-93e6-96bf9f632d66",
+ *       "0c52c1f7-1b77-4d6f-9e0e-3e75baff7461",
+ *       "8a1b2c3d-4e5f-6789-abcd-ef0123456789"
  *     ],
- *     "count": 2
+ *     "count": 3
  *   },
- *   "message": "2 queue item(s) deleted successfully",
- *   "timestamp": "2025-07-08T19:39:45.123Z"
+ *   "message": "3 queue item(s) deleted successfully",
+ *   "timestamp": "2025-01-12T15:27:45.123Z"
  * }
  * 
  * Example Error Response (404):
@@ -77,4 +74,7 @@ export const useDeleteDeepSearchQueueItems = (options = {}) => {
  * 
  * Example Error Response (400):
  * {"error": "Missing or invalid user_id. Must be a valid UUID string"}
+ * 
+ * Example Error Response (400):
+ * {"error": "Missing or invalid queue_item_ids. Must be an array of UUID strings"}
  */
