@@ -4,7 +4,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ChevronDownIcon, MoreHorizontalIcon } from "lucide-react"
+import { ChevronDownIcon, MoreHorizontalIcon, NotebookIcon, CalendarIcon } from "lucide-react"
 
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
@@ -17,6 +17,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -186,22 +191,105 @@ export default function ProspectsTable({
       ),
     },
     {
-      accessorKey: "note_count",
+      accessorKey: "notes",
       header: "Notes",
-      cell: ({ row }) => (
-        <div className="text-right">
-          {row.original.note_count || 0}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const notes = row.original.notes || []
+        const noteCount = row.original.note_count || notes.length || 0
+        
+        if (noteCount === 0) {
+          return <div className="text-center text-muted-foreground">—</div>
+        }
+
+        return (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto p-1 text-blue-600 hover:text-blue-800"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <NotebookIcon className="h-4 w-4 mr-1" />
+                {noteCount}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80" align="start">
+              <div className="space-y-2">
+                <h4 className="font-medium text-sm">Notes</h4>
+                {notes.length > 0 ? (
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {notes.map((note) => (
+                      <div key={note.id} className="p-2 border rounded-md text-sm">
+                        <p className="text-foreground">{note.body}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No notes available</p>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+        )
+      },
     },
     {
-      accessorKey: "task_count",
+      accessorKey: "tasks",
       header: "Tasks",
-      cell: ({ row }) => (
-        <div className="text-right">
-          {row.original.task_count || 0}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const tasks = row.original.tasks || []
+        const taskCount = row.original.task_count || tasks.length || 0
+        
+        if (taskCount === 0) {
+          return <div className="text-center text-muted-foreground">—</div>
+        }
+
+        return (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-auto p-1 text-green-600 hover:text-green-800"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <CalendarIcon className="h-4 w-4 mr-1" />
+                {taskCount}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80" align="start">
+              <div className="space-y-2">
+                <h4 className="font-medium text-sm">Tasks</h4>
+                {tasks.length > 0 ? (
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {tasks.map((task) => (
+                      <div key={task.id} className="p-2 border rounded-md text-sm">
+                        <div className="flex items-center justify-between mb-1">
+                          <h5 className="font-medium">{task.title}</h5>
+                          <Badge variant={task.status === 'open' ? 'default' : 'secondary'}>
+                            {task.status}
+                          </Badge>
+                        </div>
+                        {task.due_date && (
+                          <p className="text-xs text-muted-foreground mb-1">
+                            Due: {new Date(task.due_date).toLocaleDateString()}
+                          </p>
+                        )}
+                        {task.description && (
+                          <p className="text-foreground">{task.description}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No tasks available</p>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+        )
+      },
     },
     {
       id: "actions",

@@ -27,6 +27,7 @@ import {
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useGroups } from '@/contexts/GroupsContext'
 import { useFetchCampaigns } from '@/api/campaign-context/fetchCampaigns'
+import { useGetAllPrompts } from '@/api/prompt-context/getAllPrompts'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProspects } from '@/contexts/ProspectsContext'
 
@@ -159,12 +160,24 @@ export default function FilterBar() {
   const { user } = useAuth()
   const { groups = [] } = useGroups()
   const { data: campaigns = [] } = useFetchCampaigns(user?.id)
+  const { data: prompts = [] } = useGetAllPrompts(user?.id)
   const { query, setQuery, resetFilters, isLoading } = useProspects()
 
   // Local state for search input and selected fields
   const [searchInput, setSearchInput] = React.useState(query.q || '')
   const [selectedFields, setSelectedFields] = React.useState(
     query.search_fields ? query.search_fields.split(',') : []
+  )
+
+  // Local state for multi-select CSV filters
+  const [selectedGroupNames, setSelectedGroupNames] = React.useState(
+    query.group_names ? query.group_names.split(',').filter(Boolean) : []
+  )
+  const [selectedCampaignNames, setSelectedCampaignNames] = React.useState(
+    query.campaign_names ? query.campaign_names.split(',').filter(Boolean) : []
+  )
+  const [selectedPromptNames, setSelectedPromptNames] = React.useState(
+    query.prompt_names ? query.prompt_names.split(',').filter(Boolean) : []
   )
 
   // Sync local search input with external filter changes
@@ -182,6 +195,28 @@ export default function FilterBar() {
     }
   }, [query.search_fields])
 
+  // Sync multi-select arrays with external filter changes
+  React.useEffect(() => {
+    const groupNamesFromFilter = query.group_names ? query.group_names.split(',').filter(Boolean) : []
+    if (JSON.stringify(groupNamesFromFilter) !== JSON.stringify(selectedGroupNames)) {
+      setSelectedGroupNames(groupNamesFromFilter)
+    }
+  }, [query.group_names])
+
+  React.useEffect(() => {
+    const campaignNamesFromFilter = query.campaign_names ? query.campaign_names.split(',').filter(Boolean) : []
+    if (JSON.stringify(campaignNamesFromFilter) !== JSON.stringify(selectedCampaignNames)) {
+      setSelectedCampaignNames(campaignNamesFromFilter)
+    }
+  }, [query.campaign_names])
+
+  React.useEffect(() => {
+    const promptNamesFromFilter = query.prompt_names ? query.prompt_names.split(',').filter(Boolean) : []
+    if (JSON.stringify(promptNamesFromFilter) !== JSON.stringify(selectedPromptNames)) {
+      setSelectedPromptNames(promptNamesFromFilter)
+    }
+  }, [query.prompt_names])
+
   const handleFilterChange = (key, value) => {
     setQuery({ [key]: value })
   }
@@ -190,6 +225,9 @@ export default function FilterBar() {
     setQuery({
       q: searchInput.trim(),
       search_fields: selectedFields.length ? selectedFields.join(',') : '',
+      group_names: selectedGroupNames.length ? selectedGroupNames.join(',') : '',
+      campaign_names: selectedCampaignNames.length ? selectedCampaignNames.join(',') : '',
+      prompt_names: selectedPromptNames.length ? selectedPromptNames.join(',') : '',
       page: 1 // Reset to first page when applying filters
     })
   }
@@ -197,6 +235,9 @@ export default function FilterBar() {
   const handleReset = () => {
     setSearchInput('')
     setSelectedFields([])
+    setSelectedGroupNames([])
+    setSelectedCampaignNames([])
+    setSelectedPromptNames([])
     resetFilters()
   }
 
@@ -338,27 +379,6 @@ export default function FilterBar() {
                   </Select>
                 </div>
 
-                {/* Specific Group */}
-                <div className="space-y-2">
-                  <Label className="text-[13px] font-medium text-muted-foreground">Group Name</Label>
-                  <Select
-                    value={query.group_name || ''}
-                    onValueChange={(value) => handleFilterChange('group_name', value)}
-                    disabled={!groups.length}
-                  >
-                    <SelectTrigger className="h-9 min-w-[180px]">
-                      <SelectValue placeholder={groups.length ? "All Groups" : "No groups available"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {groupOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 {/* Campaign Membership */}
                 <div className="space-y-2">
                   <Label className="text-[13px] font-medium text-muted-foreground">In Campaign</Label>
@@ -371,27 +391,6 @@ export default function FilterBar() {
                     </SelectTrigger>
                     <SelectContent>
                       {BOOLEAN_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Specific Campaign */}
-                <div className="space-y-2">
-                  <Label className="text-[13px] font-medium text-muted-foreground">Campaign Name</Label>
-                  <Select
-                    value={query.campaign_name || ''}
-                    onValueChange={(value) => handleFilterChange('campaign_name', value)}
-                    disabled={!campaigns.length}
-                  >
-                    <SelectTrigger className="h-9 min-w-[180px]">
-                      <SelectValue placeholder={campaigns.length ? "All Campaigns" : "No campaigns available"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {campaignOptions.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                           {option.label}
                         </SelectItem>
@@ -438,6 +437,48 @@ export default function FilterBar() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+
+              {/* Multi-select filters section */}
+              <div className="space-y-4">
+                {/* Groups Multi-select */}
+                <div className="space-y-2">
+                  <Label className="text-[13px] font-medium text-muted-foreground">
+                    Group Names (select multiple)
+                  </Label>
+                  <MultiSelectChipPicker
+                    options={groups.map(group => ({ value: group.name, label: group.name }))}
+                    value={selectedGroupNames}
+                    onValueChange={setSelectedGroupNames}
+                    placeholder={groups.length ? "Choose groups..." : "No groups available"}
+                  />
+                </div>
+
+                {/* Campaigns Multi-select */}
+                <div className="space-y-2">
+                  <Label className="text-[13px] font-medium text-muted-foreground">
+                    Campaign Names (select multiple)
+                  </Label>
+                  <MultiSelectChipPicker
+                    options={campaigns.map(campaign => ({ value: campaign.name, label: campaign.name }))}
+                    value={selectedCampaignNames}
+                    onValueChange={setSelectedCampaignNames}
+                    placeholder={campaigns.length ? "Choose campaigns..." : "No campaigns available"}
+                  />
+                </div>
+
+                {/* Prompts Multi-select */}
+                <div className="space-y-2">
+                  <Label className="text-[13px] font-medium text-muted-foreground">
+                    Prompt Names (select multiple)
+                  </Label>
+                  <MultiSelectChipPicker
+                    options={prompts.map(prompt => ({ value: prompt.name, label: prompt.name }))}
+                    value={selectedPromptNames}
+                    onValueChange={setSelectedPromptNames}
+                    placeholder={prompts.length ? "Choose prompts..." : "No prompts available"}
+                  />
                 </div>
               </div>
             </div>
