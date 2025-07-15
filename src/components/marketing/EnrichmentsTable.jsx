@@ -35,6 +35,11 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from '@/components/ui/pagination'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { Spinner } from '@/components/ui/spinner'
 import { useEnrichments } from '@/contexts/EnrichmentsContext'
 
@@ -123,9 +128,27 @@ export default function EnrichmentsTable() {
         
         return (
           <div className="flex items-center gap-1">
-            <Badge variant="outline" title="Prospect / Company enrichments">
-              {prospectCount} / {companyCount}
-            </Badge>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="link" className="h-auto p-0 font-normal" onClick={(e) => e.stopPropagation()}>
+                  <Badge variant="outline">
+                    {prospectCount} / {companyCount}
+                  </Badge>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-48" onClick={(e) => e.stopPropagation()}>
+                <div className="space-y-2">
+                  <div className="font-medium text-sm">Enrichment Counts</div>
+                  <div className="space-y-1 text-sm">
+                    <div>Prospect: {prospectCount}</div>
+                    <div>Company: {companyCount}</div>
+                    <div className="pt-1 border-t text-xs text-muted-foreground">
+                      Total: {prospectCount + companyCount}
+                    </div>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         )
       },
@@ -159,6 +182,56 @@ export default function EnrichmentsTable() {
       enableSorting: false,
     },
     {
+      accessorKey: "variables",
+      header: "Variables",
+      cell: ({ row }) => {
+        const variables = row.original.variables || []
+        
+        if (variables.length === 0) {
+          return <div className="text-muted-foreground">—</div>
+        }
+        
+        return (
+          <div className="flex items-center gap-1">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="link" className="h-auto p-0 font-normal" onClick={(e) => e.stopPropagation()}>
+                  <Badge variant="outline">
+                    {variables.length}
+                  </Badge>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64" onClick={(e) => e.stopPropagation()}>
+                <div className="space-y-2">
+                  <div className="font-medium text-sm">Variables ({variables.length})</div>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {variables.map((variable, index) => (
+                      <div key={variable.id || index} className="text-sm">
+                        <div className="font-medium">{variable.name}</div>
+                        {variable.value && (
+                          <div className="text-muted-foreground truncate">{variable.value}</div>
+                        )}
+                        {variable.tags && variable.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {variable.tags.map((tag, tagIndex) => (
+                              <Badge key={tagIndex} variant="secondary" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+        )
+      },
+      enableSorting: false,
+    },
+    {
       accessorKey: "prompt_names",
       header: "Prompts",
       cell: ({ row }) => {
@@ -178,10 +251,28 @@ export default function EnrichmentsTable() {
         }
         
         return (
-          <div className="max-w-xs">
-            <div className="truncate" title={uniquePromptNames.join(', ')}>
-              {uniquePromptNames.join(', ')}
-            </div>
+          <div className="flex items-center gap-1">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="link" className="h-auto p-0 font-normal" onClick={(e) => e.stopPropagation()}>
+                  <Badge variant="outline">
+                    {uniquePromptNames.length}
+                  </Badge>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56" onClick={(e) => e.stopPropagation()}>
+                <div className="space-y-2">
+                  <div className="font-medium text-sm">Prompts ({uniquePromptNames.length})</div>
+                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                    {uniquePromptNames.map((promptName, index) => (
+                      <div key={index} className="text-sm">
+                        {promptName}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         )
       },

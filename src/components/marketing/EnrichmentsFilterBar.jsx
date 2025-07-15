@@ -34,11 +34,6 @@ const TYPE_OPTIONS = [
   { value: 'deep_search', label: 'Deep Search' },
 ]
 
-const HAS_COMPANY_OPTIONS = [
-  { value: null, label: 'All' },
-  { value: 'true', label: 'Yes' },
-  { value: 'false', label: 'No' },
-]
 
 // Multi-select chip picker component using Command + Popover
 function MultiSelectChipPicker({ 
@@ -142,7 +137,7 @@ export default function EnrichmentsFilterBar() {
   const [selectedPromptNames, setSelectedPromptNames] = React.useState(
     query.prompt_name ? query.prompt_name.split(',').filter(Boolean) : []
   )
-  const [hasCompany, setHasCompany] = React.useState(query.has_company || '')
+  const [variableName, setVariableName] = React.useState(query.variable_name || '')
 
   // Sync local state with external filter changes
   React.useEffect(() => {
@@ -160,16 +155,16 @@ export default function EnrichmentsFilterBar() {
   }, [query.prompt_name])
 
   React.useEffect(() => {
-    if (query.has_company !== hasCompany) {
-      setHasCompany(query.has_company || '')
+    if (query.variable_name !== variableName) {
+      setVariableName(query.variable_name || '')
     }
-  }, [query.has_company])
+  }, [query.variable_name])
 
   const handleApplyFilters = () => {
     setQuery({
       type: selectedTypes.length ? selectedTypes.join(',') : '',
       prompt_name: selectedPromptNames.length ? selectedPromptNames.join(',') : '',
-      has_company: hasCompany,
+      variable_name: variableName,
       page: 1 // Reset to first page when applying filters
     })
   }
@@ -177,7 +172,7 @@ export default function EnrichmentsFilterBar() {
   const handleReset = () => {
     setSelectedTypes([])
     setSelectedPromptNames([])
-    setHasCompany('')
+    setVariableName('')
     resetFilters()
   }
 
@@ -227,31 +222,20 @@ export default function EnrichmentsFilterBar() {
                 </Button>
               </div>
 
-              {/* Filter Options - Responsive Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Has Company Filter */}
-                <div className="space-y-2">
-                  <Label className="text-[13px] font-medium text-muted-foreground">Has Company</Label>
-                  <Select
-                    value={hasCompany}
-                    onValueChange={setHasCompany}
-                  >
-                    <SelectTrigger className="h-9 min-w-[180px]">
-                      <SelectValue placeholder="All" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {HAS_COMPANY_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Multi-select filters section */}
+              {/* Filter Options */}
               <div className="space-y-4">
+                {/* Variable Name Filter */}
+                <div className="space-y-2">
+                  <Label className="text-[13px] font-medium text-muted-foreground">Variable Name</Label>
+                  <Input
+                    placeholder="Enter variable names (comma-separated)"
+                    value={variableName}
+                    onChange={(e) => setVariableName(e.target.value)}
+                    className="h-9"
+                  />
+                </div>
+
+                {/* Multi-select filters section */}
                 {/* Types Multi-select */}
                 <div className="space-y-2">
                   <Label className="text-[13px] font-medium text-muted-foreground">

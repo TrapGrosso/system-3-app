@@ -10,7 +10,7 @@ const getProspectEnrichments = async (params) => {
     }
   })
   
-  const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getProspectEnrichments?${searchParams.toString()}`, {
+  const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getProspectsEnrichments?${searchParams.toString()}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -47,9 +47,9 @@ export const useGetProspectEnrichments = ({ userId, ...query }) => {
 
 
 /**
- * Fetches all enrichments for a user and maps them back to prospects and companies.
- * Returns an array where each element contains prospect + company + related enrichments.
- * Each enrichment now includes its associated prompt information if available.
+ * Fetches prospect-centered enrichment bundles for a user, including all related data.
+ * Returns only prospects with their enrichments, companies, and variables - never standalone companies.
+ * Enrichments exclude raw_data to keep responses lightweight.
  * 
  * Query Parameters:
  * - user_id (required): UUID of the user
@@ -57,29 +57,26 @@ export const useGetProspectEnrichments = ({ userId, ...query }) => {
  * - page_size (optional): Results per page, default 10, max 100
  * - type (optional): Comma-separated list of enrichment types to filter by
  * - prompt_name (optional): Comma-separated list of prompt names to filter enrichments by
- * - has_company (optional): Boolean filter - true returns only bundles with companies, false returns only bundles without companies
+ * - variable_name (optional): Comma-separated list of variable names to filter prospects by
  * - sort_by (optional): Column to sort by (created_at, first_name, last_name, company_name)
  * - sort_dir (optional): Sort direction, 'asc' or 'desc', default 'asc'
  * 
  * Example Requests:
  * 
  * Basic request:
- * GET /getEnrichments?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f
+ * GET /getProspectsEnrichments?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f
  * 
  * Filtered by enrichment type:
- * GET /getEnrichments?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&type=bd_scrape,deep_search
+ * GET /getProspectsEnrichments?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&type=bd_scrape,deep_search
  * 
  * Filtered by prompt names:
- * GET /getEnrichments?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&prompt_name=linkedin_profile,company_research
+ * GET /getProspectsEnrichments?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&prompt_name=linkedin_profile,company_research
  * 
- * Only bundles with companies:
- * GET /getEnrichments?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&has_company=true
- * 
- * Only bundles without companies:
- * GET /getEnrichments?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&has_company=false
+ * Filtered by variable names:
+ * GET /getProspectsEnrichments?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&variable_name=industry,role
  * 
  * Combined filters with pagination and sorting:
- * GET /getEnrichments?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&type=deep_search&prompt_name=company_research&has_company=true&page=2&page_size=20&sort_by=company_name&sort_dir=desc
+ * GET /getProspectsEnrichments?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&type=deep_search&prompt_name=company_research&variable_name=industry&page=2&page_size=20&sort_by=company_name&sort_dir=desc
  * 
  * Example Success Response (200):
  * {
@@ -110,8 +107,7 @@ export const useGetProspectEnrichments = ({ userId, ...query }) => {
  *           "entity_kind": "prospect",
  *           "type": "bd_scrape",
  *           "source": "linkedin",
- *           "raw_data": { "profile_data": "..." },
- *           "summary": null,
+ *           "summary": { "key_points": "..." },
  *           "created_at": "2025-07-15T10:30:00.000Z",
  *           "prompt": {
  *             "id": "prompt-uuid-1",
@@ -126,43 +122,23 @@ export const useGetProspectEnrichments = ({ userId, ...query }) => {
  *           "entity_kind": "company",
  *           "type": "bd_scrape",
  *           "source": "linkedin",
- *           "raw_data": { "company_data": "..." },
  *           "summary": null,
  *           "created_at": "2025-07-15T10:25:00.000Z",
  *           "prompt": null
  *         }
- *       ]
- *     },
- *     {
- *       "prospect": null,
- *       "company": {
- *         "linkedin_id": "another-company",
- *         "name": "Another Company",
- *         "website": "https://another.com",
- *         "industry": "Finance",
- *         "size": "100-500",
- *         "location": "New York, NY"
- *       },
- *       "prospect_enrichments": [],
- *       "company_enrichments": [
+ *       ],
+ *       "variables": [
  *         {
- *           "id": "enrichment-uuid-3",
- *           "entity": "another-company",
- *           "entity_kind": "company",
- *           "type": "deep_search",
- *           "source": "web_scraping",
- *           "raw_data": { "research_data": "..." },
- *           "summary": { "key_insights": "..." },
- *           "created_at": "2025-07-15T09:15:00.000Z",
- *           "prompt": {
- *             "id": "prompt-uuid-2",
- *             "name": "company_research"
- *           }
+ *           "id": "variable-uuid-1",
+ *           "name": "industry",
+ *           "value": "Technology",
+ *           "tags": ["tech", "software"],
+ *           "created_at": "2025-07-15T10:20:00.000Z"
  *         }
  *       ]
  *     }
  *   ],
- *   "total": 145,
+ *   "total": 45,
  *   "page": 1,
  *   "page_size": 10
  * }

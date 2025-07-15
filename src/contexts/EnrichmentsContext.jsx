@@ -17,7 +17,7 @@ export const EnrichmentsProvider = ({ children }) => {
     // Filter options
     type: '',
     prompt_name: '',
-    has_company: '',
+    variable_name: '',
   })
 
   // Track if we've already attempted a fallback to prevent infinite loops
@@ -44,7 +44,7 @@ export const EnrichmentsProvider = ({ children }) => {
         ...prev,
         type: '',
         prompt_name: '',
-        has_company: '',
+        variable_name: '',
         page: 1,
       }))
       setDidFallback(true) // Prevent infinite fallback attempts
@@ -94,7 +94,7 @@ export const EnrichmentsProvider = ({ children }) => {
         ...prev,
         type: '',
         prompt_name: '',
-        has_company: '',
+        variable_name: '',
         page: 1, // Reset to first page when clearing filters
       }))
     },
