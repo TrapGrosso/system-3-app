@@ -13,6 +13,8 @@ import { toast } from 'sonner'
 import DeepSearchQueueTable from '@/components/marketing/DeepSearchQueueTable'
 import { PromptSelectDialog } from '@/components/marketing/PromptSelectDialog'
 import { LogTable } from '@/components/add-leads/LogTable'
+import EnrichmentsFilterBar from '@/components/marketing/EnrichmentsFilterBar'
+import EnrichmentsTable from '@/components/marketing/EnrichmentsTable'
 
 export default function Marketing() {
     const { user } = useAuth()
@@ -156,6 +158,19 @@ export default function Marketing() {
                         </Tabs>
                         
                         <Separator />
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Enrichments</CardTitle>
+                        <CardDescription>
+                            View and manage prospect and company enrichments with filtering capabilities
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <EnrichmentsFilterBar />
+                        <EnrichmentsTable />
                     </CardContent>
                 </Card>
 

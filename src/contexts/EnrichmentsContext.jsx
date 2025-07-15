@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useMemo, useEffect } from 'react'
-import { useGetEnrichmentsWithProspects } from '@/api/enrichment/getEnrichmentsWithProspects'
+import { useGetProspectEnrichments } from '@/api/enrichment/getProspectEnrichments'
 import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -24,7 +24,7 @@ export const EnrichmentsProvider = ({ children }) => {
   const [didFallback, setDidFallback] = useState(false)
 
   // Use the enrichments query hook
-  const queryApi = useGetEnrichmentsWithProspects({ userId: user?.id, ...query })
+  const queryApi = useGetProspectEnrichments({ userId: user?.id, ...query })
 
   // Centralized error handling with fallback logic
   useEffect(() => {

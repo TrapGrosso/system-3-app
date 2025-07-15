@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 // Internal fetch function for the actual API call
-const getEnrichmentsWithProspects = async (params) => {
+const getProspectEnrichments = async (params) => {
   // Build query string, omitting undefined/null values
   const searchParams = new URLSearchParams()
   Object.entries(params).forEach(([key, value]) => {
@@ -10,7 +10,7 @@ const getEnrichmentsWithProspects = async (params) => {
     }
   })
   
-  const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getEnrichments?${searchParams.toString()}`, {
+  const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getProspectEnrichments?${searchParams.toString()}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -31,10 +31,10 @@ const getEnrichmentsWithProspects = async (params) => {
 }
 
 // Hook for server-side filtered/sorted/paginated prospects
-export const useGetEnrichmentsWithProspects = ({ userId, ...query }) => {
+export const useGetProspectEnrichments = ({ userId, ...query }) => {
   return useQuery({
-    queryKey: ['prospects', userId, query],
-    queryFn: () => getEnrichmentsWithProspects({ user_id: userId, ...query }),
+    queryKey: ['getProspectEnrichments', userId, query],
+    queryFn: () => getProspectEnrichments({ user_id: userId, ...query }),
     keepPreviousData: true, // Keep old data visible while refetching
     staleTime: 60000, // 60 seconds - prospects data is relatively stable
     cacheTime: 300000, // 5 minutes cache
