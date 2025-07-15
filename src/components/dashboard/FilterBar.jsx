@@ -169,6 +169,13 @@ export default function FilterBar() {
     query.search_fields ? query.search_fields.split(',') : []
   )
 
+  // Local state for single-value selects
+  const [status, setStatus] = React.useState(query.status || '')
+  const [inGroup, setInGroup] = React.useState(query.in_group || '')
+  const [inCampaign, setInCampaign] = React.useState(query.in_campaign || '')
+  const [hasBdScrape, setHasBdScrape] = React.useState(query.has_bd_scrape || '')
+  const [hasDeepSearch, setHasDeepSearch] = React.useState(query.has_deep_search || '')
+
   // Local state for multi-select CSV filters
   const [selectedGroupNames, setSelectedGroupNames] = React.useState(
     query.group_names ? query.group_names.split(',').filter(Boolean) : []
@@ -195,6 +202,37 @@ export default function FilterBar() {
     }
   }, [query.search_fields])
 
+  // Sync single-value selects with external filter changes
+  React.useEffect(() => {
+    if (query.status !== status) {
+      setStatus(query.status || '')
+    }
+  }, [query.status])
+
+  React.useEffect(() => {
+    if (query.in_group !== inGroup) {
+      setInGroup(query.in_group || '')
+    }
+  }, [query.in_group])
+
+  React.useEffect(() => {
+    if (query.in_campaign !== inCampaign) {
+      setInCampaign(query.in_campaign || '')
+    }
+  }, [query.in_campaign])
+
+  React.useEffect(() => {
+    if (query.has_bd_scrape !== hasBdScrape) {
+      setHasBdScrape(query.has_bd_scrape || '')
+    }
+  }, [query.has_bd_scrape])
+
+  React.useEffect(() => {
+    if (query.has_deep_search !== hasDeepSearch) {
+      setHasDeepSearch(query.has_deep_search || '')
+    }
+  }, [query.has_deep_search])
+
   // Sync multi-select arrays with external filter changes
   React.useEffect(() => {
     const groupNamesFromFilter = query.group_names ? query.group_names.split(',').filter(Boolean) : []
@@ -217,10 +255,6 @@ export default function FilterBar() {
     }
   }, [query.prompt_names])
 
-  const handleFilterChange = (key, value) => {
-    setQuery({ [key]: value })
-  }
-
   const handleApplyFilters = () => {
     setQuery({
       q: searchInput.trim(),
@@ -228,6 +262,11 @@ export default function FilterBar() {
       group_names: selectedGroupNames.length ? selectedGroupNames.join(',') : '',
       campaign_names: selectedCampaignNames.length ? selectedCampaignNames.join(',') : '',
       prompt_names: selectedPromptNames.length ? selectedPromptNames.join(',') : '',
+      status,
+      in_group: inGroup,
+      in_campaign: inCampaign,
+      has_bd_scrape: hasBdScrape,
+      has_deep_search: hasDeepSearch,
       page: 1 // Reset to first page when applying filters
     })
   }
@@ -235,6 +274,11 @@ export default function FilterBar() {
   const handleReset = () => {
     setSearchInput('')
     setSelectedFields([])
+    setStatus('')
+    setInGroup('')
+    setInCampaign('')
+    setHasBdScrape('')
+    setHasDeepSearch('')
     setSelectedGroupNames([])
     setSelectedCampaignNames([])
     setSelectedPromptNames([])
@@ -343,8 +387,8 @@ export default function FilterBar() {
                 <div className="space-y-2">
                   <Label className="text-[13px] font-medium text-muted-foreground">Status</Label>
                   <Select
-                    value={query.status || ''}
-                    onValueChange={(value) => handleFilterChange('status', value)}
+                    value={status}
+                    onValueChange={setStatus}
                   >
                     <SelectTrigger className="h-9 min-w-[180px]">
                       <SelectValue placeholder="All Statuses" />
@@ -363,8 +407,8 @@ export default function FilterBar() {
                 <div className="space-y-2">
                   <Label className="text-[13px] font-medium text-muted-foreground">In Group</Label>
                   <Select
-                    value={query.in_group || ''}
-                    onValueChange={(value) => handleFilterChange('in_group', value)}
+                    value={inGroup}
+                    onValueChange={setInGroup}
                   >
                     <SelectTrigger className="h-9 min-w-[180px]">
                       <SelectValue placeholder="All" />
@@ -383,8 +427,8 @@ export default function FilterBar() {
                 <div className="space-y-2">
                   <Label className="text-[13px] font-medium text-muted-foreground">In Campaign</Label>
                   <Select
-                    value={query.in_campaign || ''}
-                    onValueChange={(value) => handleFilterChange('in_campaign', value)}
+                    value={inCampaign}
+                    onValueChange={setInCampaign}
                   >
                     <SelectTrigger className="h-9 min-w-[180px]">
                       <SelectValue placeholder="All" />
@@ -403,8 +447,8 @@ export default function FilterBar() {
                 <div className="space-y-2">
                   <Label className="text-[13px] font-medium text-muted-foreground">BD Enrichment</Label>
                   <Select
-                    value={query.has_bd_scrape || ''}
-                    onValueChange={(value) => handleFilterChange('has_bd_scrape', value)}
+                    value={hasBdScrape}
+                    onValueChange={setHasBdScrape}
                   >
                     <SelectTrigger className="h-9 min-w-[180px]">
                       <SelectValue placeholder="All" />
@@ -423,8 +467,8 @@ export default function FilterBar() {
                 <div className="space-y-2">
                   <Label className="text-[13px] font-medium text-muted-foreground">Deep Search</Label>
                   <Select
-                    value={query.has_deep_search || ''}
-                    onValueChange={(value) => handleFilterChange('has_deep_search', value)}
+                    value={hasDeepSearch}
+                    onValueChange={setHasDeepSearch}
                   >
                     <SelectTrigger className="h-9 min-w-[180px]">
                       <SelectValue placeholder="All" />
