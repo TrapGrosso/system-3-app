@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 // Internal fetch function for the actual API call
-const innerFetch = async (params) => {
+const fetchProspects = async (params) => {
   // Build query string, omitting undefined/null values
   const searchParams = new URLSearchParams()
   Object.entries(params).forEach(([key, value]) => {
@@ -29,9 +29,6 @@ const innerFetch = async (params) => {
   // Return the API payload unmodified: { data, total, page, page_size }
   return result
 }
-
-// Simple fetchProspects function - no internal fallback logic
-const fetchProspects = innerFetch
 
 // Hook for server-side filtered/sorted/paginated prospects
 export const useProspectsQuery = ({ userId, ...query }) => {
