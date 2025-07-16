@@ -358,24 +358,16 @@ export default function ProspectsTable({
   const pageSize = query.page_size
   const sorting = [{ id: query.sort_by, desc: query.sort_dir === 'desc' }]
 
-  const pagination = React.useMemo(() => ({
-    pageIndex,
-    pageSize,
-  }), [pageIndex, pageSize])
-
   const table = useReactTable({
     data: prospects,
     columns,
     state: {
       sorting,
       rowSelection,
-      pagination,
     },
     getRowId: (row) => row.linkedin_id,
     enableRowSelection: true,
-    manualPagination: true,
     manualSorting: true,
-    pageCount: Math.ceil(total / pageSize),
     onRowSelectionChange: setRowSelection,
     onSortingChange: (sorting) => {
       const s = sorting[0] || {}
@@ -383,9 +375,6 @@ export default function ProspectsTable({
         sort_by: s.id || 'created_at', 
         sort_dir: s.desc ? 'desc' : 'asc' 
       })
-    },
-    onPaginationChange: ({ pageIndex, pageSize }) => {
-      setQuery({ page: pageIndex + 1, page_size: pageSize })
     },
     getCoreRowModel: getCoreRowModel(),
   })
@@ -561,7 +550,14 @@ export default function ProspectsTable({
 
       {/* Pagination */}
       <TablePagination
-        table={table}
+        mode="external"
+        paginationState={{ 
+          pageIndex: pageIndex, 
+          pageSize: pageSize, 
+          pageCount: Math.ceil(total / pageSize) 
+        }}
+        onPageIndexChange={(index) => setQuery({ page: index + 1 })}
+        onPageSizeChange={(size) => setQuery({ page_size: size, page: 1 })}
         totalRows={total}
         selectedCount={selectedCount}
       />

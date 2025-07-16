@@ -28,16 +28,42 @@ export function TablePagination({
   selectedCount = 0,
   pageSizes = [10, 20, 30, 50],
   className,
+  // External mode props
+  mode = 'internal',
+  paginationState,
+  onPageIndexChange,
+  onPageSizeChange,
   ...props
 }) {
-  const pageIndex = table.getState().pagination.pageIndex
-  const pageSize = table.getState().pagination.pageSize
-  const pageCount = table.getPageCount()
-  const canPreviousPage = table.getCanPreviousPage()
-  const canNextPage = table.getCanNextPage()
+  // Determine pagination values based on mode
+  const isExternal = mode === 'external'
+  
+  const pageIndex = isExternal ? paginationState?.pageIndex ?? 0 : table.getState().pagination.pageIndex
+  const pageSize = isExternal ? paginationState?.pageSize ?? 10 : table.getState().pagination.pageSize
+  const pageCount = isExternal ? paginationState?.pageCount ?? 1 : table.getPageCount()
+  
+  const canPreviousPage = isExternal ? pageIndex > 0 : table.getCanPreviousPage()
+  const canNextPage = isExternal ? pageIndex < pageCount - 1 : table.getCanNextPage()
 
   // Use provided totalRows or fallback to table data length
-  const total = totalRows ?? table.getPrePaginationRowModel().rows.length
+  const total = totalRows ?? (table ? table.getPrePaginationRowModel().rows.length : 0)
+  
+  // Pagination handlers based on mode
+  const setPageIndex = isExternal 
+    ? (index) => onPageIndexChange?.(index)
+    : (index) => table.setPageIndex(index)
+    
+  const setPageSize = isExternal
+    ? (size) => onPageSizeChange?.(size)
+    : (size) => table.setPageSize(size)
+    
+  const previousPage = isExternal
+    ? () => setPageIndex(Math.max(0, pageIndex - 1))
+    : () => table.previousPage()
+    
+  const nextPage = isExternal
+    ? () => setPageIndex(Math.min(pageCount - 1, pageIndex + 1))
+    : () => table.nextPage()
 
   // Generate page numbers for pagination
   const getPageNumbers = () => {
@@ -86,7 +112,7 @@ export function TablePagination({
           <Select
             value={`${pageSize}`}
             onValueChange={(value) => {
-              table.setPageSize(Number(value))
+              setPageSize(Number(value))
             }}
           >
             <SelectTrigger className="w-20" id="page-size">
@@ -110,7 +136,7 @@ export function TablePagination({
           <Pagination>
             <PaginationContent>
               <PaginationPrevious 
-                onClick={() => table.previousPage()}
+                onClick={() => previousPage()}
                 className={canPreviousPage ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}
               />
               
@@ -123,7 +149,7 @@ export function TablePagination({
                   <PaginationItem key={page}>
                     <PaginationLink
                       isActive={page === pageIndex}
-                      onClick={() => table.setPageIndex(page)}
+                      onClick={() => setPageIndex(page)}
                       className="cursor-pointer"
                     >
                       {page + 1}
@@ -133,7 +159,7 @@ export function TablePagination({
               ))}
               
               <PaginationNext 
-                onClick={() => table.nextPage()}
+                onClick={() => nextPage()}
                 className={canNextPage ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}
               />
             </PaginationContent>
