@@ -4,9 +4,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { 
-  ChevronDownIcon, 
-  MoreHorizontalIcon, 
+import {
   NotebookIcon, 
   CalendarIcon,
   ListIcon,
@@ -17,38 +15,13 @@ import {
 
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-  PaginationEllipsis,
-} from '@/components/ui/pagination'
-import { Spinner } from '@/components/ui/spinner'
 import { useProspects } from '@/contexts/ProspectsContext'
 import { TablePopoverCell } from '@/components/shared/table/TablePopoverCell'
 import { TableActionsDropdown } from '@/components/shared/table/TableActionsDropdown'
 import { TableBulkActions } from '@/components/shared/table/TableBulkActions'
 import { TableSkeleton } from '@/components/shared/table/TableSkeleton'
+import { TablePagination } from '@/components/shared/table/TablePagination'
 
 const getStatusVariant = (status) => {
   switch (status?.toLowerCase()) {
@@ -487,41 +460,6 @@ export default function ProspectsTable({
     }
   }
 
-  const totalPages = table.getPageCount()
-  const currentPage = table.getState().pagination.pageIndex
-  const canPreviousPage = table.getCanPreviousPage()
-  const canNextPage = table.getCanNextPage()
-
-  // Generate page numbers for pagination
-  const getPageNumbers = () => {
-    const delta = 2
-    const range = []
-    const rangeWithDots = []
-
-    for (let i = Math.max(0, currentPage - delta); 
-         i <= Math.min(totalPages - 1, currentPage + delta); 
-         i++) {
-      range.push(i)
-    }
-
-    if (range[0] > 1) {
-      rangeWithDots.push(0)
-      if (range[0] > 2) {
-        rangeWithDots.push('...')
-      }
-    }
-
-    rangeWithDots.push(...range)
-
-    if (range[range.length - 1] < totalPages - 2) {
-      if (range[range.length - 1] < totalPages - 3) {
-        rangeWithDots.push('...')
-      }
-      rangeWithDots.push(totalPages - 1)
-    }
-
-    return rangeWithDots
-  }
 
   // Show loading skeleton while loading
   if (isLoading) {
@@ -542,21 +480,12 @@ export default function ProspectsTable({
         />
 
         {/* Disabled pagination controls */}
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between opacity-50 pointer-events-none">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Loading...</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2">
-              <Label className="text-sm font-medium">Rows per page:</Label>
-              <Select disabled>
-                <SelectTrigger className="w-20">
-                  <SelectValue placeholder="10" />
-                </SelectTrigger>
-              </Select>
-            </div>
-            <div className="text-sm font-medium">Page - of -</div>
-          </div>
+        <div className="opacity-50 pointer-events-none">
+          <TablePagination
+            table={table}
+            totalRows={0}
+            selectedCount={0}
+          />
         </div>
       </div>
     )
@@ -631,74 +560,11 @@ export default function ProspectsTable({
       </div>
 
       {/* Pagination */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>
-            {selectedCount} of {total} row(s) selected.
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="page-size" className="text-sm font-medium">
-              Rows per page:
-            </Label>
-            <Select
-              value={`${pageSize}`}
-              onValueChange={(value) => {
-                setQuery({ page: 1, page_size: Number(value) })
-              }}
-            >
-              <SelectTrigger className="w-20" id="page-size">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[10, 20, 30, 50].map((size) => (
-                  <SelectItem key={size} value={`${size}`}>
-                    {size}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="text-sm font-medium">
-            Page {currentPage + 1} of {totalPages}
-          </div>
-
-          <Pagination>
-            <PaginationContent>
-              <PaginationPrevious 
-                onClick={() => setQuery({ page: currentPage })}
-                className={canPreviousPage ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}
-              />
-              
-              {getPageNumbers().map((page, index) => (
-                page === '...' ? (
-                  <PaginationItem key={`ellipsis-${index}`}>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                ) : (
-                  <PaginationItem key={page}>
-                    <PaginationLink
-                      isActive={page === currentPage}
-                      onClick={() => setQuery({ page: page + 1 })}
-                      className="cursor-pointer"
-                    >
-                      {page + 1}
-                    </PaginationLink>
-                  </PaginationItem>
-                )
-              ))}
-              
-              <PaginationNext 
-                onClick={() => setQuery({ page: currentPage + 2 })}
-                className={canNextPage ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}
-              />
-            </PaginationContent>
-          </Pagination>
-        </div>
-      </div>
+      <TablePagination
+        table={table}
+        totalRows={total}
+        selectedCount={selectedCount}
+      />
     </div>
   )
 }
