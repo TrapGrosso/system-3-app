@@ -43,7 +43,6 @@ export const useProspectsQuery = ({ userId, ...query }) => {
     retryDelay: (attemptIndex) => Math.min(1000* 2** attemptIndex, 30000),
   })
 }
-
 /**
 * Fetches prospects for a user with server-side filtering, sorting, and pagination.
 * 
@@ -58,7 +57,7 @@ export const useProspectsQuery = ({ userId, ...query }) => {
 *   Available fields:
 *   - Prospect fields: first_name, last_name, headline, location, email, title
 *   - Company fields: company_name, company_website, company_industry, company_size, company_location
-*   - Related data: notes, task_titles, task_descriptions, group_names, campaign_names, enrichment_data
+*   - Related data: notes, task_titles, task_descriptions, group_names, campaign_names, variable_name
 *   Default: all fields if q is provided
 * - status (optional): Filter by prospect status
 * - in_group (optional): 'yes' or 'no' to filter by group membership
@@ -67,7 +66,7 @@ export const useProspectsQuery = ({ userId, ...query }) => {
 * - in_campaign (optional): 'yes' or 'no' to filter by campaign membership
 * - campaign_name (optional): Filter by specific campaign name (deprecated, use campaign_names)
 * - campaign_names (optional): Comma-separated list of campaign names to filter by
-* - prompt_names (optional): Comma-separated list of prompt names to filter by enrichments
+* - prompt_names (optional): Comma-separated list of prompt names to filter by enrichments (matches prompts used on prospect OR company enrichments)
 * - has_bd_scrape (optional): Filter by BD scrape enrichment flag
 * - has_deep_search (optional): Filter by deep search enrichment flag
 * 
@@ -100,56 +99,72 @@ export const useProspectsQuery = ({ userId, ...query }) => {
 * Example Success Response (200):
 * {
 *   "data": [
-*    {
-*        "linkedin_id": "maximilianmessing",
-*        "first_name": "Maximilian",
-*        "last_name": "Messing",
-*        "headline": "",
-*        "title": "",
-*        "status": "new",
-*        "location": "Cologne, North Rhine-Westphalia, Germany",
-*        "email": null,
-*        "company_name": null,
-*        "has_bd_scrape": true,
-*        "has_deep_search": true,
-*        "note_count": 2,
-*        "task_count": 2,
-*        "notes": [
-*                    {
-*                        "id": "4c317c77-fd19-4c47-bcbd-cafafb6c4a17",
-*                        "body": "aaaa"
-*                    },
-*                    {
-*                        "id": "a9706c0f-8934-43e9-9bff-1613a68e69f5",
-*                        "body": "fanculo i neri"
-*                    }
-*                ],
-*        "tasks": [
-*            {
-*                "id": "c396e6ef-2ee3-4233-93c4-75407a257065",
-*                "title": "the task",
-*                "status": "open",
-*                "due_date": "2025-07-23",
-*                "description": "salam"
-*            },
-*            {
-*                "id": "1ebe404b-6ce5-4a8c-9293-969096447370",
-*                "title": "task",
-*                "status": "open",
-*                "due_date": "2025-07-25",
-*                "description": "really important task"
-*            }
-*          ],
-*        "groups": [
-*            {
-*                "id": "8939a893-5363-4e0b-8fb1-138c27473bc5",
-*                "name": "salam"
-*            }
-*        ],
-*        "campaigns": []
-*      }
+*     {
+*       "linkedin_id": "elizaveta-sheshko",
+*       "first_name": "Lizaveta",
+*       "last_name": "Sheshka",
+*       "headline": "IT Innovations Manager | FTECH",
+*       "title": "IT Innovation Manager",
+*       "status": "new",
+*       "location": "Poland",
+*       "email": null,
+*       "company_name": null,
+*       "has_bd_scrape": true,
+*       "has_deep_search": false,
+*       "note_count": 1,
+*       "task_count": 1,
+*       "notes": [
+*         {
+*           "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+*           "body": "Follow up on initial contact."
+*         }
+*       ],
+*       "tasks": [
+*         {
+*           "id": "f1e2d3c4-b5a6-9876-5432-10fedcba9876",
+*           "title": "Schedule demo call",
+*           "status": "open",
+*           "due_date": "2025-08-01",
+*           "description": "Prepare presentation for product demo."
+*         }
+*       ],
+*       "groups": [
+*         {
+*           "id": "3ecaa693-ee42-4e1a-82a9-7a959d719b15",
+*           "name": "test group"
+*         }
+*       ],
+*       "campaigns": [],
+*       "variables": [
+*         {
+*           "id": "d4508141-7727-418a-87a3-a10339bcbfa7",
+*           "name": "some name",
+*           "tags": [
+*             "tag",
+*             "some tag"
+*           ],
+*           "value": "some description"
+*         }
+*       ],
+*       "enrichments": [
+*         {
+*           "id": "8e9f9c16-4ff8-4678-8064-f5ab5a62ea59",
+*           "type": "bd_scrape",
+*           "prompt_id": null,
+*           "entity_kind": "prospect",
+*           "prompt_name": null
+*         },
+*         {
+*           "id": "8f150696-6ae9-4e53-bc23-d9230adee62f",
+*           "type": "bd_scrape",
+*           "prompt_id": null,
+*           "entity_kind": "company",
+*           "prompt_name": null
+*         }
+*       ]
+*     }
 *   ],
-*   "total": 523,
+*   "total": 1,
 *   "page": 1,
 *   "page_size": 10
 * }
@@ -160,7 +175,7 @@ export const useProspectsQuery = ({ userId, ...query }) => {
 * {"error": "Missing required query param: user_id"}
 * 
 * Invalid search field (400):
-* {"error": "Parameter validation failed: Invalid search field \"invalid_field\". Must be one of: first_name, last_name, headline, location, email, title, company_name, company_website, company_industry, company_size, company_location, notes, task_titles, task_descriptions, group_names, campaign_names, enrichment_data"}
+* {"error": "Parameter validation failed: Invalid search field \"invalid_field\". Must be one of: first_name, last_name, headline, location, email, title, company_name, company_website, company_industry, company_size, company_location, notes, task_titles, task_descriptions, group_names, campaign_names, enrichment_data, variable_name"}
 * 
 * Invalid page size (400):
 * {"error": "Parameter validation failed: Value 150 exceeds maximum of 100"}

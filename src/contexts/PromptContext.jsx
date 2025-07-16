@@ -8,7 +8,7 @@ import { useDeletePrompt } from "@/api/prompt-context/deletePrompt"
 import { useAuth } from "./AuthContext"
 
 // Agent type enum
-export const AGENT_TYPES = ['deep_research']
+export const AGENT_TYPES = ['deep_research', 'create_variable']
 
 const PromptContext = React.createContext(null)
 

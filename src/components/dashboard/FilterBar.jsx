@@ -63,7 +63,7 @@ const SEARCH_FIELD_OPTIONS = [
   { value: 'task_descriptions', label: 'Task Descriptions' },
   { value: 'group_names', label: 'Group Names' },
   { value: 'campaign_names', label: 'Campaign Names' },
-  { value: 'enrichment_data', label: 'Enrichment Data' },
+  { value: 'variable_name', label: 'Variable Name' },
 ]
 
 // Multi-select chip picker component using Command + Popover
