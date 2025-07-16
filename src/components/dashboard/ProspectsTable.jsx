@@ -47,6 +47,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { useProspects } from '@/contexts/ProspectsContext'
 import { TablePopoverCell } from '@/components/shared/table/TablePopoverCell'
 import { TableActionsDropdown } from '@/components/shared/table/TableActionsDropdown'
+import { TableBulkActions } from '@/components/shared/table/TableBulkActions'
 
 const getStatusVariant = (status) => {
   switch (status?.toLowerCase()) {
@@ -418,48 +419,70 @@ export default function ProspectsTable({
   const selectedRows = table.getSelectedRowModel().rows
   const selectedCount = selectedRows.length
 
+  // Define bulk actions array with handlers
+  const bulkActions = React.useMemo(() => [
+    {
+      label: "Add to Group",
+      value: "addToGroup",
+      onSelect: (selectedIds) => {
+        if (onBulkAddToGroup) {
+          onBulkAddToGroup(selectedIds)
+        } else {
+          alert(`Add ${selectedIds.length} prospects to group`)
+        }
+      }
+    },
+    {
+      label: "Add to Campaign", 
+      value: "addToCampaign",
+      onSelect: (selectedIds) => {
+        if (onBulkAddToCampaign) {
+          onBulkAddToCampaign(selectedIds)
+        } else {
+          alert(`Add ${selectedIds.length} prospects to campaign`)
+        }
+      }
+    },
+    {
+      label: "Add to Deep Search Queue",
+      value: "addToDeepSearch",
+      onSelect: (selectedIds) => {
+        if (onBulkAddToDeepSearch) {
+          onBulkAddToDeepSearch(selectedIds)
+        }
+      }
+    },
+    "separator",
+    {
+      label: "Send Email",
+      value: "email",
+      onSelect: (selectedIds) => {
+        alert(`Send email to ${selectedIds.length} prospects`)
+      }
+    },
+    {
+      label: "Export Selected",
+      value: "export",
+      onSelect: (selectedIds) => {
+        alert(`Export ${selectedIds.length} prospects`)
+      }
+    },
+    "separator",
+    {
+      label: "Delete Selected",
+      value: "delete",
+      variant: "destructive",
+      onSelect: (selectedIds) => {
+        alert(`Delete ${selectedIds.length} prospects`)
+      }
+    }
+  ], [onBulkAddToGroup, onBulkAddToCampaign, onBulkAddToDeepSearch])
+
   const handleRowClick = (prospect) => {
     if (onRowClick) {
       onRowClick(prospect.linkedin_id)
     } else {
       alert(`row clicked '${prospect.linkedin_id}'`)
-    }
-  }
-
-  const handleBulkAction = (action) => {
-    const selectedLinkedinIds = selectedRows.map(row => row.original.linkedin_id)
-    
-    switch (action) {
-      case 'email':
-        alert(`Send email to ${selectedCount} prospects`)
-        break
-      case 'delete':
-        alert(`Delete ${selectedCount} prospects`)
-        break
-      case 'export':
-        alert(`Export ${selectedCount} prospects`)
-        break
-      case 'addToGroup':
-        if (onBulkAddToGroup) {
-          onBulkAddToGroup(selectedLinkedinIds)
-        } else {
-          alert(`Add ${selectedCount} prospects to group`)
-        }
-        break
-      case 'addToCampaign':
-        if (onBulkAddToCampaign) {
-          onBulkAddToCampaign(selectedLinkedinIds)
-        } else {
-          alert(`Add ${selectedCount} prospects to campaign`)
-        }
-        break
-      case 'addToDeepSearch':
-        if (onBulkAddToDeepSearch) {
-          onBulkAddToDeepSearch(selectedLinkedinIds)
-        }
-        break
-      default:
-        break
     }
   }
 
@@ -563,43 +586,10 @@ export default function ProspectsTable({
   return (
     <div className="space-y-4">
       {/* Bulk Actions */}
-      {selectedCount > 0 && (
-        <div className="flex justify-end">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                Selected ({selectedCount})
-                <ChevronDownIcon className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleBulkAction('addToGroup')}>
-                Add to Group
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleBulkAction('addToCampaign')}>
-                Add to Campaign
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleBulkAction('addToDeepSearch')}>
-                Add to Deep Search Queue
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handleBulkAction('email')}>
-                Send Email
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleBulkAction('export')}>
-                Export Selected
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                className="text-destructive"
-                onClick={() => handleBulkAction('delete')}
-              >
-                Delete Selected
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      )}
+      <TableBulkActions
+        actions={bulkActions}
+        selectedIds={selectedRows.map(row => row.original.linkedin_id)}
+      />
 
       {/* Table */}
       <div className="rounded-md border">
