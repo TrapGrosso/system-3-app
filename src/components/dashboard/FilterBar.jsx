@@ -4,26 +4,6 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useGroups } from '@/contexts/GroupsContext'
 import { useFetchCampaigns } from '@/api/campaign-context/fetchCampaigns'
@@ -31,6 +11,7 @@ import { useGetAllPrompts } from '@/api/prompt-context/getAllPrompts'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProspects } from '@/contexts/ProspectsContext'
 import { MultiSelectChipPicker } from "../shared/filter/MultiSelectChipPicker"
+import { SingleSelect } from "../shared/filter/SingleSelect"
 
 const STATUS_OPTIONS = [
   { value: null, label: 'All Statuses' },
@@ -297,101 +278,56 @@ export default function FilterBar() {
                 {/* Status Filter */}
                 <div className="space-y-2">
                   <Label className="text-[13px] font-medium text-muted-foreground">Status</Label>
-                  <Select
+                  <SingleSelect
                     value={status}
                     onValueChange={setStatus}
-                  >
-                    <SelectTrigger className="h-9 min-w-[180px]">
-                      <SelectValue placeholder="All Statuses" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STATUS_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    options={STATUS_OPTIONS}
+                    placeholder="All Statuses"
+                  />
                 </div>
 
                 {/* Group Membership */}
                 <div className="space-y-2">
                   <Label className="text-[13px] font-medium text-muted-foreground">In Group</Label>
-                  <Select
+                  <SingleSelect
                     value={inGroup}
                     onValueChange={setInGroup}
-                  >
-                    <SelectTrigger className="h-9 min-w-[180px]">
-                      <SelectValue placeholder="All" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {BOOLEAN_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    options={BOOLEAN_OPTIONS}
+                    placeholder="All"
+                  />
                 </div>
 
                 {/* Campaign Membership */}
                 <div className="space-y-2">
                   <Label className="text-[13px] font-medium text-muted-foreground">In Campaign</Label>
-                  <Select
+                  <SingleSelect
                     value={inCampaign}
                     onValueChange={setInCampaign}
-                  >
-                    <SelectTrigger className="h-9 min-w-[180px]">
-                      <SelectValue placeholder="All" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {BOOLEAN_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    options={BOOLEAN_OPTIONS}
+                    placeholder="All"
+                  />
                 </div>
 
                 {/* BD Enrichment */}
                 <div className="space-y-2">
                   <Label className="text-[13px] font-medium text-muted-foreground">BD Enrichment</Label>
-                  <Select
+                  <SingleSelect
                     value={hasBdScrape}
                     onValueChange={setHasBdScrape}
-                  >
-                    <SelectTrigger className="h-9 min-w-[180px]">
-                      <SelectValue placeholder="All" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {BOOLEAN_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    options={BOOLEAN_OPTIONS}
+                    placeholder="All"
+                  />
                 </div>
 
                 {/* Deep Search */}
                 <div className="space-y-2">
                   <Label className="text-[13px] font-medium text-muted-foreground">Deep Search</Label>
-                  <Select
+                  <SingleSelect
                     value={hasDeepSearch}
                     onValueChange={setHasDeepSearch}
-                  >
-                    <SelectTrigger className="h-9 min-w-[180px]">
-                      <SelectValue placeholder="All" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {BOOLEAN_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    options={BOOLEAN_OPTIONS}
+                    placeholder="All"
+                  />
                 </div>
               </div>
 
