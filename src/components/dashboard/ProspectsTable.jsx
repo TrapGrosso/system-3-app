@@ -48,6 +48,7 @@ import { useProspects } from '@/contexts/ProspectsContext'
 import { TablePopoverCell } from '@/components/shared/table/TablePopoverCell'
 import { TableActionsDropdown } from '@/components/shared/table/TableActionsDropdown'
 import { TableBulkActions } from '@/components/shared/table/TableBulkActions'
+import { TableSkeleton } from '@/components/shared/table/TableSkeleton'
 
 const getStatusVariant = (status) => {
   switch (status?.toLowerCase()) {
@@ -522,36 +523,23 @@ export default function ProspectsTable({
     return rangeWithDots
   }
 
-  // Show loading overlay while loading
+  // Show loading skeleton while loading
   if (isLoading) {
     return (
       <div className="space-y-4">
-        {/* Table structure with loading overlay */}
-        <div className="relative rounded-md border min-h-[400px]">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-          </Table>
-          
-          {/* Loading overlay */}
-          <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm">
-            <div className="flex flex-col items-center gap-2">
-              <Spinner size="lg" />
-              <p className="text-sm text-muted-foreground">Loading prospects...</p>
-            </div>
-          </div>
-        </div>
+        <TableBulkActions actions={['']}/>
+        <TableSkeleton
+          headers={[
+            '', 'First Name', 'Last Name', 'Title', 'Status', 'Email',
+            'Company', 'Notes', 'Tasks', 'Variables', 'Enrichments', 
+            'Groups', 'Campaigns', ''
+          ]}
+          cellWidths={[
+            'w-8', 'w-32', 'w-32', 'w-48', 'w-20', 'w-40',
+            'w-40', 'w-8', 'w-8', 'w-8', 'w-8', 'w-8', 'w-8', 'w-16'
+          ]}
+          rowCount={10}
+        />
 
         {/* Disabled pagination controls */}
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between opacity-50 pointer-events-none">
