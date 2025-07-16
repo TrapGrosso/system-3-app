@@ -46,6 +46,7 @@ import {
 import { Spinner } from '@/components/ui/spinner'
 import { useProspects } from '@/contexts/ProspectsContext'
 import { TablePopoverCell } from '@/components/shared/table/TablePopoverCell'
+import { TableActionsDropdown } from '@/components/shared/table/TableActionsDropdown'
 
 const getStatusVariant = (status) => {
   switch (status?.toLowerCase()) {
@@ -325,91 +326,51 @@ export default function ProspectsTable({
     {
       id: "actions",
       header: "",
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="h-8 w-8 p-0"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontalIcon className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                if (onAddNote) {
-                  onAddNote(row.original.linkedin_id, row.original)
-                } else {
-                  alert(`Add note for ${row.original.first_name} ${row.original.last_name}`)
-                }
-              }}
-            >
-              Add Note
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                if (onCreateTask) {
-                  onCreateTask(row.original.linkedin_id, row.original)
-                } else {
-                  alert(`Create task for ${row.original.first_name} ${row.original.last_name}`)
-                }
-              }}
-            >
-              Create Task
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                if (onAddToGroup) {
-                  onAddToGroup(row.original.linkedin_id)
-                } else {
-                  alert(`Add ${row.original.first_name} ${row.original.last_name} to group`)
-                }
-              }}
-            >
-              Add to Group
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                if (onAddToCampaign) {
-                  onAddToCampaign(row.original.linkedin_id)
-                } else {
-                  alert(`Add ${row.original.first_name} ${row.original.last_name} to campaign`)
-                }
-              }}
-            >
-              Add to Campaign
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                if (onAddToDeepSearch) {
-                  onAddToDeepSearch(row.original.linkedin_id)
-                }
-              }}
-            >
-              Add to Deep Search Queue
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-destructive"
-              onClick={(e) => {
-                e.stopPropagation()
-                alert(`Delete ${row.original.first_name} ${row.original.last_name}`)
-              }}
-            >
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
+      cell: ({ row }) => {
+        const ctx = row.original
+        return (
+          <TableActionsDropdown
+            context={ctx}
+            items={[
+              {
+                label: "Add Note",
+                onSelect: () => onAddNote
+                  ? onAddNote(ctx.linkedin_id, ctx)
+                  : alert(`Add note for ${ctx.first_name} ${ctx.last_name}`)
+              },
+              {
+                label: "Create Task",
+                onSelect: () => onCreateTask
+                  ? onCreateTask(ctx.linkedin_id, ctx)
+                  : alert(`Create task for ${ctx.first_name} ${ctx.last_name}`)
+              },
+              "separator",
+              {
+                label: "Add to Group",
+                onSelect: () => onAddToGroup
+                  ? onAddToGroup(ctx.linkedin_id)
+                  : alert(`Add ${ctx.first_name} ${ctx.last_name} to group`)
+              },
+              {
+                label: "Add to Campaign",
+                onSelect: () => onAddToCampaign
+                  ? onAddToCampaign(ctx.linkedin_id)
+                  : alert(`Add ${ctx.first_name} ${ctx.last_name} to campaign`)
+              },
+              {
+                label: "Add to Deep Search Queue",
+                onSelect: () => onAddToDeepSearch?.(ctx.linkedin_id)
+              },
+              "separator",
+              {
+                label: "Delete",
+                variant: "destructive",
+                onSelect: () => alert(`Delete ${ctx.first_name} ${ctx.last_name}`)
+              }
+            ]}
+          />
+        )
+      },
       enableSorting: false,
       enableHiding: false,
     },
