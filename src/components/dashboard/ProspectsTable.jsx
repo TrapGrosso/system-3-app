@@ -4,7 +4,16 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ChevronDownIcon, MoreHorizontalIcon, NotebookIcon, CalendarIcon } from "lucide-react"
+import { 
+  ChevronDownIcon, 
+  MoreHorizontalIcon, 
+  NotebookIcon, 
+  CalendarIcon,
+  ListIcon,
+  TagsIcon,
+  UsersIcon,
+  FlagIcon
+} from "lucide-react"
 
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
@@ -17,11 +26,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -41,6 +45,7 @@ import {
 } from '@/components/ui/pagination'
 import { Spinner } from '@/components/ui/spinner'
 import { useProspects } from '@/contexts/ProspectsContext'
+import { TablePopoverCell } from '@/components/shared/table/TablePopoverCell'
 
 const getStatusVariant = (status) => {
   switch (status?.toLowerCase()) {
@@ -53,10 +58,6 @@ const getStatusVariant = (status) => {
     default:
       return 'outline'
   }
-}
-
-const getBooleanVariant = (value) => {
-  return value ? 'default' : 'outline'
 }
 
 export default function ProspectsTable({ 
@@ -143,24 +144,6 @@ export default function ProspectsTable({
       ),
     },
     {
-      accessorKey: "in_group",
-      header: "Group",
-      cell: ({ row }) => (
-        <Badge variant={getBooleanVariant(row.original.groups?.length > 0)}>
-          {row.original.groups?.length > 0 ? '✓' : '—'}
-        </Badge>
-      ),
-    },
-    {
-      accessorKey: "in_campaign",
-      header: "Campaign",
-      cell: ({ row }) => (
-        <Badge variant={getBooleanVariant(row.original.campaigns?.length > 0)}>
-          {row.original.campaigns?.length > 0 ? '✓' : '—'}
-        </Badge>
-      ),
-    },
-    {
       accessorKey: "email",
       header: "Email",
       cell: ({ row }) => (
@@ -195,42 +178,18 @@ export default function ProspectsTable({
       header: "Notes",
       cell: ({ row }) => {
         const notes = row.original.notes || []
-        const noteCount = row.original.note_count || notes.length || 0
-        
-        if (noteCount === 0) {
-          return <div className="text-center text-muted-foreground">—</div>
-        }
-
         return (
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-auto p-1 text-blue-600 hover:text-blue-800"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <NotebookIcon className="h-4 w-4 mr-1" />
-                {noteCount}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80" align="start">
-              <div className="space-y-2">
-                <h4 className="font-medium text-sm">Notes</h4>
-                {notes.length > 0 ? (
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {notes.map((note) => (
-                      <div key={note.id} className="p-2 border rounded-md text-sm">
-                        <p className="text-foreground">{note.body}</p>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No notes available</p>
-                )}
+          <TablePopoverCell
+            items={notes}
+            icon={<NotebookIcon />}
+            triggerVariant="blue"
+            title="Notes"
+            renderItem={(note) => (
+              <div className="p-2 border rounded-md text-sm">
+                <p className="text-foreground">{note.body}</p>
               </div>
-            </PopoverContent>
-          </Popover>
+            )}
+          />
         )
       },
     },
@@ -239,55 +198,127 @@ export default function ProspectsTable({
       header: "Tasks",
       cell: ({ row }) => {
         const tasks = row.original.tasks || []
-        const taskCount = row.original.task_count || tasks.length || 0
-        
-        if (taskCount === 0) {
-          return <div className="text-center text-muted-foreground">—</div>
-        }
-
         return (
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-auto p-1 text-green-600 hover:text-green-800"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <CalendarIcon className="h-4 w-4 mr-1" />
-                {taskCount}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80" align="start">
-              <div className="space-y-2">
-                <h4 className="font-medium text-sm">Tasks</h4>
-                {tasks.length > 0 ? (
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {tasks.map((task) => (
-                      <div key={task.id} className="p-2 border rounded-md text-sm">
-                        <div className="flex items-center justify-between mb-1">
-                          <h5 className="font-medium">{task.title}</h5>
-                          <Badge variant={task.status === 'open' ? 'default' : 'secondary'}>
-                            {task.status}
-                          </Badge>
-                        </div>
-                        {task.due_date && (
-                          <p className="text-xs text-muted-foreground mb-1">
-                            Due: {new Date(task.due_date).toLocaleDateString()}
-                          </p>
-                        )}
-                        {task.description && (
-                          <p className="text-foreground">{task.description}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No tasks available</p>
+          <TablePopoverCell
+            items={tasks}
+            icon={<CalendarIcon />}
+            triggerVariant="green"
+            title="Tasks"
+            renderItem={(task) => (
+              <div className="p-2 border rounded-md text-sm">
+                <div className="flex items-center justify-between mb-1">
+                  <h5 className="font-medium">{task.title}</h5>
+                  <Badge variant={task.status === 'open' ? 'default' : 'secondary'}>
+                    {task.status}
+                  </Badge>
+                </div>
+                {task.due_date && (
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Due: {new Date(task.due_date).toLocaleDateString()}
+                  </p>
+                )}
+                {task.description && (
+                  <p className="text-foreground">{task.description}</p>
                 )}
               </div>
-            </PopoverContent>
-          </Popover>
+            )}
+          />
+        )
+      },
+    },
+    {
+      accessorKey: "variables",
+      header: "Variables",
+      cell: ({ row }) => {
+        const variables = row.original.variables || []
+        return (
+          <TablePopoverCell
+            items={variables}
+            icon={<ListIcon />}
+            triggerVariant="slate"
+            title="Variables"
+            renderItem={(variable) => (
+              <div className="p-2 border rounded-md text-sm">
+                <p className="font-medium">{variable.name}</p>
+                <p className="text-xs text-muted-foreground">{variable.value}</p>
+                {variable.tags && variable.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {variable.tags.map((tag, idx) => (
+                      <Badge key={idx} variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          />
+        )
+      },
+    },
+    {
+      accessorKey: "enrichments",
+      header: "Enrichments",
+      cell: ({ row }) => {
+        const enrichments = row.original.enrichments || []
+        return (
+          <TablePopoverCell
+            items={enrichments}
+            icon={<TagsIcon />}
+            triggerVariant="slate"
+            title="Enrichments"
+            renderItem={(enrichment) => (
+              <div className="p-2 border rounded-md text-sm">
+                <p className="font-medium">{enrichment.type}</p>
+                {enrichment.prompt_name && (
+                  <p className="text-xs text-muted-foreground">{enrichment.prompt_name}</p>
+                )}
+                <Badge variant="outline" className="text-xs mt-1">
+                  {enrichment.entity_kind}
+                </Badge>
+              </div>
+            )}
+          />
+        )
+      },
+    },
+    {
+      accessorKey: "groups",
+      header: "Groups",
+      cell: ({ row }) => {
+        const groups = row.original.groups || []
+        return (
+          <TablePopoverCell
+            items={groups}
+            icon={<UsersIcon />}
+            triggerVariant="slate"
+            title="Groups"
+            renderItem={(group) => (
+              <div className="p-2 border rounded-md text-sm">
+                <p className="text-foreground">{group.name}</p>
+              </div>
+            )}
+          />
+        )
+      },
+    },
+    {
+      accessorKey: "campaigns",
+      header: "Campaigns",
+      cell: ({ row }) => {
+        const campaigns = row.original.campaigns || []
+        return (
+          <TablePopoverCell
+            items={campaigns}
+            icon={<FlagIcon />}
+            triggerVariant="slate"
+            title="Campaigns"
+            renderItem={(campaign) => (
+              <div className="p-2 border rounded-md text-sm">
+                <p className="text-foreground">{campaign.name}</p>
+              </div>
+            )}
+          />
         )
       },
     },
