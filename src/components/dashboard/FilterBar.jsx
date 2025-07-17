@@ -182,24 +182,6 @@ export default function FilterBar() {
     key !== 'page' && key !== 'page_size' && key !== 'sort_by' && key !== 'sort_dir' && value
   ).length
 
-  // Group options for select
-  const groupOptions = [
-    { value: null, label: 'All Groups' },
-    ...groups.map(group => ({
-      value: group.name,
-      label: group.name
-    }))
-  ]
-
-  // Campaign options for select
-  const campaignOptions = [
-    { value: 'all', label: 'All Campaigns' },
-    ...campaigns.map(campaign => ({
-      value: campaign.name,
-      label: campaign.name
-    }))
-  ]
-
   return (
     <Card className="mb-6">
       <CardContent className="pt-6">

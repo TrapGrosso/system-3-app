@@ -57,7 +57,6 @@ export const useGetDeepSearchQueueItems = (userId) => {
  *       "status": "new",
  *       "email": "john@acme.com",
  *       "title": "Senior Software Engineer",
- *       "custom_vars": {"department": "engineering"},
  *       "created_at": "2025-07-01T10:00:00.000000",
  *       "updated_at": "2025-07-01T10:00:00.000000"
  *     },
