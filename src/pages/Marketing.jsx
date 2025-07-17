@@ -12,7 +12,7 @@ import { useGetLogsByAction } from '@/api/log/getLogsByAction'
 import { toast } from 'sonner'
 import DeepSearchQueueTable from '@/components/marketing/DeepSearchQueueTable'
 import { PromptSelectDialog } from '@/components/marketing/PromptSelectDialog'
-import { LogTable } from '@/components/add-leads/LogTable'
+import { LogTable } from '@/components/shared/table/LogTable'
 import EnrichmentsFilterBar from '@/components/marketing/EnrichmentsFilterBar'
 import EnrichmentsTable from '@/components/marketing/EnrichmentsTable'
 
@@ -147,7 +147,7 @@ export default function Marketing() {
                             
                             <TabsContent value="logs" className="space-y-4">
                                 <LogTable 
-                                    logs={logs}
+                                    logs={logs.data || []}
                                     isLoading={isLoadingLogs}
                                     isError={isErrorLogs}
                                     error={logsError}

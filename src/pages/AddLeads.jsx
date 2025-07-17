@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator'
 import { ManualInput } from '@/components/add-leads/ManualInput'
 import { CsvUpload } from '@/components/add-leads/CsvUpload'
 import { SubmitSection } from '@/components/add-leads/SubmitSection'
-import { LogTable } from '@/components/add-leads/LogTable'
+import { LogTable } from '@/components/shared/table/LogTable'
 
 export default function AddLeads() {
     const { user } = useAuth()
