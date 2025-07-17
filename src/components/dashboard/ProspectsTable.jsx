@@ -9,7 +9,6 @@ import {
 } from "lucide-react"
 
 import { Badge } from '@/components/ui/badge'
-import { useProspects } from '@/contexts/ProspectsContext'
 import { TablePopoverCell } from '@/components/shared/table/TablePopoverCell'
 import { DataTable } from '@/components/shared/table/DataTable'
 
@@ -27,6 +26,11 @@ const getStatusVariant = (status) => {
 }
 
 export default function ProspectsTable({ 
+  data,
+  total,
+  query,
+  onQueryChange,
+  loading,
   onRowClick,
   onAddNote,
   onCreateTask,
@@ -37,15 +41,6 @@ export default function ProspectsTable({
   onBulkAddToCampaign,
   onBulkAddToDeepSearch
 }) {
-  
-  // Get data and state from context
-  const { 
-    data: prospects, 
-    total, 
-    query, 
-    setQuery, 
-    isLoading 
-  } = useProspects()
 
   // Column definitions (without select and actions - DataTable handles these)
   const columns = React.useMemo(() => [
@@ -277,12 +272,12 @@ export default function ProspectsTable({
   // Pagination handler
   const handlePaginationChange = React.useCallback((update) => {
     if (update.pageIndex !== undefined) {
-      setQuery({ page: update.pageIndex + 1 })
+      onQueryChange({ page: update.pageIndex + 1 })
     }
     if (update.pageSize !== undefined) {
-      setQuery({ page_size: update.pageSize, page: 1 })
+      onQueryChange({ page_size: update.pageSize, page: 1 })
     }
-  }, [setQuery])
+  }, [onQueryChange])
 
   // Sorting state and handler
   const sorting = React.useMemo(() => [
@@ -292,11 +287,11 @@ export default function ProspectsTable({
   const handleSortingChange = React.useCallback((updatedSorting) => {
     const newSorting = typeof updatedSorting === 'function' ? updatedSorting(sorting) : updatedSorting
     const s = newSorting[0] || {}
-    setQuery({ 
+    onQueryChange({ 
       sort_by: s.id || 'created_at', 
       sort_dir: s.desc ? 'desc' : 'asc' 
     })
-  }, [setQuery, sorting])
+  }, [onQueryChange, sorting])
 
   // Bulk actions array
   const bulkActions = React.useMemo(() => [
@@ -408,9 +403,9 @@ export default function ProspectsTable({
   return (
     <DataTable
       columns={columns}
-      data={prospects || []}
+      data={data || []}
       rowId={(row) => row.linkedin_id}
-      loading={isLoading}
+      loading={loading}
       emptyMessage="No prospects found"
       mode="external"
       paginationState={paginationState}

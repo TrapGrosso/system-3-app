@@ -9,7 +9,6 @@ import { useGroups } from '@/contexts/GroupsContext'
 import { useFetchCampaigns } from '@/api/campaign-context/fetchCampaigns'
 import { useGetAllPrompts } from '@/api/prompt-context/getAllPrompts'
 import { useAuth } from '@/contexts/AuthContext'
-import { useProspects } from '@/contexts/ProspectsContext'
 import { MultiSelectChipPicker } from "../shared/filter/MultiSelectChipPicker"
 import { SingleSelect } from "../shared/filter/SingleSelect"
 
@@ -48,12 +47,11 @@ const SEARCH_FIELD_OPTIONS = [
   { value: 'variable_name', label: 'Variable Name' },
 ]
 
-export default function FilterBar() {
+export default function FilterBar({ query, onApplyFilters, onResetFilters, loading }) {
   const { user } = useAuth()
   const { groups = [] } = useGroups()
   const { data: campaigns = [] } = useFetchCampaigns(user?.id)
   const { data: prompts = [] } = useGetAllPrompts(user?.id)
-  const { query, setQuery, resetFilters, isLoading } = useProspects()
 
   // Local state for search input and selected fields
   const [searchInput, setSearchInput] = React.useState(query.q || '')
@@ -148,7 +146,7 @@ export default function FilterBar() {
   }, [query.prompt_names])
 
   const handleApplyFilters = () => {
-    setQuery({
+    onApplyFilters({
       q: searchInput.trim(),
       search_fields: selectedFields.length ? selectedFields.join(',') : '',
       group_names: selectedGroupNames.length ? selectedGroupNames.join(',') : '',
@@ -158,8 +156,7 @@ export default function FilterBar() {
       in_group: inGroup,
       in_campaign: inCampaign,
       has_bd_scrape: hasBdScrape,
-      has_deep_search: hasDeepSearch,
-      page: 1 // Reset to first page when applying filters
+      has_deep_search: hasDeepSearch
     })
   }
 
@@ -174,7 +171,7 @@ export default function FilterBar() {
     setSelectedGroupNames([])
     setSelectedCampaignNames([])
     setSelectedPromptNames([])
-    resetFilters()
+    onResetFilters()
   }
 
   // Count active filters
@@ -203,7 +200,7 @@ export default function FilterBar() {
   return (
     <Card className="mb-6">
       <CardContent className="pt-6">
-        <fieldset disabled={isLoading}>
+        <fieldset disabled={loading}>
           <div className="space-y-4">
             {/* Header with filter count and reset */}
             <div className="flex items-center justify-between">
