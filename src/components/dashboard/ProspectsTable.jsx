@@ -1,10 +1,5 @@
 import * as React from "react"
 import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table"
-import {
   NotebookIcon, 
   CalendarIcon,
   ListIcon,
@@ -13,15 +8,9 @@ import {
   FlagIcon
 } from "lucide-react"
 
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
-import { useProspects } from '@/contexts/ProspectsContext'
 import { TablePopoverCell } from '@/components/shared/table/TablePopoverCell'
-import { TableActionsDropdown } from '@/components/shared/table/TableActionsDropdown'
-import { TableBulkActions } from '@/components/shared/table/TableBulkActions'
-import { TableSkeleton } from '@/components/shared/table/TableSkeleton'
-import { TablePagination } from '@/components/shared/table/TablePagination'
+import { DataTable } from '@/components/shared/table/DataTable'
 
 const getStatusVariant = (status) => {
   switch (status?.toLowerCase()) {
@@ -37,6 +26,11 @@ const getStatusVariant = (status) => {
 }
 
 export default function ProspectsTable({ 
+  data,
+  total,
+  query,
+  onQueryChange,
+  loading,
   onRowClick,
   onAddNote,
   onCreateTask,
@@ -47,42 +41,9 @@ export default function ProspectsTable({
   onBulkAddToCampaign,
   onBulkAddToDeepSearch
 }) {
-  
-  // Get data and state from context
-  const { 
-    data: prospects, 
-    total, 
-    query, 
-    setQuery, 
-    isLoading 
-  } = useProspects()
 
+  // Column definitions (without select and actions - DataTable handles these)
   const columns = React.useMemo(() => [
-    {
-      id: "select",
-      header: ({ table }) => (
-        <div className="flex items-center justify-center">
-          <Checkbox
-            checked={
-              table.getIsAllPageRowsSelected() ||
-              (table.getIsSomePageRowsSelected() && "indeterminate")
-            }
-            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-            aria-label="Select all" />
-        </div>
-      ),
-      cell: ({ row }) => (
-        <div className="flex items-center justify-center">
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-            onClick={(e) => e.stopPropagation()}
-            aria-label="Select row" />
-        </div>
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
     {
       accessorKey: "first_name",
       header: "First Name",
@@ -298,91 +259,41 @@ export default function ProspectsTable({
         )
       },
     },
-    {
-      id: "actions",
-      header: "",
-      cell: ({ row }) => {
-        const ctx = row.original
-        return (
-          <TableActionsDropdown
-            context={ctx}
-            items={[
-              {
-                label: "Add Note",
-                onSelect: () => onAddNote
-                  ? onAddNote(ctx.linkedin_id, ctx)
-                  : alert(`Add note for ${ctx.first_name} ${ctx.last_name}`)
-              },
-              {
-                label: "Create Task",
-                onSelect: () => onCreateTask
-                  ? onCreateTask(ctx.linkedin_id, ctx)
-                  : alert(`Create task for ${ctx.first_name} ${ctx.last_name}`)
-              },
-              "separator",
-              {
-                label: "Add to Group",
-                onSelect: () => onAddToGroup
-                  ? onAddToGroup(ctx.linkedin_id)
-                  : alert(`Add ${ctx.first_name} ${ctx.last_name} to group`)
-              },
-              {
-                label: "Add to Campaign",
-                onSelect: () => onAddToCampaign
-                  ? onAddToCampaign(ctx.linkedin_id)
-                  : alert(`Add ${ctx.first_name} ${ctx.last_name} to campaign`)
-              },
-              {
-                label: "Add to Deep Search Queue",
-                onSelect: () => onAddToDeepSearch?.(ctx.linkedin_id)
-              },
-              "separator",
-              {
-                label: "Delete",
-                variant: "destructive",
-                onSelect: () => alert(`Delete ${ctx.first_name} ${ctx.last_name}`)
-              }
-            ]}
-          />
-        )
-      },
-      enableSorting: false,
-      enableHiding: false,
-    },
-  ], [onAddNote, onCreateTask, onAddToGroup, onAddToCampaign, onAddToDeepSearch])
+  ], [])
 
-  const [rowSelection, setRowSelection] = React.useState({})
+  // External pagination state
+  const paginationState = React.useMemo(() => ({
+    pageIndex: query.page - 1,
+    pageSize: query.page_size,
+    pageCount: Math.ceil(total / query.page_size),
+    totalElements: total || null
+  }), [query.page, query.page_size, total])
 
-  // Convert context data to TanStack Table format
-  const pageIndex = query.page - 1
-  const pageSize = query.page_size
-  const sorting = [{ id: query.sort_by, desc: query.sort_dir === 'desc' }]
+  // Pagination handler
+  const handlePaginationChange = React.useCallback((update) => {
+    if (update.pageIndex !== undefined) {
+      onQueryChange({ page: update.pageIndex + 1 })
+    }
+    if (update.pageSize !== undefined) {
+      onQueryChange({ page_size: update.pageSize, page: 1 })
+    }
+  }, [onQueryChange])
 
-  const table = useReactTable({
-    data: prospects,
-    columns,
-    state: {
-      sorting,
-      rowSelection,
-    },
-    getRowId: (row) => row.linkedin_id,
-    enableRowSelection: true,
-    manualSorting: true,
-    onRowSelectionChange: setRowSelection,
-    onSortingChange: (sorting) => {
-      const s = sorting[0] || {}
-      setQuery({ 
-        sort_by: s.id || 'created_at', 
-        sort_dir: s.desc ? 'desc' : 'asc' 
-      })
-    },
-    getCoreRowModel: getCoreRowModel(),
-  })
+  // Sorting state and handler
+  const sorting = React.useMemo(() => [
+    { id: query.sort_by, desc: query.sort_dir === 'desc' }
+  ], [query.sort_by, query.sort_dir])
 
-  const selectedRows = table.getSelectedRowModel().rows
-  const selectedCount = selectedRows.length
+  const handleSortingChange = React.useCallback((updatedSorting) => {
+    const newSorting = typeof updatedSorting === 'function' ? updatedSorting(sorting) : updatedSorting
+    const s = newSorting[0] || {}
+    onQueryChange({ 
+      sort_by: s.id || 'created_at', 
+      sort_dir: s.desc ? 'desc' : 'asc' 
+    })
+  }, [onQueryChange, sorting])
 
-  // Define bulk actions array with handlers
+  // Bulk actions array
   const bulkActions = React.useMemo(() => [
     {
       label: "Add to Group",
@@ -441,126 +352,70 @@ export default function ProspectsTable({
     }
   ], [onBulkAddToGroup, onBulkAddToCampaign, onBulkAddToDeepSearch])
 
-  const handleRowClick = (prospect) => {
+  // Row actions function
+  const rowActions = React.useCallback((ctx) => [
+    {
+      label: "Add Note",
+      onSelect: () => onAddNote
+        ? onAddNote(ctx.linkedin_id, ctx)
+        : alert(`Add note for ${ctx.first_name} ${ctx.last_name}`)
+    },
+    {
+      label: "Create Task",
+      onSelect: () => onCreateTask
+        ? onCreateTask(ctx.linkedin_id, ctx)
+        : alert(`Create task for ${ctx.first_name} ${ctx.last_name}`)
+    },
+    "separator",
+    {
+      label: "Add to Group",
+      onSelect: () => onAddToGroup
+        ? onAddToGroup(ctx.linkedin_id)
+        : alert(`Add ${ctx.first_name} ${ctx.last_name} to group`)
+    },
+    {
+      label: "Add to Campaign",
+      onSelect: () => onAddToCampaign
+        ? onAddToCampaign(ctx.linkedin_id)
+        : alert(`Add ${ctx.first_name} ${ctx.last_name} to campaign`)
+    },
+    {
+      label: "Add to Deep Search Queue",
+      onSelect: () => onAddToDeepSearch?.(ctx.linkedin_id)
+    },
+    "separator",
+    {
+      label: "Delete",
+      variant: "destructive",
+      onSelect: () => alert(`Delete ${ctx.first_name} ${ctx.last_name}`)
+    }
+  ], [onAddNote, onCreateTask, onAddToGroup, onAddToCampaign, onAddToDeepSearch])
+
+  // Row click handler
+  const handleRowClick = React.useCallback((prospect) => {
     if (onRowClick) {
       onRowClick(prospect.linkedin_id)
     } else {
       alert(`row clicked '${prospect.linkedin_id}'`)
     }
-  }
-
-
-  // Show loading skeleton while loading
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <TableBulkActions actions={['']}/>
-        <TableSkeleton
-          headers={[
-            '', 'First Name', 'Last Name', 'Title', 'Status', 'Email',
-            'Company', 'Notes', 'Tasks', 'Variables', 'Enrichments', 
-            'Groups', 'Campaigns', ''
-          ]}
-          cellWidths={[
-            'w-8', 'w-32', 'w-32', 'w-48', 'w-20', 'w-40',
-            'w-40', 'w-8', 'w-8', 'w-8', 'w-8', 'w-8', 'w-8', 'w-16'
-          ]}
-          rowCount={10}
-        />
-
-        {/* Disabled pagination controls */}
-        <div className="opacity-50 pointer-events-none">
-          <TablePagination
-            table={table}
-            totalRows={0}
-            selectedCount={0}
-          />
-        </div>
-      </div>
-    )
-  }
-
-  // Show no results message
-  if (!prospects || prospects.length === 0) {
-    return (
-      <div className="text-center py-8 text-muted-foreground">
-        No prospects found
-      </div>
-    )
-  }
+  }, [onRowClick])
 
   return (
-    <div className="space-y-4">
-      {/* Bulk Actions */}
-      <TableBulkActions
-        actions={bulkActions}
-        selectedIds={selectedRows.map(row => row.original.linkedin_id)}
-      />
-
-      {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className="cursor-pointer"
-                  onClick={() => handleRowClick(row.original)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      handleRowClick(row.original)
-                    }
-                  }}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination */}
-      <TablePagination
-        mode="external"
-        paginationState={{ 
-          pageIndex: pageIndex, 
-          pageSize: pageSize, 
-          pageCount: Math.ceil(total / pageSize) 
-        }}
-        onPageIndexChange={(index) => setQuery({ page: index + 1 })}
-        onPageSizeChange={(size) => setQuery({ page_size: size, page: 1 })}
-        totalRows={total}
-        selectedCount={selectedCount}
-      />
-    </div>
+    <DataTable
+      columns={columns}
+      data={data || []}
+      rowId={(row) => row.linkedin_id}
+      loading={loading}
+      emptyMessage="No prospects found"
+      mode="external"
+      paginationState={paginationState}
+      onPaginationChange={handlePaginationChange}
+      sorting={sorting}
+      onSortingChange={handleSortingChange}
+      manualSorting={true}
+      bulkActions={bulkActions}
+      rowActions={rowActions}
+      onRowClick={handleRowClick}
+    />
   )
 }

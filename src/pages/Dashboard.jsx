@@ -20,7 +20,7 @@ import { PromptProvider } from '@/contexts/PromptContext'
 function DashboardContent() {
     const { user } = useAuth()
     const navigate = useNavigate()
-    const { refetch } = useProspects()
+    const { data, total, query, setQuery, resetFilters, isLoading, refetch } = useProspects()
 
     // State for HandleGroupsDialog
     const [addGroupOpen, setAddGroupOpen] = useState(false)
@@ -37,6 +37,19 @@ function DashboardContent() {
     // State for DeepSearchQueueDialog
     const [deepSearchDialogOpen, setDeepSearchDialogOpen] = useState(false)
     const [prospectIdsForDeepSearch, setProspectIdsForDeepSearch] = useState([])
+
+    // Filter and query handlers for child components
+    const handleApplyFilters = (newQuery) => {
+        setQuery({ ...newQuery, page: 1 })
+    }
+
+    const handleResetFilters = () => {
+        resetFilters()
+    }
+
+    const handleQueryChange = (queryUpdate) => {
+        setQuery(queryUpdate)
+    }
 
     const handleRowClick = (linkedinId) => {
         navigate(`/prospects/${linkedinId}`)
@@ -103,8 +116,18 @@ function DashboardContent() {
           <p className="text-muted-foreground">View and manage your prospects</p>
         </div>
         
-        <FilterBar />
+        <FilterBar 
+          query={query}
+          onApplyFilters={handleApplyFilters}
+          onResetFilters={handleResetFilters}
+          loading={isLoading}
+        />
         <ProspectsTable 
+          data={data}
+          total={total}
+          query={query}
+          onQueryChange={handleQueryChange}
+          loading={isLoading}
           onRowClick={handleRowClick}
           onAddNote={handleAddNote}
           onCreateTask={handleCreateTask}
