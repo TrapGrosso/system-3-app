@@ -113,6 +113,7 @@ export default function ProspectsTable({
     {
       accessorKey: "notes",
       header: "Notes",
+      enableSorting: false,
       cell: ({ row }) => {
         const notes = row.original.notes || []
         return (
@@ -133,6 +134,7 @@ export default function ProspectsTable({
     {
       accessorKey: "tasks",
       header: "Tasks",
+      enableSorting: false,
       cell: ({ row }) => {
         const tasks = row.original.tasks || []
         return (
@@ -166,6 +168,7 @@ export default function ProspectsTable({
     {
       accessorKey: "variables",
       header: "Variables",
+      enableSorting: false,
       cell: ({ row }) => {
         const variables = row.original.variables || []
         return (
@@ -196,6 +199,7 @@ export default function ProspectsTable({
     {
       accessorKey: "enrichments",
       header: "Enrichments",
+      enableSorting: false,
       cell: ({ row }) => {
         const enrichments = row.original.enrichments || []
         return (
@@ -222,6 +226,7 @@ export default function ProspectsTable({
     {
       accessorKey: "groups",
       header: "Groups",
+      enableSorting: false,
       cell: ({ row }) => {
         const groups = row.original.groups || []
         return (
@@ -242,6 +247,7 @@ export default function ProspectsTable({
     {
       accessorKey: "campaigns",
       header: "Campaigns",
+      enableSorting: false,
       cell: ({ row }) => {
         const campaigns = row.original.campaigns || []
         return (

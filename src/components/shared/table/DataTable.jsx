@@ -12,6 +12,7 @@ import { TableBulkActions } from './TableBulkActions'
 import { TableSkeleton } from './TableSkeleton'
 import { TablePagination } from './TablePagination'
 import { TableActionsDropdown } from './TableActionsDropdown'
+import { SortIcon } from './SortIcon'
 
 /**
  * Generic reusable data table component that handles all common table functionality
@@ -166,6 +167,29 @@ export function DataTable({
     }
   }
 
+  // Render sortable header with click handler and sort icon
+  const renderHeader = (header) => {
+    if (header.isPlaceholder) return null
+    
+    const canSort = header.column.getCanSort()
+    const headerContent = flexRender(header.column.columnDef.header, header.getContext())
+    
+    if (!canSort) {
+      return headerContent
+    }
+    
+    return (
+      <button
+        className="flex items-center hover:text-foreground transition-colors"
+        onClick={header.column.getToggleSortingHandler()}
+        type="button"
+      >
+        {headerContent}
+        <SortIcon direction={header.column.getIsSorted()} />
+      </button>
+    )
+  }
+
   // Generate skeleton headers from columns
   const skeletonHeaders = React.useMemo(() => {
     return finalColumns.map(col => {
@@ -224,9 +248,7 @@ export function DataTable({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                    {renderHeader(header)}
                   </TableHead>
                 ))}
               </TableRow>
