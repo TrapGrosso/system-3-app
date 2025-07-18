@@ -15,18 +15,22 @@ const STATUS_OPTIONS = [
   { value: 'failed', label: 'Failed' },
 ]
 
+const DATE_FIELD_OPTIONS = [
+  { value: 'start_time', label: 'Start Time' },
+  { value: 'end_time', label: 'End Time' },
+]
+
 export default function LogTableFilterBar({ query, onApplyFilters, onResetFilters, loading }) {
   // Local state for search input
   const [searchInput, setSearchInput] = React.useState(query.message || '')
 
   // Local state for single-value selects
   const [status, setStatus] = React.useState(query.status || '')
+  const [dateField, setDateField] = React.useState(query.date_field || 'start_time')
 
-  // Local state for date/time ranges
-  const [startTimeFrom, setStartTimeFrom] = React.useState(query.start_time_from || '')
-  const [endTimeTo, setEndTimeTo] = React.useState(query.end_time_to || '')
-  const [startDate, setStartDate] = React.useState(query.start_date || '')
-  const [endDate, setEndDate] = React.useState(query.end_date || '')
+  // Local state for date range
+  const [dateFrom, setDateFrom] = React.useState(query.date_from || '')
+  const [dateTo, setDateTo] = React.useState(query.date_to || '')
 
   // Sync local search input with external filter changes
   React.useEffect(() => {
@@ -42,60 +46,47 @@ export default function LogTableFilterBar({ query, onApplyFilters, onResetFilter
     }
   }, [query.status])
 
-  // Sync date/time ranges with external filter changes
   React.useEffect(() => {
-    if (query.start_time_from !== startTimeFrom) {
-      setStartTimeFrom(query.start_time_from || '')
+    if (query.date_field !== dateField) {
+      setDateField(query.date_field || 'start_time')
     }
-  }, [query.start_time_from])
+  }, [query.date_field])
+
+  // Sync date range with external filter changes
+  React.useEffect(() => {
+    if (query.date_from !== dateFrom) {
+      setDateFrom(query.date_from || '')
+    }
+  }, [query.date_from])
 
   React.useEffect(() => {
-    if (query.end_time_to !== endTimeTo) {
-      setEndTimeTo(query.end_time_to || '')
+    if (query.date_to !== dateTo) {
+      setDateTo(query.date_to || '')
     }
-  }, [query.end_time_to])
-
-  React.useEffect(() => {
-    if (query.start_date !== startDate) {
-      setStartDate(query.start_date || '')
-    }
-  }, [query.start_date])
-
-  React.useEffect(() => {
-    if (query.end_date !== endDate) {
-      setEndDate(query.end_date || '')
-    }
-  }, [query.end_date])
+  }, [query.date_to])
 
   const handleApplyFilters = () => {
     onApplyFilters({
       message: searchInput.trim(),
       status,
-      start_time_from: startTimeFrom,
-      end_time_to: endTimeTo,
-      start_date: startDate,
-      end_date: endDate
+      date_from: dateFrom,
+      date_to: dateTo,
+      date_field: dateField
     })
   }
 
   const handleReset = () => {
     setSearchInput('')
     setStatus('')
-    setStartTimeFrom('')
-    setEndTimeTo('')
-    setStartDate('')
-    setEndDate('')
+    setDateFrom('')
+    setDateTo('')
+    setDateField('start_time')
     onResetFilters()
   }
 
-  const handleTimeRangeChange = ({ from, to }) => {
-    setStartTimeFrom(from)
-    setEndTimeTo(to)
-  }
-
   const handleDateRangeChange = ({ from, to }) => {
-    setStartDate(from)
-    setEndDate(to)
+    setDateFrom(from)
+    setDateTo(to)
   }
 
   // Count active filters
@@ -163,7 +154,7 @@ export default function LogTableFilterBar({ query, onApplyFilters, onResetFilter
                 </div>
               </div>
 
-              {/* Status Filter */}
+              {/* Status and Date Field Filters */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label className="text-[13px] font-medium text-muted-foreground">Status</Label>
@@ -174,26 +165,25 @@ export default function LogTableFilterBar({ query, onApplyFilters, onResetFilter
                     placeholder="All Statuses"
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label className="text-[13px] font-medium text-muted-foreground">Date Field</Label>
+                  <SingleSelect
+                    value={dateField}
+                    onValueChange={setDateField}
+                    options={DATE_FIELD_OPTIONS}
+                    placeholder="Select field"
+                  />
+                </div>
               </div>
 
-              {/* Date and Time Filters */}
+              {/* Date Range Filter */}
               <div className="space-y-4">
-                {/* Time Range (with time) */}
                 <DateTimeRangePicker
-                  from={startTimeFrom}
-                  to={endTimeTo}
-                  onChange={handleTimeRangeChange}
-                  withTime={true}
-                  label="Time Range (absolute)"
-                />
-
-                {/* Date Range (date only) */}
-                <DateTimeRangePicker
-                  from={startDate}
-                  to={endDate}
+                  from={dateFrom}
+                  to={dateTo}
                   onChange={handleDateRangeChange}
                   withTime={false}
-                  label="Date Range (by date)"
+                  label={`Date Range (filtered by ${dateField === 'start_time' ? 'Start Time' : 'End Time'})`}
                 />
               </div>
             </div>

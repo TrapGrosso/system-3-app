@@ -64,10 +64,9 @@ export const useLogsQueryController = ({ userId, action }) => {
     sort_by: 'created_at',
     sort_dir: 'desc',
     status: '',
-    start_time_from: '',
-    end_time_to: '',
-    start_date: '',
-    end_date: '',
+    date_from: '',
+    date_to: '',
+    date_field: 'start_time',
     message: '',
   })
 
@@ -82,7 +81,7 @@ export const useLogsQueryController = ({ userId, action }) => {
     if (!queryApi.isError || queryApi.isFetching) return
 
     const hasExtraFilters = Object.values(query).some(
-      v => v !== '' && v !== null && v !== undefined && v !== 1 && v !== 10 && v !== 'created_at' && v !== 'desc'
+      v => v !== '' && v !== null && v !== undefined && v !== 1 && v !== 10 && v !== 'created_at' && v !== 'desc' && v !== 'start_time'
     )
 
     if (hasExtraFilters && !didFallback) {
@@ -94,10 +93,9 @@ export const useLogsQueryController = ({ userId, action }) => {
       setQuery(prev => ({
         ...prev,
         status: '',
-        start_time_from: '',
-        end_time_to: '',
-        start_date: '',
-        end_date: '',
+        date_from: '',
+        date_to: '',
+        date_field: 'start_time',
         message: '',
         page: 1,
       }))
@@ -136,10 +134,9 @@ export const useLogsQueryController = ({ userId, action }) => {
       setQuery(prev => ({
         ...prev,
         status: '',
-        start_time_from: '',
-        end_time_to: '',
-        start_date: '',
-        end_date: '',
+        date_from: '',
+        date_to: '',
+        date_field: 'start_time',
         message: '',
         page: 1, // Reset to first page when clearing filters
       }))
