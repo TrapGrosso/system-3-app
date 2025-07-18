@@ -179,10 +179,9 @@ export const useLogsQueryController = ({ userId, action }) => {
  * - sort_by (optional): Column to sort by ('duration_ms', 'created_at'), default 'created_at'
  * - sort_dir (optional): Sort direction, 'asc' or 'desc', default 'desc'
  * - status (optional): Filter by log status ('in_progress', 'success', 'failed')
- * - start_time_from (optional): Filter logs that started >= this timestamp (ISO format)
- * - end_time_to (optional): Filter logs that ended <= this timestamp (ISO format)
- * - start_date (optional): Filter logs that started on this date (YYYY-MM-DD format)
- * - end_date (optional): Filter logs that ended on this date (YYYY-MM-DD format)
+ * - date_from (optional): Start date for filtering (YYYY-MM-DD format)
+ * - date_to (optional): End date for filtering (YYYY-MM-DD format, inclusive)
+ * - date_field (optional): Column to apply date filtering to ('start_time', 'end_time'), default 'start_time'
  * - message (optional): Search within log messages (case-insensitive partial match)
  * 
  * Example Requests:
@@ -196,17 +195,20 @@ export const useLogsQueryController = ({ userId, action }) => {
  * Filter by status:
  * GET /getLogsByAction?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&action=add_leads&status=failed
  * 
- * Filter by time range:
- * GET /getLogsByAction?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&action=add_leads&start_time_from=2025-07-01T00:00:00Z&end_time_to=2025-07-31T23:59:59Z
+ * Filter by date range (inclusive):
+ * GET /getLogsByAction?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&action=add_leads&date_from=2025-06-01&date_to=2025-07-31
  * 
- * Filter by specific date:
- * GET /getLogsByAction?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&action=add_leads&start_date=2025-07-14
+ * Filter by date range on end_time:
+ * GET /getLogsByAction?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&action=add_leads&date_from=2025-06-01&date_to=2025-07-31&date_field=end_time
+ * 
+ * Filter from specific date onwards:
+ * GET /getLogsByAction?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&action=add_leads&date_from=2025-07-14
  * 
  * Search in messages:
  * GET /getLogsByAction?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&action=add_leads&message=error&status=failed
  * 
  * Combined filters:
- * GET /getLogsByAction?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&action=add_leads&start_date=2025-07-14&status=success&sort_by=duration_ms&sort_dir=asc
+ * GET /getLogsByAction?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&action=add_leads&date_from=2025-07-14&date_to=2025-07-20&status=success&sort_by=duration_ms&sort_dir=asc
  * 
  * Example Success Response (200):
  * {
@@ -250,6 +252,7 @@ export const useLogsQueryController = ({ userId, action }) => {
  * {"error": "Parameter validation failed: Invalid value \"invalid_status\". Must be one of: in_progress, success, failed"}
  * {"error": "Parameter validation failed: Invalid date format \"2025-13-32\". Expected YYYY-MM-DD"}
  * {"error": "Parameter validation failed: Value 150 exceeds maximum of 100"}
+ * {"error": "Parameter validation failed: Invalid value \"invalid_field\". Must be one of: start_time, end_time"}
  * 
  * Database error (500):
  * {"error": "Database error: [specific error message]"}

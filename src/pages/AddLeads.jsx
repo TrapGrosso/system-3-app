@@ -133,7 +133,7 @@ export default function AddLeads() {
                             <TabsContent value="logs" className="space-y-4">
                                 <LogTableFilterBar
                                     query={logsQuery}
-                                    onApplyFilters={(filters) => setLogsQuery(prev => ({ ...prev, ...filters, page: 1 }))}
+                                    onApplyFilters={setLogsQuery}
                                     onResetFilters={resetLogsFilters}
                                     loading={isLoadingLogs || isFetchingLogs}
                                 />
