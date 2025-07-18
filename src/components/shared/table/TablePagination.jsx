@@ -27,6 +27,7 @@ export function TablePagination({
   totalRows,
   selectedCount = 0,
   pageSizes = [10, 20, 30, 50],
+  enableSelection,
   className,
   // External mode props
   mode = 'internal',
@@ -99,13 +100,13 @@ export function TablePagination({
   return (
     <div className={cn("flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between", className)} {...props}>
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <span>
+        {enableSelection && <span>
           {selectedCount} of {total} row(s) selected.
-        </span>
+        </span>}
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2">
+        {total > pageSize ? <div className="flex items-center gap-2">
           <Label htmlFor="page-size" className="text-sm font-medium">
             Rows per page:
           </Label>
@@ -126,7 +127,7 @@ export function TablePagination({
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </div> : null }
 
         <div className="text-sm font-medium">
           Page {pageIndex + 1} of {pageCount}

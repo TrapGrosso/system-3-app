@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAddLeads } from '@/api/add-leads/addLeads'
 import { useRetryAddLeads } from '@/api/add-leads/retryAddLeads'
-import { useFetchAddLeadLogs } from '@/api/add-leads/fetchAddLeadLogs'
+import { useLogsQueryController } from '@/api/log/getLogsByAction'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -55,14 +55,21 @@ export default function AddLeads() {
         }
     })
 
-    // Fetch add lead logs
-    const { 
-        data: logs = [], 
-        isLoading: isLoadingLogs, 
-        isError: isErrorLogs, 
+    // Fetch add lead logs using new API
+    const {
+        data: logs = [],
+        total: logsTotal = 0,
+        query: logsQuery,
+        setQuery: setLogsQuery,
+        isLoading: isLoadingLogs,
+        isFetching: isFetchingLogs,
+        isError: isErrorLogs,
         error: logsError,
         refetch: refetchLogs
-    } = useFetchAddLeadLogs(user.id)
+    } = useLogsQueryController({
+        userId: user.id,
+        action: 'add_leads'
+    })
 
     const handleSubmit = (urls) => {
         if (urls.length === 0) return
@@ -123,8 +130,11 @@ export default function AddLeads() {
                             
                             <TabsContent value="logs" className="space-y-4">
                                 <LogTable 
-                                    logs={logs}
-                                    isLoading={isLoadingLogs}
+                                    data={logs}
+                                    total={logsTotal}
+                                    query={logsQuery}
+                                    onQueryChange={setLogsQuery}
+                                    loading={isLoadingLogs || isFetchingLogs}
                                     isError={isErrorLogs}
                                     error={logsError}
                                     onRetry={handleRetry}

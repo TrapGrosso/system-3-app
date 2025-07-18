@@ -291,6 +291,7 @@ export function DataTable({
 
       {/* Pagination */}
       <TablePagination
+        enableSelection={enableSelection}
         table={table}
         totalRows={isExternal ? paginationState?.totalElements || paginationState?.pageCount * paginationState?.pageSize : data.length}
         selectedCount={selectedCount}

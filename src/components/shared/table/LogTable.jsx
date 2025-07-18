@@ -1,9 +1,9 @@
+import * as React from "react"
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { RotateCcw, AlertCircle, Loader2 } from 'lucide-react'
+import { DataTable } from './DataTable'
 
 const getStatusBadge = (status) => {
   switch (status) {
@@ -46,54 +46,142 @@ const formatDuration = (durationMs) => {
 }
 
 export const LogTable = ({ 
-  logs = [], 
-  isLoading = false, 
-  isError = false, 
+  data = [],
+  total = 0,
+  query,
+  onQueryChange,
+  loading = false,
+  isError = false,
   error = null,
   onRetry,
   isRetryPending = false
 }) => {
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium">Processing Logs</h3>
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="text-sm text-muted-foreground">Loading...</span>
-          </div>
+  // Column definitions for DataTable
+  const columns = React.useMemo(() => [
+    {
+      accessorKey: "status",
+      header: "Status",
+      enableSorting: false,
+      cell: ({ row }) => getStatusBadge(row.original.status),
+    },
+    {
+      accessorKey: "start_time",
+      header: "Start Time",
+      enableSorting: false,
+      cell: ({ row }) => (
+        <div className="font-mono text-xs">
+          {formatDateTime(row.original.start_time)}
         </div>
-        
-        <div className="border rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[100px]">Status</TableHead>
-                <TableHead className="w-[180px]">Start Time</TableHead>
-                <TableHead className="w-[180px]">End Time</TableHead>
-                <TableHead className="w-[100px]">Duration</TableHead>
-                <TableHead>Message</TableHead>
-                <TableHead className="w-[80px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {[...Array(3)].map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell><Skeleton className="h-6 w-16" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-                  <TableCell><Skeleton className="h-8 w-16" /></TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+      ),
+    },
+    {
+      accessorKey: "end_time", 
+      header: "End Time",
+      enableSorting: false,
+      cell: ({ row }) => (
+        <div className="font-mono text-xs">
+          {formatDateTime(row.original.end_time)}
         </div>
-      </div>
-    )
-  }
+      ),
+    },
+    {
+      accessorKey: "duration_ms",
+      header: "Duration",
+      cell: ({ row }) => (
+        <div className="font-mono text-xs">
+          {formatDuration(row.original.duration_ms)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "message",
+      header: "Message",
+      enableSorting: false, 
+      cell: ({ row }) => (
+        <div className="max-w-[300px]">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-sm truncate block cursor-help">
+                {row.original.message}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-xs">
+              <p className="text-xs">{row.original.message}</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      ),
+    },
+    {
+      id: "actions",
+      header: null,
+      enableSorting: false,
+      cell: ({ row }) => {
+        const log = row.original
+        return log.status === 'failed' && log.retry_eligible ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              onRetry(log.id)
+            }}
+            disabled={isRetryPending}
+            className="h-8 w-full"
+          >
+            {isRetryPending ? (
+              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+            ) : (
+              <RotateCcw className="h-3 w-3 mr-1" />
+            )}
+            Retry
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled
+            className="h-8 w-full opacity-50 cursor-not-allowed"
+          >
+            <RotateCcw className="h-3 w-3 mr-1" />
+            Retry
+          </Button>
+        )
+      },
+    },
+  ], [onRetry, isRetryPending])
+
+  // External pagination state (handled in table)
+  const paginationState = React.useMemo(() => ({
+    pageIndex: query?.page ? query.page - 1 : 0,
+    pageSize: query?.page_size || 10,
+    pageCount: Math.ceil(total / (query?.page_size || 10)),
+    totalElements: total,
+  }), [query, total])
+
+  // Pagination handler (kept in table file)
+  const handlePaginationChange = React.useCallback((update) => {
+    if (update.pageIndex !== undefined) {
+      onQueryChange({ page: update.pageIndex + 1 })
+    }
+    if (update.pageSize !== undefined) {
+      onQueryChange({ page_size: update.pageSize, page: 1 })
+    }
+  }, [onQueryChange])
+
+  // Sorting state and handler
+  const sorting = React.useMemo(() => [
+    { id: query?.sort_by || 'created_at', desc: (query?.sort_dir || 'desc') === 'desc' }
+  ], [query?.sort_by, query?.sort_dir])
+
+  const handleSortingChange = React.useCallback((updatedSorting) => {
+    const newSorting = typeof updatedSorting === 'function' ? updatedSorting(sorting) : updatedSorting
+    const s = newSorting[0] || {}
+    onQueryChange({ 
+      sort_by: s.id || 'created_at', 
+      sort_dir: s.desc ? 'desc' : 'asc' 
+    })
+  }, [onQueryChange, sorting])
 
   // Error state
   if (isError) {
@@ -115,94 +203,35 @@ export const LogTable = ({
     )
   }
 
+  // Header with count
+  const header = (
+    <div className="flex items-center justify-between mb-4">
+      <h3 className="text-lg font-medium">Processing Logs</h3>
+      {!loading && (
+        <Badge variant="outline" className="text-xs">
+          {total} total logs
+        </Badge>
+      )}
+    </div>
+  )
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">Processing Logs</h3>
-        <Badge variant="outline" className="text-xs">
-          {logs.length} total logs
-        </Badge>
-      </div>
-      
-      {logs.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          <p className="text-sm">No logs available yet.</p>
-          <p className="text-xs mt-1">Logs will appear here after processing leads.</p>
-        </div>
-      ) : (
-        <div className="border rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[100px]">Status</TableHead>
-                <TableHead className="w-[180px]">Start Time</TableHead>
-                <TableHead className="w-[180px]">End Time</TableHead>
-                <TableHead className="w-[100px]">Duration</TableHead>
-                <TableHead>Message</TableHead>
-                <TableHead className="w-[80px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {logs.map((log) => (
-                <TableRow key={log.id}>
-                  <TableCell>
-                    {getStatusBadge(log.status)}
-                  </TableCell>
-                  <TableCell className="font-mono text-xs">
-                    {formatDateTime(log.start_time)}
-                  </TableCell>
-                  <TableCell className="font-mono text-xs">
-                    {formatDateTime(log.end_time)}
-                  </TableCell>
-                  <TableCell className="font-mono text-xs">
-                    {formatDuration(log.duration_ms)}
-                  </TableCell>
-                  <TableCell className="max-w-[300px]">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="text-sm truncate block cursor-help">
-                          {log.message}
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-xs">
-                        <p className="text-xs">{log.message}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell>
-                    {log.status === 'failed' && log.retry_eligible ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onRetry(log.id)}
-                        disabled={isRetryPending}
-                        className="h-8 w-full"
-                      >
-                        {isRetryPending ? (
-                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                        ) : (
-                          <RotateCcw className="h-3 w-3 mr-1" />
-                        )}
-                        Retry
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled
-                        className="h-8 w-full opacity-50 cursor-not-allowed"
-                      >
-                        <RotateCcw className="h-3 w-3 mr-1" />
-                        Retry
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+      {header}
+      <DataTable
+        columns={columns}
+        data={data}
+        rowId={(row) => row.id}
+        loading={loading}
+        emptyMessage="No logs available yet. Logs will appear here after processing leads."
+        mode="external"
+        paginationState={paginationState}
+        onPaginationChange={handlePaginationChange}
+        sorting={sorting}
+        onSortingChange={handleSortingChange}
+        manualSorting={true}
+        enableSelection={false}
+      />
     </div>
   )
 }
