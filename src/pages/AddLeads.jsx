@@ -11,6 +11,7 @@ import { ManualInput } from '@/components/add-leads/ManualInput'
 import { CsvUpload } from '@/components/add-leads/CsvUpload'
 import { SubmitSection } from '@/components/add-leads/SubmitSection'
 import { LogTable } from '@/components/shared/table/LogTable'
+import LogTableFilterBar from '@/components/shared/filter/LogTableFilterBar'
 
 export default function AddLeads() {
     const { user } = useAuth()
@@ -61,6 +62,7 @@ export default function AddLeads() {
         total: logsTotal = 0,
         query: logsQuery,
         setQuery: setLogsQuery,
+        resetFilters: resetLogsFilters,
         isLoading: isLoadingLogs,
         isFetching: isFetchingLogs,
         isError: isErrorLogs,
@@ -129,6 +131,12 @@ export default function AddLeads() {
                             </TabsContent>
                             
                             <TabsContent value="logs" className="space-y-4">
+                                <LogTableFilterBar
+                                    query={logsQuery}
+                                    onApplyFilters={(filters) => setLogsQuery(prev => ({ ...prev, ...filters, page: 1 }))}
+                                    onResetFilters={resetLogsFilters}
+                                    loading={isLoadingLogs || isFetchingLogs}
+                                />
                                 <LogTable 
                                     data={logs}
                                     total={logsTotal}

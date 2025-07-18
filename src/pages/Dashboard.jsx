@@ -6,7 +6,6 @@ import { TaskProvider } from '@/contexts/TaskContext'
 import { useNavigate } from 'react-router-dom'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { DataTable } from "@/components/data-table"
 import { SectionCards } from "@/components/section-cards"
 import ProspectsTable from '@/components/dashboard/ProspectsTable'
 import FilterBar from '@/components/dashboard/FilterBar'
