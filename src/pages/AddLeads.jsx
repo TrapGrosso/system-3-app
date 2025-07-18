@@ -12,13 +12,15 @@ import { CsvUpload } from '@/components/add-leads/CsvUpload'
 import { SubmitSection } from '@/components/add-leads/SubmitSection'
 import { LogTable } from '@/components/shared/table/LogTable'
 import LogTableFilterBar from '@/components/shared/filter/LogTableFilterBar'
-import { toast } from '@/components/ui/sonner'
+import { toast } from 'sonner'
+import SubmitLeadsDialog from '@/components/dialogs/SubmitLeadsDialog'
 
 export default function AddLeads() {
     const { user } = useAuth()
     const [manualUrls, setManualUrls] = useState([])
     const [csvUrls, setCsvUrls] = useState([])
     const [activeTab, setActiveTab] = useState('manual')
+    const [submitDialogOpen, setSubmitDialogOpen] = useState(false)
 
     // Combine URLs from both sources and remove duplicates
     const allUrls = [...new Set([...manualUrls, ...csvUrls])]
@@ -64,7 +66,7 @@ export default function AddLeads() {
         action: 'add_leads'
     })
 
-    const handleSubmit = (urls) => {
+    const handleSubmitDialogConfirm = ({ urls, options }) => {
         if (urls.length === 0) return
         
         const leads = urls.map(url => ({
@@ -73,10 +75,12 @@ export default function AddLeads() {
         
         const payload = {
             user_id: user.id,
-            leads
+            leads,
+            options
         }
         
         submitLeads(payload)
+        setSubmitDialogOpen(false)
     }
 
     const handleRetry = (logId) => {
@@ -140,7 +144,15 @@ export default function AddLeads() {
                         
                         <SubmitSection 
                             urls={allUrls}
-                            onSubmit={handleSubmit}
+                            onSubmit={() => setSubmitDialogOpen(true)}
+                            isPending={isPending || isRetryPending}
+                        />
+                        
+                        <SubmitLeadsDialog
+                            open={submitDialogOpen}
+                            onOpenChange={setSubmitDialogOpen}
+                            urls={allUrls}
+                            onConfirm={handleSubmitDialogConfirm}
                             isPending={isPending || isRetryPending}
                         />
                     </CardContent>
