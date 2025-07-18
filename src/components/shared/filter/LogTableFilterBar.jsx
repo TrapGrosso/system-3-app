@@ -91,7 +91,7 @@ export default function LogTableFilterBar({ query, onApplyFilters, onResetFilter
 
   // Count active filters
   const activeFilters = Object.entries(query).filter(([key, value]) => 
-    key !== 'page' && key !== 'page_size' && key !== 'sort_by' && key !== 'sort_dir' && value
+    key !== 'page' && key !== 'page_size' && key !== 'sort_by' && key !== 'sort_dir' && value !== 'start_time' && value
   ).length
 
   return (
