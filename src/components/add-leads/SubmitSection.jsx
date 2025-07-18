@@ -1,9 +1,9 @@
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
-import { CheckCircle, AlertCircle, Send } from 'lucide-react'
+import { Send } from 'lucide-react'
 
-export const SubmitSection = ({ urls, onSubmit, isPending, successMessage, errorMessage }) => {
+export const SubmitSection = ({ urls, onSubmit, isPending }) => {
   const handleSubmit = () => {
     if (urls.length === 0) return
     onSubmit(urls)
@@ -40,25 +40,6 @@ export const SubmitSection = ({ urls, onSubmit, isPending, successMessage, error
           )}
         </Button>
       </div>
-      
-      {/* Status Messages */}
-      {successMessage && (
-        <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
-          <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-          <span className="text-sm text-green-700 dark:text-green-300">
-            {successMessage}
-          </span>
-        </div>
-      )}
-      
-      {errorMessage && (
-        <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-          <span className="text-sm text-red-700 dark:text-red-300">
-            Error: {errorMessage}
-          </span>
-        </div>
-      )}
     </div>
   )
 }

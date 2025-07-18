@@ -12,14 +12,13 @@ import { CsvUpload } from '@/components/add-leads/CsvUpload'
 import { SubmitSection } from '@/components/add-leads/SubmitSection'
 import { LogTable } from '@/components/shared/table/LogTable'
 import LogTableFilterBar from '@/components/shared/filter/LogTableFilterBar'
+import { toast } from '@/components/ui/sonner'
 
 export default function AddLeads() {
     const { user } = useAuth()
     const [manualUrls, setManualUrls] = useState([])
     const [csvUrls, setCsvUrls] = useState([])
     const [activeTab, setActiveTab] = useState('manual')
-    const [successMessage, setSuccessMessage] = useState('')
-    const [errorMessage, setErrorMessage] = useState('')
 
     // Combine URLs from both sources and remove duplicates
     const allUrls = [...new Set([...manualUrls, ...csvUrls])]
@@ -27,32 +26,24 @@ export default function AddLeads() {
     // Move the useAddLeads hook here
     const { mutate: submitLeads, isPending } = useAddLeads({
         onSuccess: (data) => {
-            setErrorMessage('') // Clear any existing errors
-            setSuccessMessage(data.message || 'Leads submitted successfully')
+            toast.success(data.message || 'Leads submitted successfully')
             setManualUrls([])
             setCsvUrls([])
             refetchLogs()
-            console.log('Success:', data)
         },
         onError: (error) => {
-            setSuccessMessage('') // Clear any existing success
-            setErrorMessage(error?.message || 'Failed to submit leads')
-            console.error('Error:', error)
+            toast.error(error?.message || 'Failed to submit leads')
         }
     })
 
     // Retry leads hook
     const { mutate: retryAddLeads, isPending: isRetryPending } = useRetryAddLeads({
         onSuccess: (data) => {
-            setErrorMessage('') // Clear any existing errors
-            setSuccessMessage(data.message || 'Retry submitted successfully')
+            toast.success(data.message || 'Retry submitted successfully')
             refetchLogs()
-            console.log('Retry submitted successfully')
         },
         onError: (error) => {
-            setSuccessMessage('') // Clear any existing success
-            setErrorMessage(error?.message || 'Failed to submit retry')
-            console.error('Retry error:', error)
+            toast.error(error?.message || 'Failed to submit retry')
         }
     })
 
@@ -76,9 +67,6 @@ export default function AddLeads() {
     const handleSubmit = (urls) => {
         if (urls.length === 0) return
         
-        setSuccessMessage('') // Clear messages before new operation
-        setErrorMessage('')
-        
         const leads = urls.map(url => ({
             url: url.trim()
         }))
@@ -92,9 +80,6 @@ export default function AddLeads() {
     }
 
     const handleRetry = (logId) => {
-        setSuccessMessage('') // Clear messages before new operation
-        setErrorMessage('')
-        
         retryAddLeads({ log_id: logId, user_id: user.id })
     }
 
@@ -157,8 +142,6 @@ export default function AddLeads() {
                             urls={allUrls}
                             onSubmit={handleSubmit}
                             isPending={isPending || isRetryPending}
-                            successMessage={successMessage}
-                            errorMessage={errorMessage}
                         />
                     </CardContent>
                 </Card>
