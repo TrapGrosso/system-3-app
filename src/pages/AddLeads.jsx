@@ -69,9 +69,7 @@ export default function AddLeads() {
     const handleSubmitDialogConfirm = ({ urls, options }) => {
         if (urls.length === 0) return
         
-        const leads = urls.map(url => ({
-            url: url.trim()
-        }))
+        const leads = urls.map(url => url.trim())
         
         const payload = {
             user_id: user.id,

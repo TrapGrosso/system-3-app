@@ -27,15 +27,16 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
 
 import { useGroups } from "@/contexts/GroupsContext"
+import PromptMultiSelect from "@/components/shared/dialog/PromptMultiSelect"
 
 // Multi-select options for lead processing
 const MULTI_OPTIONS = [
-  { value: "send_notification", label: "Send email notification" },
-  { value: "auto_followup", label: "Enable auto-follow-up" },
-  { value: "high_priority", label: "Mark as high priority" },
-  { value: "skip_duplicates", label: "Skip duplicates" },
-  { value: "validate_emails", label: "Validate emails" },
-  { value: "extract_company", label: "Extract company data" },
+  { value: "send_notification", label: "Send email notification when finished" },
+  { value: "find_emails", label: "find emails" },
+  { value: "ignore_prospect_company", label: "Ignore prospect's company" },
+  { value: "ignore_all_companies", label: "Ignore all companies" },
+  { value: "add_to_ds_queue", label: "Add prospects to deep search queue" },
+  { value: "ignore_other_companies", label: "Ignore provided companies" },
 ]
 
 function SubmitLeadsDialog({ 
@@ -49,6 +50,7 @@ function SubmitLeadsDialog({
 }) {
   const [selectedGroupId, setSelectedGroupId] = useState("")
   const [selectedOptions, setSelectedOptions] = useState([])
+  const [selectedPromptIds, setSelectedPromptIds] = useState([])
   
   // Get groups context
   const {
@@ -64,7 +66,10 @@ function SubmitLeadsDialog({
     const options = {
       add_to_group: !!selectedGroupId,
       ...(selectedGroupId && { group: selectedGroup }),
-      flags: selectedOptions
+      flags: selectedOptions,
+      ...(selectedOptions.includes('add_to_ds_queue') && {
+        prompt_ids: selectedPromptIds
+      })
     }
     
     onConfirm({ urls, options })
@@ -78,6 +83,7 @@ function SubmitLeadsDialog({
       // Reset state when closing
       setSelectedGroupId("")
       setSelectedOptions([])
+      setSelectedPromptIds([])
     }
   }
 
@@ -182,6 +188,19 @@ function SubmitLeadsDialog({
             </div>
           </div>
 
+          {/* Deep Search Queue Prompts */}
+          {selectedOptions.includes('add_to_ds_queue') && (
+            <>
+              <Separator />
+              <PromptMultiSelect
+                value={selectedPromptIds}
+                onChange={setSelectedPromptIds}
+                disabled={isPending}
+                label="Select prompts for deep search queue"
+              />
+            </>
+          )}
+
           <Separator />
 
           {/* Summary */}
@@ -214,7 +233,11 @@ function SubmitLeadsDialog({
           </Button>
           <Button 
             onClick={handleSubmit}
-            disabled={urlCount === 0 || isPending}
+            disabled={
+              urlCount === 0 || 
+              isPending || 
+              (selectedOptions.includes('add_to_ds_queue') && selectedPromptIds.length === 0)
+            }
           >
             {isPending && <Spinner size="sm" className="mr-2" />}
             <Send className="h-4 w-4 mr-2" />
