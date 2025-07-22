@@ -13,7 +13,7 @@ import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
 import ProspectNotesDialog from '@/components/dialogs/ProspectNotesDialog'
 import ProspectTasksDialog from '@/components/dialogs/ProspectTasksDialog'
 import DeepSearchQueueDialog from '@/components/dialogs/DeepSearchQueueDialog'
-import ProspectEnrichmentsDialog from '@/components/dialogs/ProspectEnrichmentsDialog'
+import ProspectEnrichmentsDialog from '@/components/dialogs/enrichments/ProspectEnrichmentsDialog'
 import { DeepSearchQueueProvider } from '@/contexts/DeepSearchQueueContext'
 import { PromptProvider } from '@/contexts/PromptContext'
 

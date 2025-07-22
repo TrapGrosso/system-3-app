@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useGroups } from '@/contexts/GroupsContext'
 import { useFetchCampaigns } from '@/api/campaign-context/fetchCampaigns'
-import { useGetAllPrompts } from '@/api/prompt-context/getAllPrompts'
+import { useAllPrompts } from "@/contexts/PromptContext"
 import { useAuth } from '@/contexts/AuthContext'
 import { MultiSelectChipPicker } from "../shared/filter/MultiSelectChipPicker"
 import { SingleSelect } from "../shared/filter/SingleSelect"
@@ -51,7 +51,7 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
   const { user } = useAuth()
   const { groups = [] } = useGroups()
   const { data: campaigns = [] } = useFetchCampaigns(user?.id)
-  const { data: prompts = [] } = useGetAllPrompts(user?.id)
+  const { data: prompts = [] } = useAllPrompts()
 
   // Local state for search input and selected fields
   const [searchInput, setSearchInput] = React.useState(query.q || '')

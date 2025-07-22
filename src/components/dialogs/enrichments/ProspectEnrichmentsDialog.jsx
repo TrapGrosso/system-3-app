@@ -17,34 +17,11 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 
 import { DataTable } from "@/components/shared/table/DataTable"
 import PromptMultiSelect from "@/components/shared/dialog/PromptMultiSelect"
+import { EnrichmentFilters } from "./EnrichmentFilters"
 import { useGetProspectEnrichments } from "@/api/variable-dialog/getProspectEnrichments"
-
-// Utility to flatten enrichments data
-const flattenEnrichments = (data) => {
-  if (!data) return []
-  
-  return data.flatMap(prospect => [
-    ...(prospect.prospectEnrichments || []).map(enrichment => ({
-      ...enrichment,
-      prospect_id: prospect.prospect_id,
-      prospect_name: `${prospect.first_name} ${prospect.last_name}`,
-      scope: 'prospect',
-      type: enrichment.type || 'profile'
-    })),
-    ...(prospect.companyEnrichments || []).map(enrichment => ({
-      ...enrichment,
-      prospect_id: prospect.prospect_id,
-      prospect_name: `${prospect.first_name} ${prospect.last_name}`,
-      scope: 'company',
-      type: enrichment.type || 'company_profile'
-    }))
-  ])
-}
 
 // API call to post variables
 const postVariablesFromEnrichments = async (payload) => {
@@ -73,14 +50,16 @@ function ProspectEnrichmentsDialog({
   children
 }) {
   const [step, setStep] = useState('select')
-  const [selectedRowIds, setSelectedRowIds] = useState({})
   const [selectedPromptIds, setSelectedPromptIds] = useState([])
-  const [promptFilterInput, setPromptFilterInput] = useState('')
-  const [showPromptFilter, setShowPromptFilter] = useState(false)
+  const [filters, setFilters] = useState({
+    promptIds: [],
+    entityKinds: [],
+    sources: []
+  })
 
-  // Fetch enrichments data
+  // Fetch enrichments data - now already flattened
   const { 
-    data: enrichmentsData, 
+    data: enrichmentsData = [], 
     isLoading: isLoadingEnrichments, 
     isError: isErrorEnrichments,
     error: enrichmentsError
@@ -99,17 +78,36 @@ function ProspectEnrichmentsDialog({
     }
   })
 
-  // Flatten enrichments for table
-  const flattenedEnrichments = useMemo(() => 
-    flattenEnrichments(enrichmentsData), 
-    [enrichmentsData]
-  )
+  // Filter enrichments based on current filters
+  const filteredEnrichments = useMemo(() => {
+    return enrichmentsData.filter(enrichment => {
+      // Filter by prompt IDs
+      if (filters.promptIds.length > 0) {
+        if (!enrichment.prompt?.id || !filters.promptIds.includes(enrichment.prompt.id)) {
+          return false
+        }
+      }
 
-  // Selected enrichments
-  const selectedEnrichments = useMemo(() => 
-    flattenedEnrichments.filter(enrichment => selectedRowIds[enrichment.id]),
-    [flattenedEnrichments, selectedRowIds]
-  )
+      // Filter by entity kinds
+      if (filters.entityKinds.length > 0) {
+        if (!filters.entityKinds.includes(enrichment.entity_kind)) {
+          return false
+        }
+      }
+
+      // Filter by sources
+      if (filters.sources.length > 0) {
+        if (!filters.sources.includes(enrichment.source)) {
+          return false
+        }
+      }
+
+      return true
+    })
+  }, [enrichmentsData, filters])
+
+  // Selected enrichments are always all filtered enrichments
+  const selectedEnrichments = filteredEnrichments
 
   // Group selected enrichments by prospect
   const selectedByProspect = useMemo(() => {
@@ -123,35 +121,40 @@ function ProspectEnrichmentsDialog({
     return grouped
   }, [selectedEnrichments])
 
-  // Table columns
+  // Table columns - updated for new API structure
   const columns = useMemo(() => [
     {
-      accessorKey: 'scope',
+      accessorKey: 'entity_kind',
       header: 'Type',
+      enableSorting: false,
       cell: ({ row }) => (
-        <Badge variant={row.original.scope === 'prospect' ? 'default' : 'secondary'}>
-          {row.original.scope}
+        <Badge variant={row.original.entity_kind === 'prospect' ? 'default' : 'secondary'}>
+          {row.original.entity_kind}
         </Badge>
       )
     },
     {
       accessorKey: 'source',
       header: 'Source',
+      enableSorting: false,
       cell: ({ row }) => row.original.source || '—'
     },
     {
       accessorKey: 'prompt',
       header: 'Prompt',
+      enableSorting: false,
       cell: ({ row }) => row.original.prompt?.name || '—'
     },
     {
       accessorKey: 'created_at',
       header: 'Created',
+      enableSorting: false,
       cell: ({ row }) => new Date(row.original.created_at).toLocaleString()
     },
     {
       accessorKey: 'prospect_name',
       header: 'Prospect',
+      enableSorting: false,
       cell: ({ row }) => (
         <span className="truncate max-w-32" title={row.original.prospect_name}>
           {row.original.prospect_name}
@@ -160,76 +163,23 @@ function ProspectEnrichmentsDialog({
     }
   ], [])
 
-  // Bulk actions for table
-  const bulkActions = [
-    { label: 'Select All', value: 'all' },
-    { label: 'Select Prospect-type', value: 'prospect' },
-    { label: 'Select Company-type', value: 'company' },
-    { label: 'Select by Prompt...', value: 'prompt' },
-    'separator',
-    { label: 'Clear Selection', value: 'clear', variant: 'destructive' }
-  ]
-
-  // Handle bulk actions
-  const handleBulkAction = (action, selectedIds) => {
-    switch (action) {
-      case 'all':
-        const allIds = {}
-        flattenedEnrichments.forEach(e => { allIds[e.id] = true })
-        setSelectedRowIds(allIds)
-        break
-      case 'prospect':
-        const prospectIds = {}
-        flattenedEnrichments.filter(e => e.scope === 'prospect').forEach(e => { prospectIds[e.id] = true })
-        setSelectedRowIds(prev => ({ ...prev, ...prospectIds }))
-        break
-      case 'company':
-        const companyIds = {}
-        flattenedEnrichments.filter(e => e.scope === 'company').forEach(e => { companyIds[e.id] = true })
-        setSelectedRowIds(prev => ({ ...prev, ...companyIds }))
-        break
-      case 'prompt':
-        setShowPromptFilter(true)
-        break
-      case 'clear':
-        setSelectedRowIds({})
-        break
-    }
-  }
-
-  // Handle prompt filter apply
-  const handleApplyPromptFilter = () => {
-    if (promptFilterInput.trim()) {
-      const promptIds = {}
-      flattenedEnrichments
-        .filter(e => 
-          e.prompt?.name?.toLowerCase().includes(promptFilterInput.toLowerCase()) &&
-          e.type !== 'create_variable'
-        )
-        .forEach(e => { promptIds[e.id] = true })
-      setSelectedRowIds(prev => ({ ...prev, ...promptIds }))
-      setPromptFilterInput('')
-      setShowPromptFilter(false)
-    }
-  }
-
   // Handle close dialog
   const handleClose = () => {
     setStep('select')
-    setSelectedRowIds({})
     setSelectedPromptIds([])
-    setPromptFilterInput('')
-    setShowPromptFilter(false)
+    setFilters({ promptIds: [], entityKinds: [], sources: [] })
     onOpenChange?.(false)
   }
 
   // Handle submit
   const handleSubmit = () => {
-    const payload = prospectIds.map(prospect_id => ({
-      prospect_id,
-      enrichment_ids: selectedByProspect.get(prospect_id) || [],
-      prompt_ids: selectedPromptIds
-    }))
+    const payload = [...selectedByProspect.entries()].map(
+      ([prospect_id, enrichment_ids]) => ({
+        prospect_id,
+        enrichment_ids,
+        prompt_ids: selectedPromptIds
+      })
+    )
 
     postMutation.mutate(payload)
   }
@@ -243,7 +193,7 @@ function ProspectEnrichmentsDialog({
     }
   }
 
-  const selectedCount = Object.keys(selectedRowIds).length
+  const selectedCount = selectedEnrichments.length
   const selectedProspectCount = selectedByProspect.size
 
   return (
@@ -258,7 +208,7 @@ function ProspectEnrichmentsDialog({
             Create Variables from Enrichments
           </DialogTitle>
           <DialogDescription>
-            {step === 'select' && 'Select enrichments to create variables from'}
+            {step === 'select' && 'Filter and select enrichments to create variables from'}
             {step === 'prompt' && 'Choose a prompt to process the selected enrichments'}
             {step === 'confirm' && 'Review your selection and confirm variable creation'}
           </DialogDescription>
@@ -285,40 +235,19 @@ function ProspectEnrichmentsDialog({
           {/* Select Step */}
           {step === 'select' && !isLoadingEnrichments && !isErrorEnrichments && (
             <div className="space-y-4 h-full flex flex-col">
-              {showPromptFilter && (
-                <div className="flex items-center gap-2 p-4 bg-muted/50 rounded-lg">
-                  <Label htmlFor="prompt-filter">Filter by prompt name:</Label>
-                  <Input
-                    id="prompt-filter"
-                    value={promptFilterInput}
-                    onChange={(e) => setPromptFilterInput(e.target.value)}
-                    placeholder="Enter prompt name..."
-                    className="w-64"
-                    onKeyDown={(e) => e.key === 'Enter' && handleApplyPromptFilter()}
-                  />
-                  <Button 
-                    onClick={handleApplyPromptFilter}
-                    disabled={!promptFilterInput.trim()}
-                  >
-                    Apply Filter
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setShowPromptFilter(false)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              )}
+              <EnrichmentFilters
+                filters={filters}
+                onChange={setFilters}
+                enrichmentsData={enrichmentsData}
+              />
               
               <div className="flex-1 overflow-auto">
                 <DataTable
                   columns={columns}
-                  data={flattenedEnrichments}
+                  data={filteredEnrichments}
                   rowId={(row) => row.id}
-                  enableSelection={true}
-                  bulkActions={bulkActions}
-                  onBulkAction={handleBulkAction}
+                  enableSelection={false}
+                  manualSorting={false}
                   emptyMessage="No enrichments found for the selected prospects"
                 />
               </div>
