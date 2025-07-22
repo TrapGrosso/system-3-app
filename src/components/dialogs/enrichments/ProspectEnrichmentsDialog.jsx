@@ -21,6 +21,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { DataTable } from "@/components/shared/table/DataTable"
 import PromptMultiSelect from "@/components/shared/dialog/PromptMultiSelect"
 import { EnrichmentFilters } from "./EnrichmentFilters"
+import { ConfirmationSummary } from "./ConfirmationSummary"
 import { useGetProspectEnrichments } from "@/api/variable-dialog/getProspectEnrichments"
 
 // API call to post variables
@@ -278,26 +279,12 @@ function ProspectEnrichmentsDialog({
 
           {/* Confirm Step */}
           {step === 'confirm' && (
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <h4 className="font-medium">Summary</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-muted-foreground">Enrichments</p>
-                    <p className="font-medium">{selectedCount} selected</p>
-                  </div>
-                  <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-muted-foreground">Prospects</p>
-                    <p className="font-medium">{selectedProspectCount} affected</p>
-                  </div>
-                </div>
-                
-                <div className="p-4 border rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-2">Selected Prompt</p>
-                  <Badge>{selectedPromptIds.length > 0 ? 'Prompt selected' : 'No prompt selected'}</Badge>
-                </div>
-              </div>
-            </div>
+            <ConfirmationSummary 
+              selectedEnrichments={selectedEnrichments}
+              selectedProspectCount={selectedProspectCount}
+              selectedPromptIds={selectedPromptIds}
+              selectedByProspect={selectedByProspect}
+            />
           )}
         </div>
 
