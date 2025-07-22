@@ -193,7 +193,7 @@ export const usePrompts = () => {
 }
 
 // Hook for getting all user prompts
-export const useAllPrompts = () => {
+export const useAllPrompts = (type = 'all') => {
   const { user_id } = usePrompts()
-  return useGetAllPrompts(user_id)
+  return useGetAllPrompts(user_id, type)
 }

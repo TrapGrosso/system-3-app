@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
-const getAllPrompts = async (user_id) => {
-  const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getAllPrompts?user_id=${user_id}`, {
+const getAllPrompts = async (user_id, type) => {
+  const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getAllPrompts?user_id=${user_id}&type=${type}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -20,10 +20,10 @@ const getAllPrompts = async (user_id) => {
   return result || []
 }
 
-export const useGetAllPrompts = (userId) => {
+export const useGetAllPrompts = (userId, type) => {
   return useQuery({
-    queryKey: ['getAllPrompts', userId],
-    queryFn: () => getAllPrompts(userId),
+    queryKey: ['getAllPrompts', userId, type],
+    queryFn: () => getAllPrompts(userId, type),
     staleTime: 30000,
     cacheTime: 300000,
     refetchInterval: 60000, 
@@ -34,10 +34,16 @@ export const useGetAllPrompts = (userId) => {
 }
 
 /**
- * Fetches all prompts for a user.
+ * Fetches all prompts for a user, with optional filtering by agent type.
  * 
- * Example Request:
+ * Query Parameters:
+ * - user_id (required): UUID of the user
+ * - type (optional): Filter by agent_type. If omitted, null, empty, "all", or "All", returns all prompts
+ * 
+ * Example Requests:
  * GET /getAllPrompts?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f
+ * GET /getAllPrompts?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&type=sales
+ * GET /getAllPrompts?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&type=all
  * 
  * Example Success Response (200):
  * [
@@ -67,5 +73,7 @@ export const useGetAllPrompts = (userId) => {
  * 
  * Example Error Response (400):
  * {"error": "Missing required query param: user_id"}
+ * 
+ * Example Error Response (404) - when filtering by type that doesn't exist:
+ * []
  */
-
