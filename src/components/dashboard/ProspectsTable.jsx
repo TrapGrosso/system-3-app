@@ -39,7 +39,9 @@ export default function ProspectsTable({
   onAddToDeepSearch,
   onBulkAddToGroup,
   onBulkAddToCampaign,
-  onBulkAddToDeepSearch
+  onBulkAddToDeepSearch,
+  onCreateVariables,
+  onBulkCreateVariables
 }) {
 
   // Column definitions (without select and actions - DataTable handles these)
@@ -332,6 +334,17 @@ export default function ProspectsTable({
         }
       }
     },
+    {
+      label: "Create Variables",
+      value: "createVariables",
+      onSelect: (selectedIds) => {
+        if (onBulkCreateVariables) {
+          onBulkCreateVariables(selectedIds)
+        } else {
+          alert(`Create variables for ${selectedIds.length} prospects`)
+        }
+      }
+    },
     "separator",
     {
       label: "Send Email",
@@ -356,7 +369,7 @@ export default function ProspectsTable({
         alert(`Delete ${selectedIds.length} prospects`)
       }
     }
-  ], [onBulkAddToGroup, onBulkAddToCampaign, onBulkAddToDeepSearch])
+  ], [onBulkAddToGroup, onBulkAddToCampaign, onBulkAddToDeepSearch, onBulkCreateVariables])
 
   // Row actions function
   const rowActions = React.useCallback((ctx) => [
@@ -389,13 +402,19 @@ export default function ProspectsTable({
       label: "Add to Deep Search Queue",
       onSelect: () => onAddToDeepSearch?.(ctx.linkedin_id)
     },
+    {
+      label: "Create Variables",
+      onSelect: () => onCreateVariables
+        ? onCreateVariables(ctx.linkedin_id)
+        : alert(`Create variables for ${ctx.first_name} ${ctx.last_name}`)
+    },
     "separator",
     {
       label: "Delete",
       variant: "destructive",
       onSelect: () => alert(`Delete ${ctx.first_name} ${ctx.last_name}`)
     }
-  ], [onAddNote, onCreateTask, onAddToGroup, onAddToCampaign, onAddToDeepSearch])
+  ], [onAddNote, onCreateTask, onAddToGroup, onAddToCampaign, onAddToDeepSearch, onCreateVariables])
 
   // Row click handler
   const handleRowClick = React.useCallback((prospect) => {

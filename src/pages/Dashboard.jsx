@@ -13,6 +13,7 @@ import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
 import ProspectNotesDialog from '@/components/dialogs/ProspectNotesDialog'
 import ProspectTasksDialog from '@/components/dialogs/ProspectTasksDialog'
 import DeepSearchQueueDialog from '@/components/dialogs/DeepSearchQueueDialog'
+import ProspectEnrichmentsDialog from '@/components/dialogs/ProspectEnrichmentsDialog'
 import { DeepSearchQueueProvider } from '@/contexts/DeepSearchQueueContext'
 import { PromptProvider } from '@/contexts/PromptContext'
 
@@ -36,6 +37,10 @@ function DashboardContent() {
     // State for DeepSearchQueueDialog
     const [deepSearchDialogOpen, setDeepSearchDialogOpen] = useState(false)
     const [prospectIdsForDeepSearch, setProspectIdsForDeepSearch] = useState([])
+
+    // State for ProspectEnrichmentsDialog
+    const [enrichDialogOpen, setEnrichDialogOpen] = useState(false)
+    const [prospectIdsForEnrich, setProspectIdsForEnrich] = useState([])
 
     // Filter and query handlers for child components
     const handleApplyFilters = (newQuery) => {
@@ -102,6 +107,18 @@ function DashboardContent() {
         setDeepSearchDialogOpen(true)
     }
 
+    // Create Variables handlers
+    const handleCreateVariables = (linkedinId) => {
+        setProspectIdsForEnrich([linkedinId])
+        setEnrichDialogOpen(true)
+    }
+
+    const handleBulkCreateVariables = (linkedinIds) => {
+        if (!linkedinIds.length) return
+        setProspectIdsForEnrich(linkedinIds)
+        setEnrichDialogOpen(true)
+    }
+
   return (
     <DashboardLayout headerText="Dashboard">
       <SectionCards />
@@ -136,6 +153,8 @@ function DashboardContent() {
           onBulkAddToGroup={handleBulkAddToGroup}
           onBulkAddToCampaign={handleBulkAddToCampaign}
           onBulkAddToDeepSearch={handleBulkAddToDeepSearch}
+          onCreateVariables={handleCreateVariables}
+          onBulkCreateVariables={handleBulkCreateVariables}
         />
       </div>
       
@@ -187,6 +206,19 @@ function DashboardContent() {
           refetch() // Refresh prospects list after successful addition
           setDeepSearchDialogOpen(false)
           setProspectIdsForDeepSearch([])
+        }}
+      />
+      
+      {/* ProspectEnrichmentsDialog - controlled by Dashboard state */}
+      <ProspectEnrichmentsDialog
+        user_id={user?.id}
+        prospectIds={prospectIdsForEnrich}
+        open={enrichDialogOpen}
+        onOpenChange={setEnrichDialogOpen}
+        onSuccess={() => {
+          refetch() // Refresh prospects list after successful variable creation
+          setEnrichDialogOpen(false)
+          setProspectIdsForEnrich([])
         }}
       />
     </DashboardLayout>
