@@ -27,6 +27,7 @@ import { useAllPrompts } from "@/contexts/PromptContext"
 function PromptMultiSelect({ 
   value = [], 
   onChange, 
+  type = 'all',
   disabled = false,
   label = "Select prompts"
 }) {
@@ -37,7 +38,7 @@ function PromptMultiSelect({
     isLoading: isLoadingPrompts, 
     isError: isErrorPrompts, 
     refetch: refetchPrompts 
-  } = useAllPrompts()
+  } = useAllPrompts(type) 
 
   const handlePromptToggle = (promptId) => {
     const newValue = value.includes(promptId) 
