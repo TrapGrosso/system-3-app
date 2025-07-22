@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext"
 
 export function EnrichmentFilters({ filters, onChange, enrichmentsData = [] }) {
   const { user } = useAuth()
-  const { data: prompts = [] } = useAllPrompts('deep_search')
+  const { data: prompts = [] } = useAllPrompts('deep_research')
 
   // Generate unique sources from enrichments data
   const sourceOptions = React.useMemo(() => {
