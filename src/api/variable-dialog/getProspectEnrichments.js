@@ -37,7 +37,7 @@ export const useGetProspectEnrichments = (userId, prospectIds) => {
 
 
 /**
- * Fetches enrichments for prospects in a prospect-centric format.
+ * Fetches enrichments for prospects in a flattened format.
  * 
  * Example Request:
  * GET /getProspectEnrichments?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&prospect_ids=john-doe-123,jane-smith-456
@@ -45,30 +45,26 @@ export const useGetProspectEnrichments = (userId, prospectIds) => {
  * Example Success Response (200):
  * [
  *   {
+ *     "id": "e1",
+ *     "entity_kind": "prospect",
+ *     "type": "profile",
+ *     "source": "clearbit",
+ *     "created_at": "2025-07-20T12:00:00Z",
+ *     "prompt": { "id": "p10", "name": "Summary Prompt" },
  *     "prospect_id": "john-doe-123",
- *     "first_name": "John",
- *     "last_name": "Doe",
- *     "company": { "linkedin_id": "acme-789", "name": "ACME Corp" },
- *     "prospectEnrichments": [
- *       {
- *         "id": "e1",
- *         "type": "profile",
- *         "source": "clearbit",
- *         "summary": {...},
- *         "created_at": "2025-07-20T12:00:00Z",
- *         "prompt": { "id": "p10", "name": "Summary Prompt" }
- *       }
- *     ],
- *     "companyEnrichments": [
- *       {
- *         "id": "e5",
- *         "type": "company_profile",
- *         "source": "clearbit",
- *         "summary": {...},
- *         "created_at": "2025-07-19T10:00:00Z",
- *         "prompt": null
- *       }
- *     ]
+ *     "prospect_name": "John Doe"
+ *   },
+ *   {
+ *     "id": "e5",
+ *     "entity_kind": "company",
+ *     "type": "company_profile",
+ *     "source": "clearbit",
+ *     "created_at": "2025-07-19T10:00:00Z",
+ *     "prompt": null,
+ *     "prospect_id": "john-doe-123",
+ *     "prospect_name": "John Doe",
+ *     "company_name": "Acme Corp.",
+ *     "company_id": "acme-corp"
  *   }
  * ]
  * 
