@@ -2,27 +2,10 @@ import * as React from "react"
 import { useState, useEffect } from "react"
 import { Plus, Edit3 } from "lucide-react"
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Spinner } from "@/components/ui/spinner"
+import DialogWrapper from "@/components/shared/dialog/DialogWrapper"
+import SpinnerButton from "@/components/shared/ui/SpinnerButton"
+import FormField from "@/components/shared/ui/FormField"
 
 import { usePrompts } from "@/contexts/PromptContext"
 
@@ -32,10 +15,9 @@ function PromptFormDialog({
   onSuccess,
   trigger,
   children,
-  open: controlledOpen,
-  onOpenChange: controlledOnOpenChange
+  open,
+  onOpenChange
 }) {
-  const [internalOpen, setInternalOpen] = useState(false)
   const [hasSubmitted, setHasSubmitted] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
@@ -53,11 +35,6 @@ function PromptFormDialog({
     isUpdatingPrompt,
     AGENT_TYPES,
   } = usePrompts()
-
-  // Determine if this is controlled or uncontrolled
-  const isControlled = controlledOpen !== undefined
-  const dialogOpen = isControlled ? controlledOpen : internalOpen
-  const setDialogOpen = isControlled ? controlledOnOpenChange : setInternalOpen
 
   // Initialize form data when prompt changes (edit mode)
   useEffect(() => {
@@ -146,21 +123,16 @@ function PromptFormDialog({
     }
   }
 
-  const handleOpenChange = (newOpen) => {
-    if (setDialogOpen) {
-      setDialogOpen(newOpen)
-    }
-    if (!newOpen) {
-      // Reset form when closing
-      if (mode === "create") {
-        setFormData({
-          name: "",
-          description: "",
-          prompt_text: "",
-          agent_type: "",
-          tags: ""
-        })
-      }
+  const handleClose = () => {
+    onOpenChange(false)
+    if (mode === "create") {
+      setFormData({
+        name: "",
+        description: "",
+        prompt_text: "",
+        agent_type: "",
+        tags: ""
+      })
     }
   }
 
@@ -170,172 +142,124 @@ function PromptFormDialog({
     
     const finished = mode === "create" ? !isCreatingPrompt : !isUpdatingPrompt
     if (finished) {
-      handleOpenChange(false)
+      handleClose()
       onSuccess?.()
       setHasSubmitted(false) // reset for next time
     }
-  }, [hasSubmitted, isCreatingPrompt, isUpdatingPrompt, mode, onSuccess])
+  }, [hasSubmitted, isCreatingPrompt, isUpdatingPrompt, mode, onSuccess, onOpenChange])
 
   // Reset hasSubmitted when dialog closes
   useEffect(() => {
-    if (!dialogOpen) {
+    if (!open) {
       setHasSubmitted(false)
     }
-  }, [dialogOpen])
+  }, [open])
 
   const isSubmitting = mode === "create" ? isCreatingPrompt : isUpdatingPrompt
   const isFormValid = formData.name.trim() && formData.prompt_text.trim()
 
   return (
-    <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
-      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
+    <DialogWrapper
+      open={open}
+      onOpenChange={onOpenChange}
+      icon={mode === "create" ? <Plus className="h-5 w-5" /> : <Edit3 className="h-5 w-5" />}
+      title={mode === "create" ? "Create New Prompt" : "Edit Prompt"}
+      description={mode === "create" 
+        ? "Create a new AI prompt template for your campaigns."
+        : "Update the prompt details and configuration."
+      }
+      size="lg"
+    >
+      {trigger && <DialogWrapper.Trigger asChild>{trigger}</DialogWrapper.Trigger>}
+      {children && <DialogWrapper.Trigger asChild>{children}</DialogWrapper.Trigger>}
       
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {mode === "create" ? (
-              <>
-                <Plus className="h-5 w-5" />
-                Create New Prompt
-              </>
-            ) : (
-              <>
-                <Edit3 className="h-5 w-5" />
-                Edit Prompt
-              </>
-            )}
-          </DialogTitle>
-          <DialogDescription>
-            {mode === "create" 
-              ? "Create a new AI prompt template for your campaigns."
-              : "Update the prompt details and configuration."
-            }
-          </DialogDescription>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name Field */}
-          <div className="space-y-2">
-            <Label htmlFor="prompt-name" className="text-sm font-medium">
-              Name <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="prompt-name"
-              placeholder="Enter prompt name..."
-              value={formData.name}
-              onChange={(e) => handleInputChange("name", e.target.value)}
-              disabled={isSubmitting}
-              maxLength={100}
-              required
-            />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>A descriptive name for your prompt</span>
-              <span>{formData.name.length}/100</span>
-            </div>
-          </div>
+          <FormField
+            id="prompt-name"
+            label="Name"
+            required
+            value={formData.name}
+            onChange={(v) => handleInputChange("name", v)}
+            placeholder="Enter prompt name..."
+            maxLength={100}
+            helper="A descriptive name for your prompt"
+            disabled={isSubmitting}
+          />
 
           {/* Description Field */}
-          <div className="space-y-2">
-            <Label htmlFor="prompt-description" className="text-sm font-medium">
-              Description
-            </Label>
-            <Textarea
-              id="prompt-description"
-              placeholder="Enter prompt description..."
-              value={formData.description}
-              onChange={(e) => handleInputChange("description", e.target.value)}
-              disabled={isSubmitting}
-              rows={2}
-              className="resize-none"
-            />
-            <span className="text-xs text-muted-foreground">
-              Optional description to help identify this prompt
-            </span>
-          </div>
+          <FormField
+            id="prompt-description"
+            label="Description"
+            type="textarea"
+            rows={2}
+            value={formData.description}
+            onChange={(v) => handleInputChange("description", v)}
+            placeholder="Enter prompt description..."
+            helper="Optional description to help identify this prompt"
+            disabled={isSubmitting}
+          />
 
           {/* Prompt Text Field */}
-          <div className="space-y-2">
-            <Label htmlFor="prompt-text" className="text-sm font-medium">
-              Prompt Text <span className="text-destructive">*</span>
-            </Label>
-            <Textarea
-              id="prompt-text"
-              placeholder="Enter your prompt text here..."
-              value={formData.prompt_text}
-              onChange={(e) => handleInputChange("prompt_text", e.target.value)}
-              disabled={isSubmitting}
-              rows={6}
-              className="resize-none font-mono text-sm"
-              required
-            />
-            <span className="text-xs text-muted-foreground">
-              The actual prompt text that will be used by the AI
-            </span>
-          </div>
+          <FormField
+            id="prompt-text"
+            label="Prompt Text"
+            required
+            type="textarea"
+            rows={6}
+            value={formData.prompt_text}
+            onChange={(v) => handleInputChange("prompt_text", v)}
+            placeholder="Enter your prompt text here..."
+            className="font-mono text-sm"
+            helper="The actual prompt text that will be used by the AI"
+            disabled={isSubmitting}
+          />
 
           {/* Agent Type Field */}
-          <div className="space-y-2">
-            <Label htmlFor="agent-type" className="text-sm font-medium">
-              Agent Type
-            </Label>
-            <Select
-              value={formData.agent_type}
-              onValueChange={(value) => handleInputChange("agent_type", value)}
-              disabled={isSubmitting}
-            >
-              <SelectTrigger id="agent-type">
-                <SelectValue placeholder="Select agent type..." />
-              </SelectTrigger>
-              <SelectContent>
-                {AGENT_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <span className="text-xs text-muted-foreground">
-              Agent type for specialized prompts
-            </span>
-          </div>
+          <FormField
+            id="agent-type"
+            label="Agent Type"
+            type="select"
+            value={formData.agent_type}
+            onChange={(v) => handleInputChange("agent_type", v)}
+            placeholder="Select agent type..."
+            options={AGENT_TYPES.map((type) => ({
+              label: type.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
+              value: type,
+            }))}
+            helper="Agent type for specialized prompts"
+            disabled={isSubmitting}
+          />
 
           {/* Tags Field */}
-          <div className="space-y-2">
-            <Label htmlFor="prompt-tags" className="text-sm font-medium">
-              Tags
-            </Label>
-            <Input
-              id="prompt-tags"
-              placeholder="Enter tags separated by commas..."
-              value={formData.tags}
-              onChange={(e) => handleInputChange("tags", e.target.value)}
-              disabled={isSubmitting}
-            />
-            <span className="text-xs text-muted-foreground">
-              Comma-separated tags to help organize and find your prompts
-            </span>
-          </div>
+          <FormField
+            id="prompt-tags"
+            label="Tags"
+            value={formData.tags}
+            onChange={(v) => handleInputChange("tags", v)}
+            placeholder="Enter tags separated by commas..."
+            helper="Comma-separated tags to help organize and find your prompts"
+            disabled={isSubmitting}
+          />
         </form>
 
-        <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button 
-            variant="outline" 
-            onClick={() => handleOpenChange(false)}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleSubmit}
-            disabled={!isFormValid || isSubmitting}
-          >
-            {isSubmitting && <Spinner size="sm" className="mr-2" />}
-            {mode === "create" ? "Create Prompt" : "Update Prompt"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      <DialogWrapper.Footer className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <Button 
+          variant="outline" 
+          onClick={handleClose}
+          disabled={isSubmitting}
+        >
+          Cancel
+        </Button>
+        <SpinnerButton 
+          loading={isSubmitting}
+          disabled={!isFormValid}
+          onClick={handleSubmit}
+        >
+          {mode === "create" ? "Create Prompt" : "Update Prompt"}
+        </SpinnerButton>
+      </DialogWrapper.Footer>
+    </DialogWrapper>
   )
 }
 
