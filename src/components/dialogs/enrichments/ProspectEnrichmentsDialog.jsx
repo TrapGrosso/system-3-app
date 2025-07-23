@@ -1,9 +1,9 @@
 import * as React from "react"
 import { useState, useMemo } from "react"
 import { Wand2, ArrowRight, ArrowLeft, Check } from "lucide-react"
-import { useMutation } from '@tanstack/react-query'
 import { toast } from "sonner"
 import { Spinner } from "@/components/ui/spinner"
+import { useCreateVariables } from "@/api/variable-dialog/createVariables"
 
 import DialogWrapper from "@/components/shared/dialog/DialogWrapper"
 import { Button } from "@/components/ui/button"
@@ -17,22 +17,6 @@ import { EnrichmentFilters } from "./EnrichmentFilters"
 import { ConfirmationSummary } from "./ConfirmationSummary"
 import { useGetProspectEnrichments } from "@/api/variable-dialog/getProspectEnrichments"
 
-// API call to post variables
-const postVariablesFromEnrichments = async (payload) => {
-  const response = await fetch('https://n8n.coolify.fabiodevelopsthings.com/webhook/bbc9705e-9da1-43b6-992d-e05ab6e38644', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload)
-  })
-
-  if (!response.ok) {
-    throw new Error(`Failed to create variables: ${response.statusText}`)
-  }
-
-  return response.json()
-}
 
 function ProspectEnrichmentsDialog({
   user_id,
@@ -60,8 +44,7 @@ function ProspectEnrichmentsDialog({
   } = useGetProspectEnrichments(user_id, prospectIds)
 
   // Mutation for posting variables
-  const postMutation = useMutation({
-    mutationFn: postVariablesFromEnrichments,
+  const createVariablesMutation = useCreateVariables({
     onSuccess: (data) => {
       toast.success("Variables creation started successfully!")
       onSuccess?.(data)
@@ -167,7 +150,7 @@ function ProspectEnrichmentsDialog({
 
   // Handle submit
   const handleSubmit = () => {
-    const payload = [...selectedByProspect.entries()].map(
+    const prospect_enrichments_ids = [...selectedByProspect.entries()].map(
       ([prospect_id, enrichment_ids]) => ({
         prospect_id,
         enrichment_ids,
@@ -175,7 +158,7 @@ function ProspectEnrichmentsDialog({
       })
     )
 
-    postMutation.mutate(payload)
+    createVariablesMutation.mutate({ user_id, prospect_enrichments_ids })
   }
 
   // Handle prompt selection (enforce single selection)
@@ -315,7 +298,7 @@ function ProspectEnrichmentsDialog({
               </Button>
               <SpinnerButton
                 onClick={handleSubmit}
-                loading={postMutation.isPending}
+                loading={createVariablesMutation.isPending}
               >
                 <Check className="h-4 w-4 mr-2" />
                 Create Variables
