@@ -159,7 +159,7 @@ function DashboardContent() {
       </div>
       
       {/* HandleGroupsDialog - controlled by Dashboard state */}
-      {prospectIdsForGroup.length && <HandleGroupsDialog
+      {!!prospectIdsForGroup.length && <HandleGroupsDialog
         user_id={user?.id}
         prospect_ids={prospectIdsForGroup}
         open={addGroupOpen}
@@ -198,7 +198,7 @@ function DashboardContent() {
       )}
       
       {/* DeepSearchQueueDialog - controlled by Dashboard state */}
-      {prospectIdsForDeepSearch.length && <DeepSearchQueueDialog
+      {!!prospectIdsForDeepSearch.length && <DeepSearchQueueDialog
         prospect_ids={prospectIdsForDeepSearch}
         open={deepSearchDialogOpen}
         onOpenChange={setDeepSearchDialogOpen}
@@ -210,7 +210,7 @@ function DashboardContent() {
       />}
       
       {/* ProspectEnrichmentsDialog - controlled by Dashboard state */}
-      {prospectIdsForEnrich.length && <ProspectEnrichmentsDialog
+      {!!prospectIdsForEnrich.length && <ProspectEnrichmentsDialog
         user_id={user?.id}
         prospectIds={prospectIdsForEnrich}
         open={enrichDialogOpen}

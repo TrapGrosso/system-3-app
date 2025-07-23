@@ -108,9 +108,16 @@ function ProspectEnrichmentsDialog({
     const grouped = new Map()
     selectedEnrichments.forEach(enrichment => {
       if (!grouped.has(enrichment.prospect_id)) {
-        grouped.set(enrichment.prospect_id, [])
+        grouped.set(enrichment.prospect_id, { company_id: null, enrichment_ids: [] })
       }
-      grouped.get(enrichment.prospect_id).push(enrichment.id)
+      
+      const prospectData = grouped.get(enrichment.prospect_id)
+      prospectData.enrichment_ids.push(enrichment.id)
+      
+      // Prioritize company_id from company enrichments
+      if (enrichment.company_id && (!prospectData.company_id || enrichment.entity_kind === 'company')) {
+        prospectData.company_id = enrichment.company_id
+      }
     })
     return grouped
   }, [selectedEnrichments])
@@ -168,9 +175,10 @@ function ProspectEnrichmentsDialog({
   // Handle submit
   const handleSubmit = () => {
     const payload = [...selectedByProspect.entries()].map(
-      ([prospect_id, enrichment_ids]) => ({
+      ([prospect_id, data]) => ({
         prospect_id,
-        enrichment_ids,
+        company_id: data.company_id,
+        enrichment_ids: data.enrichment_ids,
         prompt_ids: selectedPromptIds
       })
     )
