@@ -106,7 +106,7 @@ export function TablePagination({
       </div>
 
       <div className="flex items-center gap-2">
-        {total > pageSize ? <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <Label htmlFor="page-size" className="text-sm font-medium">
             Rows per page:
           </Label>
@@ -127,7 +127,7 @@ export function TablePagination({
               ))}
             </SelectContent>
           </Select>
-        </div> : null }
+        </div>
 
         <div className="text-sm font-medium">
           Page {pageIndex + 1} of {pageCount}

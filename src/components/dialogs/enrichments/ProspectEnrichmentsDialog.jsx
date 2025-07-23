@@ -4,15 +4,7 @@ import { Wand2, ArrowRight, ArrowLeft, Check } from "lucide-react"
 import { useMutation } from '@tanstack/react-query'
 import { toast } from "sonner"
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import DialogWrapper from "@/components/shared/dialog/DialogWrapper"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -198,24 +190,22 @@ function ProspectEnrichmentsDialog({
   const selectedProspectCount = selectedByProspect.size
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
+    <DialogWrapper 
+      open={open} 
+      onOpenChange={handleClose}
+      icon={<Wand2 className="h-5 w-5" />}
+      title="Create Variables from Enrichments"
+      description={
+        step === 'select' ? 'Filter and select enrichments to create variables from' :
+        step === 'prompt' ? 'Choose a prompt to process the selected enrichments' :
+        'Review your selection and confirm variable creation'
+      }
+      size="xl"
+    >
+      {trigger && <DialogWrapper.Trigger asChild>{trigger}</DialogWrapper.Trigger>}
+      {children && <DialogWrapper.Trigger asChild>{children}</DialogWrapper.Trigger>}
       
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Wand2 className="h-5 w-5" />
-            Create Variables from Enrichments
-          </DialogTitle>
-          <DialogDescription>
-            {step === 'select' && 'Filter and select enrichments to create variables from'}
-            {step === 'prompt' && 'Choose a prompt to process the selected enrichments'}
-            {step === 'confirm' && 'Review your selection and confirm variable creation'}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="flex-1 overflow-hidden">
+      <DialogWrapper.Body>
           {/* Loading State */}
           {isLoadingEnrichments && (
             <div className="flex items-center justify-center h-64">
@@ -286,9 +276,9 @@ function ProspectEnrichmentsDialog({
               selectedByProspect={selectedByProspect}
             />
           )}
-        </div>
+      </DialogWrapper.Body>
 
-        <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+      <DialogWrapper.Footer className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           {step === 'select' && (
             <>
               <Button variant="outline" onClick={handleClose}>
@@ -332,9 +322,8 @@ function ProspectEnrichmentsDialog({
               </Button>
             </>
           )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </DialogWrapper.Footer>
+    </DialogWrapper>
   )
 }
 
