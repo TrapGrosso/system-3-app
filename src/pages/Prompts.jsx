@@ -1,23 +1,35 @@
 import * as React from "react"
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { Plus } from "lucide-react"
 
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { Button } from "@/components/ui/button"
 
-import { PromptProvider, useAllPrompts } from "@/contexts/PromptContext"
+import { PromptProvider, useAllPrompts, usePrompts } from "@/contexts/PromptContext"
 import { useFilteredPrompts } from "@/hooks/use-filtered-prompts"
 import PromptFilters from "@/components/prompts/PromptFilters"
 import PromptsGrid from "@/components/prompts/PromptsGrid"
 import PromptFormDialog from "@/components/dialogs/PromptFormDialog"
+import { PromptPreviewDialog } from "@/components/prompts"
+import PromptDeleteDialog from "@/components/dialogs/PromptDeleteDialog"
 
 function PromptsContent() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedTags, setSelectedTags] = useState([])
   const [selectedAgentType, setSelectedAgentType] = useState("")
 
+  const [dialogType, setDialogType] = useState(null) // 'create' | 'preview' | 'edit' | 'delete'
+  const [activePrompt, setActivePrompt] = useState(null) // currently selected prompt
+
   // Get prompts data
   const { data: prompts = [], isLoading, error } = useAllPrompts()
+
+  // Get prompt mutations from context
+  const {
+    duplicatePrompt,
+    deletePrompt,
+    isDeletingPrompt,
+  } = usePrompts()
 
   // Filter prompts based on search and filters
   const filteredPrompts = useFilteredPrompts(
@@ -27,15 +39,41 @@ function PromptsContent() {
     selectedAgentType
   )
 
-  const handlePromptEdit = (prompt) => {
-    // Optional callback for when a prompt is edited
-    console.log("Prompt edited:", prompt)
-  }
+  const openCreate = useCallback(() => {
+    setActivePrompt(null)
+    setDialogType("create")
+  }, [])
 
-  const handlePromptDuplicate = (prompt) => {
-    // Optional callback for when a prompt is duplicated
-    console.log("Prompt duplicated:", prompt)
-  }
+  const openPreview = useCallback((prompt) => {
+    setActivePrompt(prompt)
+    setDialogType("preview")
+  }, [])
+
+  const openEdit = useCallback((prompt) => {
+    setActivePrompt(prompt)
+    setDialogType("edit")
+  }, [])
+
+  const openAskDelete = useCallback((prompt) => {
+    setActivePrompt(prompt)
+    setDialogType("delete")
+  }, [])
+
+  const closeDialog = useCallback(() => {
+    setDialogType(null)
+    setActivePrompt(null)
+  }, [])
+
+  const handleDuplicate = useCallback((prompt) => {
+    duplicatePrompt(prompt.id)
+  }, [duplicatePrompt])
+
+  const handleDeleteConfirmed = useCallback(() => {
+    if (activePrompt) {
+      deletePrompt(activePrompt.id)
+      closeDialog()
+    }
+  }, [activePrompt, deletePrompt, closeDialog])
 
   return (
     <DashboardLayout headerText="Prompts">
@@ -49,15 +87,10 @@ function PromptsContent() {
             </p>
           </div>
           
-          <PromptFormDialog
-            mode="create"
-            trigger={
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Prompt
-              </Button>
-            }
-          />
+          <Button onClick={openCreate}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Prompt
+          </Button>
         </div>
 
         {/* Filters */}
@@ -90,10 +123,36 @@ function PromptsContent() {
           prompts={filteredPrompts}
           isLoading={isLoading}
           error={error}
-          onPromptEdit={handlePromptEdit}
-          onPromptDuplicate={handlePromptDuplicate}
+          onPromptEdit={openEdit}
+          onPromptDuplicate={handleDuplicate}
+          onPromptPreview={openPreview}
+          onPromptAskDelete={openAskDelete}
+          onCreatePrompt={openCreate}
         />
       </div>
+
+      {/* Dialogs */}
+      <PromptPreviewDialog
+        open={dialogType === "preview"}
+        onOpenChange={closeDialog}
+        prompt={activePrompt}
+      />
+
+      <PromptFormDialog
+        mode={dialogType === "edit" ? "edit" : "create"}
+        prompt={dialogType === "edit" ? activePrompt : null}
+        open={dialogType === "create" || dialogType === "edit"}
+        onOpenChange={closeDialog}
+        onSuccess={closeDialog}
+      />
+
+      <PromptDeleteDialog
+        open={dialogType === "delete"}
+        onOpenChange={closeDialog}
+        prompt={activePrompt}
+        onConfirm={handleDeleteConfirmed}
+        isLoading={isDeletingPrompt}
+      />
     </DashboardLayout>
   )
 }

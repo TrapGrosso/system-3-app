@@ -1,5 +1,4 @@
 export { default as PromptCard } from './PromptCard'
-export { default as PromptCardBody } from './PromptCardBody'
 export { default as PromptPreviewDialog } from './PromptPreviewDialog'
 export { default as PromptDeleteDialog } from '../dialogs/PromptDeleteDialog'
 export { default as PromptFilters } from './PromptFilters'

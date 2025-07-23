@@ -5,14 +5,16 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 
 import PromptCard from "./PromptCard"
-import PromptFormDialog from "@/components/dialogs/PromptFormDialog"
 
 function PromptsGrid({ 
   prompts = [], 
   isLoading = false, 
   error = null,
   onPromptEdit,
-  onPromptDuplicate 
+  onPromptDuplicate,
+  onPromptPreview,
+  onPromptAskDelete,
+  onCreatePrompt
 }) {
   if (error) {
     return (
@@ -51,15 +53,10 @@ function PromptsGrid({
         <p className="text-muted-foreground mb-4 max-w-md">
           You haven't created any prompts yet. Create your first prompt to get started with AI-powered campaigns.
         </p>
-        <PromptFormDialog
-          mode="create"
-          trigger={
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Create your first prompt
-            </Button>
-          }
-        />
+        <Button onClick={onCreatePrompt}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create your first prompt
+        </Button>
       </div>
     )
   }
@@ -72,6 +69,8 @@ function PromptsGrid({
           prompt={prompt}
           onEdit={onPromptEdit}
           onDuplicate={onPromptDuplicate}
+          onPreview={onPromptPreview}
+          onAskDelete={onPromptAskDelete}
         />
       ))}
     </div>

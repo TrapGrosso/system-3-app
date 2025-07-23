@@ -11,6 +11,8 @@ import {
 import { Badge } from "@/components/ui/badge"
 
 function PromptPreviewDialog({ open, onOpenChange, prompt }) {
+  if (!prompt) return null
+
   const formatDate = (dateString) => {
     if (!dateString) return "Unknown"
     return new Date(dateString).toLocaleDateString("en-US", {

@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 
 function PromptDeleteDialog({ open, onOpenChange, prompt, onConfirm, isLoading }) {
+  if (!prompt) return null
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
