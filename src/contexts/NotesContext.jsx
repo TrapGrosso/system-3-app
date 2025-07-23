@@ -114,7 +114,7 @@ export const NotesProvider = ({ children }) => {
 
   const updateProspectNote = React.useCallback(
     (note_id, updated_content) => {
-      return updateNoteMutation.mutate({
+      return updateNoteMutation.mutateAsync({
         user_id,
         note_id,
         updated_content
