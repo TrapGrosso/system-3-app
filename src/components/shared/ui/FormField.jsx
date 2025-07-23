@@ -1,7 +1,10 @@
 import * as React from "react"
+import { Calendar as CalendarIcon } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
 import {
   Select,
   SelectContent,
@@ -9,15 +12,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
 
 /**
  * FormField - A compound component that handles common form field patterns
- * Reduces boilerplate for Label + Input/Textarea/Select + helper text + character counter
+ * Reduces boilerplate for Label + Input/Textarea/Select/DatePicker + helper text + character counter
  */
 function FormField({
   id,
   label,
-  type = "text", // "text" | "textarea" | "select"
+  type = "text", // "text" | "textarea" | "select" | "date"
   value,
   onChange,
   placeholder,
@@ -35,6 +44,10 @@ function FormField({
   const handleChange = (newValue) => {
     if (type === "select") {
       onChange?.(newValue)
+    } else if (type === "date") {
+      // Handle date - convert to YYYY-MM-DD string
+      const dateStr = newValue ? new Date(newValue).toISOString().split('T')[0] : ""
+      onChange?.(dateStr)
     } else {
       onChange?.(newValue.target ? newValue.target.value : newValue)
     }
@@ -78,6 +91,35 @@ function FormField({
               ))}
             </SelectContent>
           </Select>
+        )
+
+      case "date":
+        return (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                id={id}
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !value && "text-muted-foreground"
+                )}
+                disabled={disabled}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {value ? new Date(value).toLocaleDateString() : (placeholder || "Pick a date")}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <Calendar
+                mode="single"
+                selected={value ? new Date(value) : undefined}
+                onSelect={handleChange}
+                disabled={disabled}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
         )
       
       default: // "text"

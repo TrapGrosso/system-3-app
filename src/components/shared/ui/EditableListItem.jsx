@@ -168,7 +168,7 @@ function EditableListItem({
         <div className="space-y-2">
           {isMultiField ? (
             /* Multi-field edit mode */
-            <div className="space-y-3">
+            <div>
               {fields.map((field) => (
                 <FormField
                   key={field.name}
@@ -177,7 +177,7 @@ function EditableListItem({
                   type={field.type || 'text'}
                   value={draft[field.name] || ""}
                   onChange={(value) => updateDraftField(field.name, value)}
-                  onKeyDown={handleKeyDown}
+                  onKeyDown={field.type === 'date' ? undefined : handleKeyDown} // Skip keydown for date picker
                   disabled={saveLoading}
                   required={field.required}
                   {...field} // spread additional FormField props (maxLength, rows, etc.)
