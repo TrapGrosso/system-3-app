@@ -2,30 +2,13 @@ import * as React from "react"
 import { useState } from "react"
 import { Trash2 } from "lucide-react"
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { Badge } from "@/components/ui/badge"
+import DialogWrapper from "@/components/shared/dialog/DialogWrapper"
+import SpinnerButton from "@/components/shared/ui/SpinnerButton"
+import FormField from "@/components/shared/ui/FormField"
+import GroupSingleSelect from "@/components/shared/dialog/GroupSingleSelect"
 
 import { useGroups } from "@/contexts/GroupsContext"
 
@@ -35,10 +18,9 @@ function HandleGroupsDialog({
   onSuccess,
   trigger,
   children,
-  open: controlledOpen,
-  onOpenChange: controlledOnOpenChange
+  open,
+  onOpenChange
 }) {
-  const [internalOpen, setInternalOpen] = useState(false)
   const [selectedGroupId, setSelectedGroupId] = useState("")
   const [activeTab, setActiveTab] = useState("add")
   const [groupName, setGroupName] = useState("")
@@ -56,11 +38,6 @@ function HandleGroupsDialog({
     getGroupById,
   } = useGroups()
   
-  // Determine if this is controlled or uncontrolled
-  const isControlled = controlledOpen !== undefined
-  const dialogOpen = isControlled ? controlledOpen : internalOpen
-  const setDialogOpen = isControlled ? controlledOnOpenChange : setInternalOpen
-
   const handleSubmit = () => {
     if (!selectedGroupId || !prospect_ids.length) return
     
@@ -71,7 +48,7 @@ function HandleGroupsDialog({
     }, {
       onSuccess: (data) => {
         setSelectedGroupId("")
-        handleOpenChange(false)
+        onOpenChange(false)
         onSuccess?.(data)
       }
     })
@@ -112,9 +89,7 @@ function HandleGroupsDialog({
   }
 
   const handleOpenChange = (newOpen) => {
-    if (setDialogOpen) {
-      setDialogOpen(newOpen)
-    }
+    onOpenChange(newOpen)
     if (!newOpen) {
       // Reset all state
       setSelectedGroupId("")
@@ -131,21 +106,20 @@ function HandleGroupsDialog({
 
 
   return (
-    <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
-      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
+    <DialogWrapper 
+      open={open} 
+      onOpenChange={handleOpenChange}
+      title="Manage Groups"
+      description={
+        prospect_ids.length > 0 
+          ? `Add ${prospect_ids.length} lead${prospect_ids.length !== 1 ? 's' : ''} to a group or manage your groups.`
+          : 'Create, manage, and organize your groups.'
+      }
+      size="md"
+    >
+      {(trigger || children) && <DialogWrapper.Trigger asChild>{trigger || children}</DialogWrapper.Trigger>}
       
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Manage Groups</DialogTitle>
-          <DialogDescription>
-            {prospect_ids.length > 0 
-              ? `Add ${prospect_ids.length} lead${prospect_ids.length !== 1 ? 's' : ''} to a group or manage your groups.`
-              : 'Create, manage, and organize your groups.'
-            }
-          </DialogDescription>
-        </DialogHeader>
-
+      <DialogWrapper.Body>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="add" disabled={prospect_ids.length === 0}>
@@ -155,18 +129,17 @@ function HandleGroupsDialog({
               Manage Groups
             </TabsTrigger>
           </TabsList>
-          
           <TabsContent value="add" className="mt-4">
-            <AddToGroupTab 
-              isLoadingGroups={isLoadingGroups}
-              isErrorGroups={isErrorGroups}
-              refetchGroups={refetchGroups}
-              groups={groups}
-              selectedGroupId={selectedGroupId}
-              setSelectedGroupId={setSelectedGroupId}
-              selectedGroup={selectedGroup}
-              setActiveTab={setActiveTab}
+            <GroupSingleSelect
+              value={selectedGroupId}
+              onChange={setSelectedGroupId}
+              onCreateFirstGroupClick={() => setActiveTab("manage")}
             />
+            {selectedGroup && (
+              <p className="text-xs text-muted-foreground mt-2">
+                {selectedGroup.description}
+              </p>
+            )}
           </TabsContent>
           
           <TabsContent value="manage" className="mt-4">
@@ -184,105 +157,31 @@ function HandleGroupsDialog({
             />
           </TabsContent>
         </Tabs>
+      </DialogWrapper.Body>
 
-        <DialogFooter className="flex flex-col gap-3">
-          {/* Dialog Action Buttons */}
-          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button 
-              variant="outline" 
-              onClick={() => handleOpenChange(false)}
-              disabled={isSubmitting || isCreating || isDeleting}
+      <DialogWrapper.Footer>
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <SpinnerButton 
+            variant="outline" 
+            onClick={() => handleOpenChange(false)}
+            disabled={isSubmitting || isCreating || isDeleting}
+          >
+            Cancel
+          </SpinnerButton>
+          {activeTab === "add" && (
+            <SpinnerButton 
+              onClick={handleSubmit} 
+              disabled={!selectedGroupId || isSubmitting || groups.length === 0}
+              loading={isSubmitting}
             >
-              Cancel
-            </Button>
-            {activeTab === "add" && (
-              <Button 
-                onClick={handleSubmit} 
-                disabled={!selectedGroupId || isSubmitting || groups.length === 0}
-              >
-                {isSubmitting && <Spinner size="sm" className="mr-2" />}
-                Add to Group
-              </Button>
-            )}
-          </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-// Component for Add to Group tab
-const AddToGroupTab = ({ 
-  isLoadingGroups, 
-  isErrorGroups, 
-  refetchGroups, 
-  groups, 
-  selectedGroupId, 
-  setSelectedGroupId, 
-  selectedGroup, 
-  setActiveTab 
-}) => (
-  <div className="space-y-4">
-    {isLoadingGroups ? (
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-20" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-    ) : isErrorGroups ? (
-      <div className="space-y-2">
-        <p className="text-sm text-destructive">Failed to load groups</p>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => refetchGroups()}
-        >
-          Retry
-        </Button>
-      </div>
-    ) : groups.length === 0 ? (
-      <div className="text-center py-4">
-        <p className="text-sm text-muted-foreground mb-2">No groups found</p>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => setActiveTab("manage")}
-        >
-          Create your first group
-        </Button>
-      </div>
-    ) : (
-      <div className="space-y-3">
-        <div className="space-y-2">
-          <Label htmlFor="group-select" className="text-sm font-medium">
-            Select group
-          </Label>
-          <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
-            <SelectTrigger id="group-select">
-              <SelectValue placeholder="Choose a group..." />
-            </SelectTrigger>
-            <SelectContent>
-              {groups.map((group) => (
-                <SelectItem key={group.id} value={group.id}>
-                  <div className="flex items-center justify-between w-full">
-                    <span className="truncate">{group.name}</span>
-                    <Badge variant="secondary" className="ml-2">
-                      {group.prospect_count}
-                    </Badge>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {selectedGroup && (
-            <p className="text-xs text-muted-foreground">
-              {selectedGroup.description}
-            </p>
+              Add to Group
+            </SpinnerButton>
           )}
         </div>
-      </div>
-    )}
-  </div>
-)
+      </DialogWrapper.Footer>
+    </DialogWrapper>
+  )
+}
 
 // Component for Manage Groups tab
 const ManageGroupsTab = ({ 
@@ -301,35 +200,36 @@ const ManageGroupsTab = ({
     {/* Create Group Form */}
     <div className="space-y-3">
       <h4 className="text-sm font-medium">Create new group</h4>
-      <div className="space-y-3">
-        <div className="space-y-2">
-          <Label htmlFor="group-name">Group name</Label>
-          <Input
-            id="group-name"
-            value={groupName}
-            onChange={(e) => setGroupName(e.target.value)}
-            placeholder="Enter group name..."
-            disabled={isCreating}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="group-description">Description</Label>
-          <Input
-            id="group-description"
-            value={groupDescription}
-            onChange={(e) => setGroupDescription(e.target.value)}
-            placeholder="Enter group description..."
-            disabled={isCreating}
-          />
-        </div>
-        <Button 
+      <div>
+        <FormField
+          id="group-name"
+          label="Group name"
+          value={groupName}
+          onChange={setGroupName}
+          placeholder="Enter group name..."
+          required
+          disabled={isCreating}
+          maxLength={60}
+        />
+        <FormField
+          id="group-description"
+          label="Description"
+          type="textarea"
+          rows={2}
+          value={groupDescription}
+          onChange={setGroupDescription}
+          placeholder="Enter group description..."
+          disabled={isCreating}
+          maxLength={200}
+        />
+        <SpinnerButton 
           onClick={handleCreateGroup}
           disabled={!groupName.trim() || isCreating}
+          loading={isCreating}
           className="w-full"
         >
-          {isCreating && <Spinner size="sm" className="mr-2" />}
           Create Group
-        </Button>
+        </SpinnerButton>
       </div>
     </div>
 
@@ -372,16 +272,17 @@ const ManageGroupsTab = ({
                   </p>
                 )}
               </div>
-              <Button
+              <SpinnerButton
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={() => handleDeleteGroup(group.id)}
                 disabled={isDeleting}
+                loading={isDeleting}
               >
                 <Trash2 className="h-4 w-4" />
                 <span className="sr-only">Delete group</span>
-              </Button>
+              </SpinnerButton>
             </div>
           ))}
         </div>
