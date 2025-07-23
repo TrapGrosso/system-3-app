@@ -78,7 +78,7 @@ function DialogWrapperBody({ children, className, ...props }) {
 
 function DialogWrapperFooter({ children, className, ...props }) {
   return (
-    <DialogFooter className={cn("flex-shrink-0", className)} {...props}>
+    <DialogFooter className={cn("flex-shrink-0 mt-4", className)} {...props}>
       {children}
     </DialogFooter>
   )

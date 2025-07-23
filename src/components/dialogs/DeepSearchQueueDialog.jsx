@@ -79,6 +79,7 @@ function DeepSearchQueueDialog({
 
         <div className="space-y-4">
           <PromptMultiSelect
+          type="deep_research"
             value={selectedPromptIds}
             onChange={setSelectedPromptIds}
             disabled={isAddingToQueue}

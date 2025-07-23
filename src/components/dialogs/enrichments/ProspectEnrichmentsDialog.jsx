@@ -8,9 +8,9 @@ import DialogWrapper from "@/components/shared/dialog/DialogWrapper"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Spinner } from "@/components/ui/spinner"
 
 import { DataTable } from "@/components/shared/table/DataTable"
+import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 import PromptMultiSelect from "@/components/shared/dialog/PromptMultiSelect"
 import { EnrichmentFilters } from "./EnrichmentFilters"
 import { ConfirmationSummary } from "./ConfirmationSummary"
@@ -312,14 +312,13 @@ function ProspectEnrichmentsDialog({
               <Button variant="outline" onClick={() => setStep('prompt')}>
                 <ArrowLeft className="h-4 w-4 mr-2" /> Back
               </Button>
-              <Button 
+              <SpinnerButton
                 onClick={handleSubmit}
-                disabled={postMutation.isPending}
+                loading={postMutation.isPending}
               >
-                {postMutation.isPending && <Spinner size="sm" className="mr-2" />}
                 <Check className="h-4 w-4 mr-2" />
                 Create Variables
-              </Button>
+              </SpinnerButton>
             </>
           )}
       </DialogWrapper.Footer>
