@@ -15,10 +15,10 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { DataTable } from "@/components/shared/table/DataTable"
 import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 import PromptMultiSelect from "@/components/shared/dialog/PromptMultiSelect"
+import { SingleSelect } from "@/components/shared/filter/SingleSelect"
 import { EnrichmentFilters } from "./EnrichmentFilters"
 import { ConfirmationSummary } from "./ConfirmationSummary"
 import { useGetProspectEnrichments } from "@/api/variable-dialog/getProspectEnrichments"
-import { useAllPrompts } from "@/contexts/PromptContext"
 
 // Multi-select options for enrichment processing
 const MULTI_OPTIONS = [
@@ -40,6 +40,7 @@ function ProspectEnrichmentsDialog({
   const [step, setStep] = useState('select')
   const [selectedPromptIds, setSelectedPromptIds] = useState([])
   const [selectedOptions, setSelectedOptions] = useState([])
+  const [agentPrecision, setAgentPrecision] = useState('default')
   const [filters, setFilters] = useState({
     promptIds: [],
     entityKinds: [],
@@ -54,10 +55,6 @@ function ProspectEnrichmentsDialog({
     error: enrichmentsError
   } = useGetProspectEnrichments(user_id, prospectIds)
 
-  // Fetch prompts for name resolution
-  const { 
-    data: prompts = []
-  } = useAllPrompts('create_variable')
 
   // Mutation for posting variables
   const createVariablesMutation = useCreateVariables({
@@ -178,17 +175,14 @@ function ProspectEnrichmentsDialog({
     createVariablesMutation.mutate({ 
       user_id, 
       prospect_enrichments_ids,
-      flags: selectedOptions
+      flags: selectedOptions,
+      agent_precision: agentPrecision
     })
   }
 
-  // Handle prompt selection (enforce single selection)
+  // Handle prompt selection (allow multiple)
   const handlePromptChange = (newPromptIds) => {
-    if (newPromptIds.length > 1) {
-      setSelectedPromptIds([newPromptIds[newPromptIds.length - 1]])
-    } else {
-      setSelectedPromptIds(newPromptIds)
-    }
+    setSelectedPromptIds(newPromptIds)
   }
 
   const handleOptionToggle = (optionValue) => {
@@ -199,9 +193,6 @@ function ProspectEnrichmentsDialog({
     )
   }
 
-  // Get selected prompt name for display
-  const selectedPrompt = prompts.find(p => p.id === selectedPromptIds[0])
-  const selectedPromptName = selectedPrompt?.name
 
   const selectedCount = selectedEnrichments.length
   const selectedProspectCount = selectedByProspect.size
@@ -214,7 +205,7 @@ function ProspectEnrichmentsDialog({
       title="Create Variables from Enrichments"
       description={
         step === 'select' ? 'Filter and select enrichments to create variables from' :
-        step === 'prompt' ? 'Choose a prompt to process the selected enrichments' :
+        step === 'prompt' ? 'Choose prompt(s) to process the selected enrichments' :
         'Review your selection and confirm variable creation'
       }
       size="xl"
@@ -279,8 +270,28 @@ function ProspectEnrichmentsDialog({
                 value={selectedPromptIds}
                 onChange={handlePromptChange}
                 type="create_variable"
-                label="Select prompt for variable creation (select only one)"
+                label="Select prompt(s) for variable creation (you can pick multiple)"
               />
+
+              <Separator />
+
+              {/* Agent Precision */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">
+                  Agent precision
+                </Label>
+                <SingleSelect
+                  value={agentPrecision}
+                  onValueChange={setAgentPrecision}
+                  options={[
+                    { value: 'low', label: 'Low' },
+                    { value: 'default', label: 'Default' },
+                    { value: 'high', label: 'High' }
+                  ]}
+                  placeholder="Select precision"
+                  triggerClassName="h-9 min-w-[180px]"
+                />
+              </div>
 
               <Separator />
 
@@ -314,7 +325,7 @@ function ProspectEnrichmentsDialog({
               selectedProspectCount={selectedProspectCount}
               selectedPromptIds={selectedPromptIds}
               selectedByProspect={selectedByProspect}
-              promptName={selectedPromptName}
+              selectedPromptCount={selectedPromptIds.length}
               flags={selectedOptions}
               flagOptions={MULTI_OPTIONS}
             />
@@ -343,7 +354,7 @@ function ProspectEnrichmentsDialog({
               </Button>
               <Button 
                 onClick={() => setStep('confirm')}
-                disabled={selectedPromptIds.length !== 1}
+                disabled={selectedPromptIds.length === 0}
               >
                 Continue <ArrowRight className="h-4 w-4 ml-2" />
               </Button>

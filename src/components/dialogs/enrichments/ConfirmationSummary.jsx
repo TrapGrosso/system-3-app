@@ -11,7 +11,7 @@ export function ConfirmationSummary({
   selectedProspectCount, 
   selectedPromptIds,
   selectedByProspect,
-  promptName,
+  selectedPromptCount,
   flags = [],
   flagOptions = []
 }) {
@@ -70,10 +70,10 @@ export function ConfirmationSummary({
           icon={Users2}
         />
         <StatTile 
-          label="Prompt" 
-          value={promptName || "None"}
+          label="Prompts" 
+          value={`${selectedPromptCount} Selected`}
           icon={MessageSquare}
-          valueClass={promptName ? "text-green-600" : "text-muted-foreground"}
+          valueClass={selectedPromptCount > 0 ? "text-green-600" : "text-muted-foreground"}
         />
       </div>
 
