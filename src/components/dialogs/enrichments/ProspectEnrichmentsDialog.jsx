@@ -23,9 +23,7 @@ import { useGetProspectEnrichments } from "@/api/variable-dialog/getProspectEnri
 // Multi-select options for enrichment processing
 const MULTI_OPTIONS = [
   { value: "send_notification", label: "Send email notification when finished" },
-  { value: "include_company_data", label: "Include company data in variables" },
-  { value: "auto_tag_prospects", label: "Auto-tag processed prospects" },
-  { value: "export_to_csv", label: "Export results to CSV" },
+  { value: 'save_tokens', label: "Reduce token usage" },
 ]
 
 function ProspectEnrichmentsDialog({
