@@ -3,13 +3,17 @@ import { useMemo } from "react"
 import { Sparkles, Users2, MessageSquare, AlertTriangle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { StatTile } from "./StatTile"
 
 export function ConfirmationSummary({ 
   selectedEnrichments, 
   selectedProspectCount, 
   selectedPromptIds,
-  selectedByProspect 
+  selectedByProspect,
+  promptName,
+  flags = [],
+  flagOptions = []
 }) {
   // Aggregate enrichments by type and source
   const countsByKind = useMemo(() => {
@@ -40,6 +44,15 @@ export function ConfirmationSummary({
     return names
   }, [selectedEnrichments])
 
+  // Create a map of flag values to labels for display
+  const flagLabelMap = useMemo(() => {
+    const map = {}
+    flagOptions.forEach(option => {
+      map[option.value] = option.label
+    })
+    return map
+  }, [flagOptions])
+
   const selectedCount = selectedEnrichments.length
 
   return (
@@ -58,9 +71,9 @@ export function ConfirmationSummary({
         />
         <StatTile 
           label="Prompt" 
-          value={selectedPromptIds.length > 0 ? "Selected" : "None"} 
+          value={promptName || "None"}
           icon={MessageSquare}
-          valueClass={selectedPromptIds.length > 0 ? "text-green-600" : "text-muted-foreground"}
+          valueClass={promptName ? "text-green-600" : "text-muted-foreground"}
         />
       </div>
 
@@ -97,6 +110,20 @@ export function ConfirmationSummary({
             </div>
           </div>
         </div>
+
+        {/* Processing Options */}
+        {flags.length > 0 && (
+          <div className="p-4 border rounded-lg space-y-2">
+            <h5 className="text-sm font-medium text-muted-foreground">Processing Options</h5>
+            <div className="space-y-1">
+              {flags.map((flag) => (
+                <div key={flag} className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">{flagLabelMap[flag] || flag}</Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Affected Prospects */}
         {prospectNames.length > 0 && (

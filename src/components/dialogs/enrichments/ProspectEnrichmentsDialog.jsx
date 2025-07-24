@@ -9,6 +9,8 @@ import DialogWrapper from "@/components/shared/dialog/DialogWrapper"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 
 import { DataTable } from "@/components/shared/table/DataTable"
 import SpinnerButton from "@/components/shared/ui/SpinnerButton"
@@ -16,7 +18,15 @@ import PromptMultiSelect from "@/components/shared/dialog/PromptMultiSelect"
 import { EnrichmentFilters } from "./EnrichmentFilters"
 import { ConfirmationSummary } from "./ConfirmationSummary"
 import { useGetProspectEnrichments } from "@/api/variable-dialog/getProspectEnrichments"
+import { useAllPrompts } from "@/contexts/PromptContext"
 
+// Multi-select options for enrichment processing
+const MULTI_OPTIONS = [
+  { value: "send_notification", label: "Send email notification when finished" },
+  { value: "include_company_data", label: "Include company data in variables" },
+  { value: "auto_tag_prospects", label: "Auto-tag processed prospects" },
+  { value: "export_to_csv", label: "Export results to CSV" },
+]
 
 function ProspectEnrichmentsDialog({
   user_id,
@@ -29,6 +39,7 @@ function ProspectEnrichmentsDialog({
 }) {
   const [step, setStep] = useState('select')
   const [selectedPromptIds, setSelectedPromptIds] = useState([])
+  const [selectedOptions, setSelectedOptions] = useState([])
   const [filters, setFilters] = useState({
     promptIds: [],
     entityKinds: [],
@@ -42,6 +53,11 @@ function ProspectEnrichmentsDialog({
     isError: isErrorEnrichments,
     error: enrichmentsError
   } = useGetProspectEnrichments(user_id, prospectIds)
+
+  // Fetch prompts for name resolution
+  const { 
+    data: prompts = []
+  } = useAllPrompts('create_variable')
 
   // Mutation for posting variables
   const createVariablesMutation = useCreateVariables({
@@ -144,6 +160,7 @@ function ProspectEnrichmentsDialog({
   const handleClose = () => {
     setStep('select')
     setSelectedPromptIds([])
+    setSelectedOptions([])
     setFilters({ promptIds: [], entityKinds: [], sources: [] })
     onOpenChange?.(false)
   }
@@ -158,7 +175,11 @@ function ProspectEnrichmentsDialog({
       })
     )
 
-    createVariablesMutation.mutate({ user_id, prospect_enrichments_ids })
+    createVariablesMutation.mutate({ 
+      user_id, 
+      prospect_enrichments_ids,
+      flags: selectedOptions
+    })
   }
 
   // Handle prompt selection (enforce single selection)
@@ -169,6 +190,18 @@ function ProspectEnrichmentsDialog({
       setSelectedPromptIds(newPromptIds)
     }
   }
+
+  const handleOptionToggle = (optionValue) => {
+    setSelectedOptions(prev => 
+      prev.includes(optionValue) 
+        ? prev.filter(val => val !== optionValue)
+        : [...prev, optionValue]
+    )
+  }
+
+  // Get selected prompt name for display
+  const selectedPrompt = prompts.find(p => p.id === selectedPromptIds[0])
+  const selectedPromptName = selectedPrompt?.name
 
   const selectedCount = selectedEnrichments.length
   const selectedProspectCount = selectedByProspect.size
@@ -248,6 +281,29 @@ function ProspectEnrichmentsDialog({
                 type="create_variable"
                 label="Select prompt for variable creation (select only one)"
               />
+
+              <Separator />
+
+              {/* Processing Options */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">
+                  Processing options
+                </Label>
+                <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
+                  {MULTI_OPTIONS.map((option) => (
+                    <label
+                      key={option.value}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <Checkbox
+                        checked={selectedOptions.includes(option.value)}
+                        onCheckedChange={() => handleOptionToggle(option.value)}
+                      />
+                      <span className="text-sm">{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
@@ -258,6 +314,9 @@ function ProspectEnrichmentsDialog({
               selectedProspectCount={selectedProspectCount}
               selectedPromptIds={selectedPromptIds}
               selectedByProspect={selectedByProspect}
+              promptName={selectedPromptName}
+              flags={selectedOptions}
+              flagOptions={MULTI_OPTIONS}
             />
           )}
       </DialogWrapper.Body>
