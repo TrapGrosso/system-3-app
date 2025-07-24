@@ -175,8 +175,10 @@ function ProspectEnrichmentsDialog({
     createVariablesMutation.mutate({ 
       user_id, 
       prospect_enrichments_ids,
-      flags: selectedOptions,
-      agent_precision: agentPrecision
+      options: {
+        flags: selectedOptions,
+        agent_precision: agentPrecision
+      }
     })
   }
 
