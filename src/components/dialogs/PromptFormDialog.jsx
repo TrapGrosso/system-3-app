@@ -118,7 +118,7 @@ function PromptFormDialog({
       } else {
         // No changes, just close without marking as submitted
         setHasSubmitted(false)
-        handleOpenChange(false)
+        onOpenChange(false)
       }
     }
   }

@@ -56,7 +56,8 @@ export const useGetAllPrompts = (userId, type) => {
  *     "agent_type": "sales",
  *     "tags": ["email", "sales", "template"],
  *     "created_at": "2025-07-04T18:35:22.123456",
- *     "updated_at": "2025-07-04T18:35:22.123456"
+ *     "updated_at": "2025-07-04T18:35:22.123456",
+ *     "additional_metadata": {}
  *   },
  *   {
  *     "id": "0c52c1f7-1b77-4d6f-9e0e-3e75baff7461",
@@ -67,7 +68,8 @@ export const useGetAllPrompts = (userId, type) => {
  *     "agent_type": "content",
  *     "tags": null,
  *     "created_at": "2025-07-03T10:02:11.987654",
- *     "updated_at": "2025-07-03T10:02:11.987654"
+ *     "updated_at": "2025-07-03T10:02:11.987654",
+ *     "additional_metadata": {}
  *   }
  * ]
  * 
