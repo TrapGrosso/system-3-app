@@ -14,6 +14,7 @@ import ProspectNotesDialog from '@/components/dialogs/ProspectNotesDialog'
 import ProspectTasksDialog from '@/components/dialogs/ProspectTasksDialog'
 import DeepSearchQueueDialog from '@/components/dialogs/DeepSearchQueueDialog'
 import ProspectEnrichmentsDialog from '@/components/dialogs/enrichments/ProspectEnrichmentsDialog'
+import RemoveFromGroupDialog from '@/components/dialogs/RemoveFromGroupDialog'
 import { DeepSearchQueueProvider } from '@/contexts/DeepSearchQueueContext'
 import { PromptProvider } from '@/contexts/PromptContext'
 
@@ -41,6 +42,10 @@ function DashboardContent() {
     // State for ProspectEnrichmentsDialog
     const [enrichDialogOpen, setEnrichDialogOpen] = useState(false)
     const [prospectIdsForEnrich, setProspectIdsForEnrich] = useState([])
+
+    // State for RemoveFromGroupDialog
+    const [removeFromGroupDialogOpen, setRemoveFromGroupDialogOpen] = useState(false)
+    const [selectedProspectForRemoval, setSelectedProspectForRemoval] = useState(null)
 
     // Filter and query handlers for child components
     const handleApplyFilters = (newQuery) => {
@@ -119,6 +124,12 @@ function DashboardContent() {
         setEnrichDialogOpen(true)
     }
 
+    // Remove from group handler
+    const handleRemoveFromGroup = (linkedinId, prospect) => {
+        setSelectedProspectForRemoval(prospect)
+        setRemoveFromGroupDialogOpen(true)
+    }
+
   return (
     <DashboardLayout headerText="Dashboard">
       <SectionCards />
@@ -155,6 +166,7 @@ function DashboardContent() {
           onBulkAddToDeepSearch={handleBulkAddToDeepSearch}
           onCreateVariables={handleCreateVariables}
           onBulkCreateVariables={handleBulkCreateVariables}
+          onRemoveFromGroup={handleRemoveFromGroup}
         />
       </div>
       
@@ -221,6 +233,21 @@ function DashboardContent() {
           setProspectIdsForEnrich([])
         }}
       />}
+      
+      {/* RemoveFromGroupDialog - controlled by Dashboard state */}
+      {selectedProspectForRemoval && (
+        <RemoveFromGroupDialog
+          prospect_id={selectedProspectForRemoval.linkedin_id}
+          prospect_name={`${selectedProspectForRemoval.first_name} ${selectedProspectForRemoval.last_name}`.trim()}
+          open={removeFromGroupDialogOpen}
+          onOpenChange={setRemoveFromGroupDialogOpen}
+          onSuccess={() => {
+            refetch() // Refresh prospects list after successful group removal
+            setRemoveFromGroupDialogOpen(false)
+            setSelectedProspectForRemoval(null)
+          }}
+        />
+      )}
     </DashboardLayout>
   )
 }

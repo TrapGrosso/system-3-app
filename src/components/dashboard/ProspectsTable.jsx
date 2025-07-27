@@ -41,7 +41,8 @@ export default function ProspectsTable({
   onBulkAddToCampaign,
   onBulkAddToDeepSearch,
   onCreateVariables,
-  onBulkCreateVariables
+  onBulkCreateVariables,
+  onRemoveFromGroup
 }) {
 
   // Column definitions (without select and actions - DataTable handles these)
@@ -410,11 +411,18 @@ export default function ProspectsTable({
     },
     "separator",
     {
+      label: "Remove from Group",
+      variant: "destructive",
+      onSelect: () => onRemoveFromGroup
+        ? onRemoveFromGroup(ctx.linkedin_id, ctx)
+        : alert(`Remove ${ctx.first_name} ${ctx.last_name} from group`)
+    },
+    {
       label: "Delete",
       variant: "destructive",
       onSelect: () => alert(`Delete ${ctx.first_name} ${ctx.last_name}`)
     }
-  ], [onAddNote, onCreateTask, onAddToGroup, onAddToCampaign, onAddToDeepSearch, onCreateVariables])
+  ], [onAddNote, onCreateTask, onAddToGroup, onAddToCampaign, onAddToDeepSearch, onCreateVariables, onRemoveFromGroup])
 
   // Row click handler
   const handleRowClick = React.useCallback((prospect) => {
