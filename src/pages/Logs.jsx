@@ -3,8 +3,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useRetryAddLeads } from '@/api/add-leads/retryAddLeads'
 import { useLogsQueryController } from '@/api/log/getLogsByAction'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
-import { LogTable } from '@/components/logs/LogTable'
-import LogTableFilterBar from '@/components/logs/LogTableFilterBar'
+import { LogTable } from '@/components/logs-page/LogTable'
+import LogTableFilterBar from '@/components/logs-page/LogTableFilterBar'
 import { toast } from 'sonner'
 
 export default function Logs() {
