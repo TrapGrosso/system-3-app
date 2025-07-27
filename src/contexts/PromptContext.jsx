@@ -6,18 +6,10 @@ import { useCreatePrompt } from "@/api/prompt-context/createPrompt"
 import { useUpdatePrompt } from "@/api/prompt-context/updatePrompt"
 import { useDeletePrompt } from "@/api/prompt-context/deletePrompt"
 import { useAuth } from "./AuthContext"
+import { DEFAULT_MODEL_SETTINGS } from "@/constants/modelSettings"
 
 // Agent type enum
 export const AGENT_TYPES = ['deep_research', 'create_variable']
-
-// Default model settings for advanced options
-export const DEFAULT_MODEL_SETTINGS = {
-  temperature: 0.7,
-  top_p: 1,
-  max_tokens: 1024,
-  frequency_penalty: 0,
-  presence_penalty: 0,
-}
 
 const PromptContext = React.createContext(null)
 

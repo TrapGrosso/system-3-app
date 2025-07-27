@@ -1,14 +1,15 @@
 import * as React from "react"
 import { useState, useEffect } from "react"
-import { Plus, Edit3, ChevronDown, ChevronRight } from "lucide-react"
+import { Plus, Edit3 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import DialogWrapper from "@/components/shared/dialog/DialogWrapper"
 import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 import FormField from "@/components/shared/ui/FormField"
+import DialogAdvancedSettingsCollapsible from "@/components/shared/dialog/DialogAdvancedSettingsCollapsible"
 
 import { usePrompts } from "@/contexts/PromptContext"
+import { DEFAULT_MODEL_SETTINGS, MODEL_SETTINGS_FIELDS } from "@/constants/modelSettings"
 
 function PromptFormDialog({ 
   mode = "create", // "create" or "edit"
@@ -20,7 +21,6 @@ function PromptFormDialog({
   onOpenChange
 }) {
   const [hasSubmitted, setHasSubmitted] = useState(false)
-  const [advancedOpen, setAdvancedOpen] = useState(false)
   const [formData, setFormData] = useState({
     agent_type: "",
     name: "",
@@ -38,7 +38,6 @@ function PromptFormDialog({
     isCreatingPrompt,
     isUpdatingPrompt,
     AGENT_TYPES,
-    DEFAULT_MODEL_SETTINGS,
   } = usePrompts()
 
   // Initialize form data when prompt changes (edit mode)
@@ -310,96 +309,13 @@ function PromptFormDialog({
               />
 
               {/* Advanced Settings - Collapsible */}
-              <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
-                <CollapsibleTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="flex items-center justify-between w-full p-0 h-auto font-medium text-left"
-                    type="button"
-                  >
-                    <span>Advanced Settings</span>
-                    {advancedOpen ? (
-                      <ChevronDown className="h-4 w-4" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4" />
-                    )}
-                  </Button>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="space-y-4 mt-4 p-4 border rounded-lg bg-muted/50">
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Configure advanced model parameters for fine-tuning AI behavior
-                  </p>
-                  
-                  {/* Temperature */}
-                  <FormField
-                    id="temperature"
-                    label="Temperature"
-                    type="number"
-                    min="0"
-                    max="2"
-                    step="0.1"
-                    value={formData.model_settings.temperature}
-                    onChange={(v) => handleModelSettingChange("temperature", parseFloat(v) || 0.7)}
-                    helper="Controls randomness: 0 = focused, 2 = creative"
-                    disabled={isSubmitting}
-                  />
-
-                  {/* Top P */}
-                  <FormField
-                    id="top_p"
-                    label="Top P"
-                    type="number"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={formData.model_settings.top_p}
-                    onChange={(v) => handleModelSettingChange("top_p", parseFloat(v) || 1)}
-                    helper="Controls diversity via nucleus sampling"
-                    disabled={isSubmitting}
-                  />
-
-                  {/* Max Tokens */}
-                  <FormField
-                    id="max_tokens"
-                    label="Max Tokens"
-                    type="number"
-                    min="1"
-                    max="4000"
-                    value={formData.model_settings.max_tokens}
-                    onChange={(v) => handleModelSettingChange("max_tokens", parseInt(v) || 1024)}
-                    helper="Maximum length of the response"
-                    disabled={isSubmitting}
-                  />
-
-                  {/* Frequency Penalty */}
-                  <FormField
-                    id="frequency_penalty"
-                    label="Frequency Penalty"
-                    type="number"
-                    min="-2"
-                    max="2"
-                    step="0.1"
-                    value={formData.model_settings.frequency_penalty}
-                    onChange={(v) => handleModelSettingChange("frequency_penalty", parseFloat(v) || 0)}
-                    helper="Reduces repetition of tokens"
-                    disabled={isSubmitting}
-                  />
-
-                  {/* Presence Penalty */}
-                  <FormField
-                    id="presence_penalty"
-                    label="Presence Penalty"
-                    type="number"
-                    min="-2"
-                    max="2"
-                    step="0.1"
-                    value={formData.model_settings.presence_penalty}
-                    onChange={(v) => handleModelSettingChange("presence_penalty", parseFloat(v) || 0)}
-                    helper="Encourages talking about new topics"
-                    disabled={isSubmitting}
-                  />
-                </CollapsibleContent>
-              </Collapsible>
+              <DialogAdvancedSettingsCollapsible
+                settings={formData.model_settings}
+                onChange={handleModelSettingChange}
+                disabled={isSubmitting}
+                fieldConfig={MODEL_SETTINGS_FIELDS}
+                description="Configure advanced model parameters for fine-tuning AI behavior"
+              />
             </>
           )}
         </form>
