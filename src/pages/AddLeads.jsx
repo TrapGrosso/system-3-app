@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAddLeads } from '@/api/add-leads/addLeads'
 import { useRetryAddLeads } from '@/api/add-leads/retryAddLeads'
-import { useLogsQueryController } from '@/api/log/getLogsByAction'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -10,8 +9,6 @@ import { Separator } from '@/components/ui/separator'
 import { ManualInput } from '@/components/add-leads/ManualInput'
 import { CsvUpload } from '@/components/add-leads/CsvUpload'
 import { SubmitSection } from '@/components/add-leads/SubmitSection'
-import { LogTable } from '@/components/logs/LogTable'
-import LogTableFilterBar from '@/components/logs/LogTableFilterBar'
 import { toast } from 'sonner'
 import SubmitLeadsDialog from '@/components/dialogs/SubmitLeadsDialog'
 
@@ -31,7 +28,6 @@ export default function AddLeads() {
             toast.success(data.message || 'Leads submitted successfully')
             setManualUrls([])
             setCsvUrls([])
-            refetchLogs()
         },
         onError: (error) => {
             toast.error(error?.message || 'Failed to submit leads')
@@ -42,28 +38,10 @@ export default function AddLeads() {
     const { mutate: retryAddLeads, isPending: isRetryPending } = useRetryAddLeads({
         onSuccess: (data) => {
             toast.success(data.message || 'Retry submitted successfully')
-            refetchLogs()
         },
         onError: (error) => {
             toast.error(error?.message || 'Failed to submit retry')
         }
-    })
-
-    // Fetch add lead logs using new API
-    const {
-        data: logs = [],
-        total: logsTotal = 0,
-        query: logsQuery,
-        setQuery: setLogsQuery,
-        resetFilters: resetLogsFilters,
-        isLoading: isLoadingLogs,
-        isFetching: isFetchingLogs,
-        isError: isErrorLogs,
-        error: logsError,
-        refetch: refetchLogs
-    } = useLogsQueryController({
-        userId: user.id,
-        action: 'add_leads'
     })
 
     const handleSubmitDialogConfirm = ({ urls, options }) => {
@@ -81,10 +59,6 @@ export default function AddLeads() {
         setSubmitDialogOpen(false)
     }
 
-    const handleRetry = (logId) => {
-        retryAddLeads({ log_id: logId, user_id: user.id })
-    }
-
     return (
         <DashboardLayout headerText="Add Leads">
             <div className="px-4 lg:px-6 space-y-6">
@@ -98,10 +72,9 @@ export default function AddLeads() {
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                            <TabsList className="grid w-full grid-cols-3">
+                            <TabsList className="grid w-full grid-cols-2">
                                 <TabsTrigger value="manual">Manual Input</TabsTrigger>
                                 <TabsTrigger value="csv">CSV Upload</TabsTrigger>
-                                <TabsTrigger value="logs">Logs</TabsTrigger>
                             </TabsList>
                             
                             <TabsContent value="manual" className="space-y-4">
@@ -114,26 +87,6 @@ export default function AddLeads() {
                             <TabsContent value="csv" className="space-y-4">
                                 <CsvUpload 
                                     onDataChange={setCsvUrls}
-                                />
-                            </TabsContent>
-                            
-                            <TabsContent value="logs" className="space-y-4">
-                                <LogTableFilterBar
-                                    query={logsQuery}
-                                    onApplyFilters={setLogsQuery}
-                                    onResetFilters={resetLogsFilters}
-                                    loading={isLoadingLogs || isFetchingLogs}
-                                />
-                                <LogTable 
-                                    data={logs}
-                                    total={logsTotal}
-                                    query={logsQuery}
-                                    onQueryChange={setLogsQuery}
-                                    loading={isLoadingLogs || isFetchingLogs}
-                                    isError={isErrorLogs}
-                                    error={logsError}
-                                    onRetry={handleRetry}
-                                    isRetryPending={isRetryPending}
                                 />
                             </TabsContent>
                         </Tabs>
