@@ -92,9 +92,6 @@ function DialogAdvancedSettingsCollapsible({
             id={field.key}
             label={field.label}
             type={field.type || "text"}
-            min={field.min}
-            max={field.max}
-            step={field.step}
             value={settings[field.key] || ""}
             onChange={(value) => handleFieldChange(field, value)}
             helper={field.helper}
