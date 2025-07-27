@@ -17,7 +17,7 @@ import FormField from "@/components/shared/ui/FormField"
  * @param {Function} onOpenChange - Callback for open state changes (optional)
  * @param {string} title - Title for the collapsible section (default: "Advanced Settings")
  * @param {React.ReactNode} description - Custom description/helper text (optional)
- * @param {Array} fieldConfig - Array of field configuration objects
+ * @param {Array} fieldConfig - Array of field configuration objects with defaultValue support
  * @param {string} className - Additional CSS classes for the content wrapper
  */
 function DialogAdvancedSettingsCollapsible({
@@ -92,7 +92,7 @@ function DialogAdvancedSettingsCollapsible({
             id={field.key}
             label={field.label}
             type={field.type || "text"}
-            value={settings[field.key] || ""}
+            value={settings[field.key] ?? field.defaultValue ?? ""}
             onChange={(value) => handleFieldChange(field, value)}
             helper={field.helper}
             disabled={disabled}

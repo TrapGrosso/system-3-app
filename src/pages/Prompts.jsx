@@ -9,7 +9,8 @@ import { PromptProvider, useAllPrompts, usePrompts } from "@/contexts/PromptCont
 import { useFilteredPrompts } from "@/hooks/use-filtered-prompts"
 import PromptFilters from "@/components/prompts/PromptFilters"
 import PromptsGrid from "@/components/prompts/PromptsGrid"
-import PromptFormDialog from "@/components/dialogs/PromptFormDialog"
+import CreatePromptDialog from "@/components/dialogs/CreatePromptDialog"
+import UpdatePromptDialog from "@/components/dialogs/UpdatePromptDialog"
 import { PromptPreviewDialog } from "@/components/prompts"
 import PromptDeleteDialog from "@/components/dialogs/PromptDeleteDialog"
 
@@ -138,11 +139,16 @@ function PromptsContent() {
         prompt={activePrompt}
       />
 
-      <PromptFormDialog
-        mode={dialogType === "edit" ? "edit" : "create"}
-        prompt={dialogType === "edit" ? activePrompt : null}
-        open={dialogType === "create" || dialogType === "edit"}
+      <CreatePromptDialog
+        open={dialogType === "create"}
         onOpenChange={closeDialog}
+        onSuccess={closeDialog}
+      />
+
+      <UpdatePromptDialog
+        open={dialogType === "edit"}
+        onOpenChange={closeDialog}
+        prompt={activePrompt}
         onSuccess={closeDialog}
       />
 
