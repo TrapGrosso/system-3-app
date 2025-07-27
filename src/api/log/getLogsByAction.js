@@ -64,6 +64,7 @@ export const useLogsQueryController = ({ userId, action }) => {
     sort_by: 'created_at',
     sort_dir: 'desc',
     status: '',
+    action: '',
     date_from: '',
     date_to: '',
     date_field: 'start_time',
@@ -134,6 +135,7 @@ export const useLogsQueryController = ({ userId, action }) => {
       setQuery(prev => ({
         ...prev,
         status: '',
+        action: '',
         date_from: '',
         date_to: '',
         date_field: 'start_time',
@@ -170,7 +172,7 @@ export const useLogsQueryController = ({ userId, action }) => {
  * 
  * Query Parameters:
  * - user_id (required): UUID of the user
- * - action (required): The action to filter logs by
+ * - action (optional): The action to filter logs by. If not provided, all actions will be fetched.
  * - page (optional): Page number, default 1
  * - page_size (optional): Results per page, default 10, max 100
  * - sort_by (optional): Column to sort by ('duration_ms', 'created_at'), default 'created_at'
@@ -184,6 +186,7 @@ export const useLogsQueryController = ({ userId, action }) => {
  * Example Requests:
  * 
  * Basic usage:
+ * GET /getLogsByAction?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f
  * GET /getLogsByAction?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&action=add_leads
  * 
  * With pagination and sorting:
@@ -242,7 +245,6 @@ export const useLogsQueryController = ({ userId, action }) => {
  * 
  * Missing required parameters (400):
  * {"error": "Missing required query param: user_id"}
- * {"error": "Missing or empty required query param: action"}
  * 
  * Invalid parameters (400):
  * {"error": "Invalid user_id format. Must be a valid UUID"}

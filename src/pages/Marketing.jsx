@@ -12,7 +12,7 @@ import { useGetLogsByAction } from '@/api/log/getLogsByAction'
 import { toast } from 'sonner'
 import DeepSearchQueueTable from '@/components/marketing/DeepSearchQueueTable'
 import { PromptSelectDialog } from '@/components/marketing/PromptSelectDialog'
-import { LogTable } from '@/components/shared/table/LogTable'
+import { LogTable } from '@/components/logs/LogTable'
 
 export default function Marketing() {
     const { user } = useAuth()
