@@ -8,7 +8,8 @@ import {
   IconChecklist,
   IconMessageCircle,
   IconBolt,
-  IconUsersGroup
+  IconUsersGroup,
+  IconLogs
 } from "@tabler/icons-react"
 
 import { AppSidebar } from "@/components/navigation/app-sidebar"
@@ -60,6 +61,11 @@ export function DashboardLayout({ children, headerText = "Dashboard" }) {
           { label: "All Groups", action: "view-all" },
           { label: "My Groups", action: "view-mine" }
         ]
+      },
+      {
+        name: "Logs",
+        url: "/logs",
+        icon: IconLogs
       },
       {
         name: "Tasks",
