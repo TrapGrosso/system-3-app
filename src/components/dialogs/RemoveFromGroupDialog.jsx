@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator"
 
 import DialogWrapper from "@/components/shared/dialog/DialogWrapper"
 import SpinnerButton from "@/components/shared/ui/SpinnerButton"
+import SpinnerOverlay from "@/components/shared/ui/SpinnerOverlay"
 
 import { useGroups, useProspectGroups } from "@/contexts/GroupsContext"
 
@@ -19,6 +20,9 @@ function RemoveFromGroupDialog({
   onOpenChange,
   onSuccess
 }) {
+  // Local state for tracking which group is being removed
+  const [removingGroupId, setRemovingGroupId] = useState(null)
+
   // Get groups context
   const {
     user_id,
@@ -36,6 +40,7 @@ function RemoveFromGroupDialog({
   } = useProspectGroups(prospect_id)
 
   const handleRemoveFromGroup = (groupId) => {
+    setRemovingGroupId(groupId)
     removeFromGroup.mutate({
       user_id,
       group_id: groupId,
@@ -45,6 +50,9 @@ function RemoveFromGroupDialog({
         invalidateProspectGroups(prospect_id)
         refetchGroups()
         onSuccess?.()
+      },
+      onSettled: () => {
+        setRemovingGroupId(null)
       }
     })
   }
@@ -85,7 +93,7 @@ function RemoveFromGroupDialog({
     >
       <DialogWrapper.Body className="space-y-4">
         {/* Groups List */}
-        <div className="space-y-3">
+        <div className="space-y-3 relative">
           {isLoadingGroups ? (
             <div className="space-y-2">
               {[...Array(3)].map((_, i) => (
@@ -125,9 +133,6 @@ function RemoveFromGroupDialog({
                   <div className="space-y-1 flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-sm truncate">{group.name}</span>
-                      <Badge variant="secondary" className="text-xs">
-                        {group.prospect_count || 0}
-                      </Badge>
                     </div>
                     {group.description && (
                       <p className="text-xs text-muted-foreground truncate">
@@ -141,7 +146,7 @@ function RemoveFromGroupDialog({
                     className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                     onClick={() => handleRemoveFromGroup(group.id)}
                     disabled={isAnyLoading}
-                    loading={isRemovingOne}
+                    loading={removingGroupId === group.id && isRemovingOne}
                   >
                     <Trash2 className="h-4 w-4" />
                     <span className="sr-only">Remove from {group.name}</span>
@@ -151,6 +156,9 @@ function RemoveFromGroupDialog({
             </div>
           )}
         </div>
+
+          {/* Overlay for bulk removal */}
+          {isRemovingAll && <SpinnerOverlay />}
 
         {/* Remove from all groups section */}
         {groups.length > 0 && (
