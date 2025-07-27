@@ -9,7 +9,48 @@ import FormField from "@/components/shared/ui/FormField"
 import DialogAdvancedSettingsCollapsible from "@/components/shared/dialog/DialogAdvancedSettingsCollapsible"
 
 import { usePrompts } from "@/contexts/PromptContext"
-import { DEFAULT_MODEL_SETTINGS, MODEL_SETTINGS_FIELDS } from "@/constants/modelSettings"
+
+// Inlined model settings constants
+const DEFAULT_MODEL_SETTINGS = {
+  temperature: 0.7,
+  top_p: 1,
+  max_tokens: 1024,
+  frequency_penalty: 0,
+  presence_penalty: 0,
+}
+
+const MODEL_SETTINGS_FIELDS = [
+  {
+    key: "temperature",
+    label: "Temperature",
+    type: "text",
+    helper: "Controls randomness: 0 = focused, 2 = creative"
+  },
+  {
+    key: "top_p",
+    label: "Top P",
+    type: "text",
+    helper: "Controls diversity via nucleus sampling"
+  },
+  {
+    key: "max_tokens",
+    label: "Max Tokens",
+    type: "text",
+    helper: "Maximum length of the response"
+  },
+  {
+    key: "frequency_penalty",
+    label: "Frequency Penalty",
+    type: "text",
+    helper: "Reduces repetition of tokens"
+  },
+  {
+    key: "presence_penalty",
+    label: "Presence Penalty",
+    type: "text",
+    helper: "Encourages talking about new topics"
+  }
+]
 
 function PromptFormDialog({ 
   mode = "create", // "create" or "edit"
@@ -94,6 +135,12 @@ function PromptFormDialog({
       return
     }
 
+    // Validate agent_type
+    if (formData.agent_type && !AGENT_TYPES.includes(formData.agent_type)) {
+      toast.error(`Invalid agent type. Must be one of: ${AGENT_TYPES.join(', ')}`)
+      return
+    }
+
     // Parse tags from comma-separated string
     const parsedTags = formData.tags
       .split(",")
@@ -104,16 +151,30 @@ function PromptFormDialog({
     setHasSubmitted(true)
 
     if (mode === "create") {
+      // Build additional_metadata
+      const additional_metadata = {
+        ...DEFAULT_MODEL_SETTINGS,
+        ...formData.model_settings,
+        ...(formData.agent_type === 'create_variable' && formData.variable_display_name.trim()
+          ? { variable_name: formData.variable_display_name.trim() }
+          : {}),
+      }
+
       createPrompt({
         prompt_name: formData.name.trim(),
         prompt_description: formData.description.trim() || undefined,
         prompt_text: formData.prompt_text.trim(),
         agent_type: formData.agent_type,
         tags: parsedTags.length > 0 ? parsedTags : undefined,
-        variable_display_name: formData.variable_display_name.trim() || undefined,
-        model_settings: formData.model_settings
+        additional_metadata
       })
     } else if (mode === "edit" && prompt) {
+      // Validate agent_type if provided
+      if (formData.agent_type && !AGENT_TYPES.includes(formData.agent_type)) {
+        toast.error(`Invalid agent type. Must be one of: ${AGENT_TYPES.join(', ')}`)
+        return
+      }
+
       const updates = {}
       
       if (formData.name.trim() !== prompt.name) {
@@ -137,21 +198,35 @@ function PromptFormDialog({
         updates.updated_tags = newTags.length > 0 ? newTags : undefined
       }
 
-      // Check additional_metadata changes
+      // Build updated_additional_metadata if needed
       const currentMetadata = prompt.additional_metadata || {}
       const currentVariableName = currentMetadata.variable_name || ""
       const newVariableName = formData.variable_display_name.trim()
       
-      if (newVariableName !== currentVariableName) {
-        updates.variable_display_name = newVariableName
-      }
-
-      // Check model settings changes
+      const variableNameChanged = newVariableName !== currentVariableName
       const modelSettingsChanged = Object.keys(DEFAULT_MODEL_SETTINGS).some(key => 
         formData.model_settings[key] !== currentMetadata[key]
       )
-      if (modelSettingsChanged) {
-        updates.model_settings = formData.model_settings
+
+      if (variableNameChanged || modelSettingsChanged) {
+        let updated_additional_metadata = {
+          ...currentMetadata,
+          ...formData.model_settings,
+          ...(formData.agent_type === 'create_variable' && newVariableName
+            ? { variable_name: newVariableName }
+            : formData.agent_type !== 'create_variable' 
+            ? { variable_name: undefined }
+            : {}),
+        }
+
+        // Remove undefined values
+        Object.keys(updated_additional_metadata).forEach(key => {
+          if (updated_additional_metadata[key] === undefined) {
+            delete updated_additional_metadata[key]
+          }
+        })
+
+        updates.updated_additional_metadata = updated_additional_metadata
       }
 
       // Only update if there are changes

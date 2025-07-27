@@ -6,7 +6,6 @@ import { useCreatePrompt } from "@/api/prompt-context/createPrompt"
 import { useUpdatePrompt } from "@/api/prompt-context/updatePrompt"
 import { useDeletePrompt } from "@/api/prompt-context/deletePrompt"
 import { useAuth } from "./AuthContext"
-import { DEFAULT_MODEL_SETTINGS } from "@/constants/modelSettings"
 
 // Agent type enum
 export const AGENT_TYPES = ['deep_research', 'create_variable']
@@ -96,75 +95,24 @@ export const PromptProvider = ({ children }) => {
   )
 
   const createPrompt = React.useCallback(
-    (promptData) => {
-      // Validate agent_type
-      if (promptData.agent_type && !AGENT_TYPES.includes(promptData.agent_type)) {
-        toast.error(`Invalid agent type. Must be one of: ${AGENT_TYPES.join(', ')}`)
-        return
-      }
-
-      // Extract special fields for additional_metadata
-      const { variable_display_name, model_settings, ...restData } = promptData
-
-      // Build additional_metadata
-      const additional_metadata = {
-        ...(model_settings || DEFAULT_MODEL_SETTINGS),
-        ...(promptData.agent_type === 'create_variable' && variable_display_name
-          ? { variable_name: variable_display_name }
-          : {}),
-      }
-
+    (payload) => {
       return createPromptMutation.mutate({
         user_id,
-        ...restData,
-        additional_metadata
+        ...payload
       })
     },
     [createPromptMutation, user_id]
   )
 
   const updatePrompt = React.useCallback(
-    (prompt_id, updates) => {
-      // Validate agent_type if provided
-      if (updates.updated_agent_type && !AGENT_TYPES.includes(updates.updated_agent_type)) {
-        toast.error(`Invalid agent type. Must be one of: ${AGENT_TYPES.join(', ')}`)
-        return
-      }
-
-      // Extract special fields for additional_metadata
-      const { variable_display_name, model_settings, ...restUpdates } = updates
-
-      // Build updated_additional_metadata if needed
-      let updated_additional_metadata
-      if (variable_display_name !== undefined || model_settings !== undefined) {
-        const currentPrompt = getPromptById(prompt_id)
-        const currentMetadata = currentPrompt?.additional_metadata || {}
-        
-        updated_additional_metadata = {
-          ...(model_settings || currentMetadata),
-          ...(updates.updated_agent_type === 'create_variable' && variable_display_name
-            ? { variable_name: variable_display_name }
-            : updates.updated_agent_type !== 'create_variable' 
-            ? { variable_name: undefined }
-            : {}),
-        }
-
-        // Remove undefined values
-        Object.keys(updated_additional_metadata).forEach(key => {
-          if (updated_additional_metadata[key] === undefined) {
-            delete updated_additional_metadata[key]
-          }
-        })
-      }
-
+    (prompt_id, payload) => {
       return updatePromptMutation.mutate({
         user_id,
         prompt_id,
-        ...restUpdates,
-        ...(updated_additional_metadata ? { updated_additional_metadata } : {})
+        ...payload
       })
     },
-    [updatePromptMutation, user_id, getPromptById]
+    [updatePromptMutation, user_id]
   )
 
   const deletePrompt = React.useCallback(
@@ -184,7 +132,6 @@ export const PromptProvider = ({ children }) => {
 
       // Agent types enum
       AGENT_TYPES,
-      DEFAULT_MODEL_SETTINGS,
 
       // Mutation objects (raw)
       createPromptMutation,
