@@ -9,6 +9,7 @@ import { useRemoveFromGroup } from "@/api/groups-context/removeFromGroup"
 import { useRemoveFromAllGroups } from "@/api/groups-context/removeFromAllGroups"
 import { useEmptyGroup } from "@/api/groups-context/emptyGroup"
 import { useFetchProspectsFromGroup } from "@/api/groups-context/fetchProspectsFromGroup"
+import { useGetProspectGroups } from "@/api/groups-context/getProspectGroups"
 import { useAuth } from "./AuthContext"
 
 const GroupsContext = React.createContext(null)
@@ -110,6 +111,11 @@ export const GroupsProvider = ({ children }) => {
     [queryClient, user_id]
   )
 
+  const invalidateProspectGroups = React.useCallback(
+    (prospectId) => queryClient.invalidateQueries(['getProspectGroups', user_id, prospectId]),
+    [queryClient, user_id]
+  )
+
   const value = React.useMemo(
     () => ({
       // Data
@@ -129,6 +135,7 @@ export const GroupsProvider = ({ children }) => {
       // Helpers
       refetchGroups,
       invalidateGroups,
+      invalidateProspectGroups,
       getGroupById,
     }),
     [
@@ -144,6 +151,7 @@ export const GroupsProvider = ({ children }) => {
       emptyGroupMutation,
       refetchGroups,
       invalidateGroups,
+      invalidateProspectGroups,
       getGroupById,
     ]
   )
@@ -167,4 +175,10 @@ export const useGroups = () => {
 export const useGroupProspects = (groupId) => {
   const { user_id } = useGroups()
   return useFetchProspectsFromGroup(user_id, groupId)
+}
+
+// Wrapper hook for fetching groups for a specific prospect
+export const useProspectGroups = (prospectId) => {
+  const { user_id } = useGroups()
+  return useGetProspectGroups(user_id, prospectId)
 }
