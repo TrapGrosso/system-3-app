@@ -43,7 +43,8 @@ export const useCreatePrompt = (options = {}) => {
  *   "prompt_description": "A prompt for conducting deep research",
  *   "prompt_text": "You are a research assistant specialized in...",
  *   "agent_type": "deep_research",
- *   "tags": ["research", "analysis", "AI"]
+ *   "tags": ["research", "analysis", "AI"],
+ *   "additional_metadata": {"model": "gpt-4", "language": "en"}
  * }
  * 
  * Example Success Response (201):
@@ -59,7 +60,8 @@ export const useCreatePrompt = (options = {}) => {
  *       "agent_type": "deep_research",
  *       "tags": ["research", "analysis", "AI"],
  *       "created_at": "2025-07-04T20:29:15.123456",
- *       "updated_at": "2025-07-04T20:29:15.123456"
+ *       "updated_at": "2025-07-04T20:29:15.123456",
+ *       "additional_metadata": {"model": "gpt-4", "language": "en"}
  *     }
  *   },
  *   "message": "Prompt created successfully",
