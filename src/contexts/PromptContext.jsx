@@ -10,6 +10,15 @@ import { useAuth } from "./AuthContext"
 // Agent type enum
 export const AGENT_TYPES = ['deep_research', 'create_variable']
 
+// Default model settings for advanced options
+export const DEFAULT_MODEL_SETTINGS = {
+  temperature: 0.7,
+  top_p: 1,
+  max_tokens: 1024,
+  frequency_penalty: 0,
+  presence_penalty: 0,
+}
+
 const PromptContext = React.createContext(null)
 
 export const PromptProvider = ({ children }) => {
@@ -101,9 +110,22 @@ export const PromptProvider = ({ children }) => {
         toast.error(`Invalid agent type. Must be one of: ${AGENT_TYPES.join(', ')}`)
         return
       }
+
+      // Extract special fields for additional_metadata
+      const { variable_display_name, model_settings, ...restData } = promptData
+
+      // Build additional_metadata
+      const additional_metadata = {
+        ...(model_settings || DEFAULT_MODEL_SETTINGS),
+        ...(promptData.agent_type === 'create_variable' && variable_display_name
+          ? { variable_name: variable_display_name }
+          : {}),
+      }
+
       return createPromptMutation.mutate({
         user_id,
-        ...promptData
+        ...restData,
+        additional_metadata
       })
     },
     [createPromptMutation, user_id]
@@ -116,13 +138,41 @@ export const PromptProvider = ({ children }) => {
         toast.error(`Invalid agent type. Must be one of: ${AGENT_TYPES.join(', ')}`)
         return
       }
+
+      // Extract special fields for additional_metadata
+      const { variable_display_name, model_settings, ...restUpdates } = updates
+
+      // Build updated_additional_metadata if needed
+      let updated_additional_metadata
+      if (variable_display_name !== undefined || model_settings !== undefined) {
+        const currentPrompt = getPromptById(prompt_id)
+        const currentMetadata = currentPrompt?.additional_metadata || {}
+        
+        updated_additional_metadata = {
+          ...(model_settings || currentMetadata),
+          ...(updates.updated_agent_type === 'create_variable' && variable_display_name
+            ? { variable_name: variable_display_name }
+            : updates.updated_agent_type !== 'create_variable' 
+            ? { variable_name: undefined }
+            : {}),
+        }
+
+        // Remove undefined values
+        Object.keys(updated_additional_metadata).forEach(key => {
+          if (updated_additional_metadata[key] === undefined) {
+            delete updated_additional_metadata[key]
+          }
+        })
+      }
+
       return updatePromptMutation.mutate({
         user_id,
         prompt_id,
-        ...updates
+        ...restUpdates,
+        ...(updated_additional_metadata ? { updated_additional_metadata } : {})
       })
     },
-    [updatePromptMutation, user_id]
+    [updatePromptMutation, user_id, getPromptById]
   )
 
   const deletePrompt = React.useCallback(
@@ -142,6 +192,7 @@ export const PromptProvider = ({ children }) => {
 
       // Agent types enum
       AGENT_TYPES,
+      DEFAULT_MODEL_SETTINGS,
 
       // Mutation objects (raw)
       createPromptMutation,
