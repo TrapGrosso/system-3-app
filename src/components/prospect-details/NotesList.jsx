@@ -34,6 +34,45 @@ export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
     }
   }
 
+  const handleBulkAction = (action, selectedIds) => {
+    if (action === 'delete') {
+      deleteNotes(selectedIds)
+      if (onNotesChanged) {
+        // Call after a brief delay to allow for the mutation to complete
+        setTimeout(() => onNotesChanged(), 100)
+      }
+    }
+  }
+
+  const rowActions = (note) => [
+    {
+      id: 'edit',
+      label: 'Edit',
+      icon: PencilIcon,
+      onSelect: () => handleEditNote(note),
+      disabled: isUpdatingNote || isDeletingNote
+    },
+    {
+      id: 'delete',
+      label: 'Delete',
+      icon: TrashIcon,
+      variant: 'destructive',
+      onSelect: () => handleDeleteNote(note.id),
+      disabled: isDeletingNote
+    }
+  ]
+
+  const bulkActions = [
+    {
+      id: 'delete',
+      label: 'Delete selected',
+      value: 'delete',
+      icon: TrashIcon,
+      variant: 'destructive',
+      disabled: isDeletingNote
+    }
+  ]
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -45,62 +84,27 @@ export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
   }
 
   const columns = [
-      {
-        header: 'Note',
-        accessorKey: 'body',
-        enableSorting: false,
-        cell: ({ row }) => (
-          <div className="font-medium whitespace-pre-wrap break-words">
-            {row.original.body}
-          </div>
-        ),
-      },
-      {
-        header: 'Created At',
-        accessorKey: 'created_at',
-        enableSorting: false,
-        cell: ({ row }) => (
-          <div className="text-muted-foreground w-48">
-            {formatDate(row.original.created_at)}
-          </div>
-        ),
-      },
-      {
-        id: 'actions',
-        header: '',
-        enableSorting: false,
-        cell: ({ row }) => (
-          <div className="flex items-center gap-1 w-20">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleEditNote(row.original)
-              }}
-              className="h-8 w-8 p-0"
-              disabled={isUpdatingNote || isDeletingNote}
-            >
-              <PencilIcon className="h-4 w-4" />
-              <span className="sr-only">Edit note</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleDeleteNote(row.original.id)
-              }}
-              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-              disabled={isDeletingNote}
-            >
-              <TrashIcon className="h-4 w-4" />
-              <span className="sr-only">Delete note</span>
-            </Button>
-          </div>
-        ),
-      },
-    ]
+    {
+      header: 'Note',
+      accessorKey: 'body',
+      enableSorting: false,
+      cell: ({ row }) => (
+        <div className="font-medium whitespace-pre-wrap break-words">
+          {row.original.body}
+        </div>
+      ),
+    },
+    {
+      header: 'Created At',
+      accessorKey: 'created_at',
+      enableSorting: false,
+      cell: ({ row }) => (
+        <div className="text-muted-foreground w-48">
+          {formatDate(row.original.created_at)}
+        </div>
+      ),
+    },
+  ]
 
   if (notes.length === 0) {
     return (
@@ -147,7 +151,10 @@ export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
           columns={columns}
           data={notes}
           rowId={(row) => row.id}
-          enableSelection={false}
+          enableSelection={true}
+          rowActions={rowActions}
+          bulkActions={bulkActions}
+          onBulkAction={handleBulkAction}
           emptyMessage="No notes found"
           onRowClick={() => {}} // Disable row clicks
         />
