@@ -34,16 +34,6 @@ export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
     }
   }
 
-  const handleBulkAction = (action, selectedIds) => {
-    if (action === 'delete') {
-      deleteNotes(selectedIds)
-      if (onNotesChanged) {
-        // Call after a brief delay to allow for the mutation to complete
-        setTimeout(() => onNotesChanged(), 100)
-      }
-    }
-  }
-
   const rowActions = (note) => [
     {
       id: 'edit',
@@ -69,7 +59,11 @@ export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
       value: 'delete',
       icon: TrashIcon,
       variant: 'destructive',
-      disabled: isDeletingNote
+      disabled: isDeletingNote,
+      onSelect: (ids) => {
+        deleteNotes(ids)
+        setTimeout(() => onVariablesChanged?.(), 100)
+      },
     }
   ]
 
@@ -154,7 +148,6 @@ export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
           enableSelection={true}
           rowActions={rowActions}
           bulkActions={bulkActions}
-          onBulkAction={handleBulkAction}
           emptyMessage="No notes found"
           onRowClick={() => {}} // Disable row clicks
         />

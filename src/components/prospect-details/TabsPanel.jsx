@@ -20,6 +20,8 @@ export default function TabsPanel(
     onNotesChanged, 
     onAddTask, 
     onTasksChanged, 
+    onAddVariable,
+    onVariablesChanged,
     onAddToGroup 
   }) {
   return (
@@ -75,7 +77,12 @@ export default function TabsPanel(
         </TabsContent>
         
         <TabsContent value="variables" className="mt-6">
-          <VariablesTable variables={variables} prospect={prospect} />
+          <VariablesTable 
+            variables={variables} 
+            prospect={prospect}
+            onAddVariable={onAddVariable}
+            onVariablesChanged={onVariablesChanged}
+          />
         </TabsContent>
       </Tabs>
     </div>

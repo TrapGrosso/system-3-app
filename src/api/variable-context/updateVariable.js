@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 
 const updateVariable = async (payload) => {
-  const response = await fetch('https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/updateVariable', {
+  const response = await fetch('https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/updateVariables', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

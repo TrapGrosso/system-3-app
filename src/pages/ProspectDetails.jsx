@@ -11,6 +11,7 @@ import { TaskProvider } from '@/contexts/TaskContext'
 import { usegetProspectDetails } from '@/api/prospect-details/useGetProspectsDetails'
 import ProspectNotesDialog from '@/components/dialogs/ProspectNotesDialog'
 import ProspectTasksDialog from '@/components/dialogs/ProspectTasksDialog'
+import ProspectVariablesDialog from '@/components/dialogs/ProspectVariablesDialog'
 import DeepSearchQueueDialog from '@/components/dialogs/DeepSearchQueueDialog'
 import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
 import {
@@ -24,6 +25,7 @@ export default function ProspectDetails() {
   const { linkedinId } = useParams()
   const [notesDialogOpen, setNotesDialogOpen] = useState(false)
   const [tasksDialogOpen, setTasksDialogOpen] = useState(false)
+  const [variablesDialogOpen, setVariablesDialogOpen] = useState(false)
   const [deepSearchDialogOpen, setDeepSearchDialogOpen] = useState(false)
   const [groupsDialogOpen, setGroupsDialogOpen] = useState(false)
 
@@ -57,6 +59,14 @@ export default function ProspectDetails() {
 
   const handleOpenGroupsDialog = () => {
     setGroupsDialogOpen(true)
+  }
+
+  const handleOpenVariablesDialog = () => {
+    setVariablesDialogOpen(true)
+  }
+
+  const handleVariablesDialogSuccess = () => {
+    refetch() // Refresh prospect details to update variables count and data
   }
 
   const handleGroupsDialogSuccess = () => {
@@ -173,6 +183,8 @@ export default function ProspectDetails() {
             onNotesChanged={handleNotesDialogSuccess}
             onAddTask={handleOpenTasksDialog}
             onTasksChanged={handleTasksDialogSuccess}
+            onAddVariable={handleOpenVariablesDialog}
+            onVariablesChanged={handleVariablesDialogSuccess}
             onAddToGroup={handleOpenGroupsDialog}
           />
 
@@ -195,6 +207,17 @@ export default function ProspectDetails() {
               open={tasksDialogOpen}
               onOpenChange={setTasksDialogOpen}
               onSuccess={handleTasksDialogSuccess}
+            />
+          )}
+
+          {/* ProspectVariablesDialog - controlled by ProspectDetails state */}
+          {data.prospect && (
+            <ProspectVariablesDialog
+              prospect_id={data.prospect.linkedin_id}
+              prospect_name={`${data.prospect.first_name} ${data.prospect.last_name}`.trim()}
+              open={variablesDialogOpen}
+              onOpenChange={setVariablesDialogOpen}
+              onSuccess={handleVariablesDialogSuccess}
             />
           )}
 

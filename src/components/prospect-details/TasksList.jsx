@@ -46,14 +46,14 @@ export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
     {
       label: 'Edit',
       icon: PencilIcon,
-      onClick: () => handleEditTask(task),
+      onSelect: () => handleEditTask(task),
     },
     {
       label: 'Delete',
       icon: TrashIcon,
       variant: "destructive",
       disabled: isDeletingTask,
-      onClick: () => handleDeleteTask(task.id),
+      onSelect: () => handleDeleteTask(task.id),
     },
   ]
 
@@ -62,7 +62,7 @@ export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
       label: 'Delete selected',
       icon: TrashIcon,
       variant: "destructive",
-      onClick: (ids) => {
+      onSelect: (ids) => {
         deleteTasks(ids)
         setTimeout(() => onTasksChanged?.(), 100)
       },
