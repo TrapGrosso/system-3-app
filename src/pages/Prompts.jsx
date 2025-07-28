@@ -12,7 +12,7 @@ import PromptsGrid from "@/components/prompts/PromptsGrid"
 import CreatePromptDialog from "@/components/dialogs/CreatePromptDialog"
 import UpdatePromptDialog from "@/components/dialogs/UpdatePromptDialog"
 import { PromptPreviewDialog } from "@/components/prompts"
-import PromptDeleteDialog from "@/components/dialogs/PromptDeleteDialog"
+import DeleteDialog from "@/components/dialogs/DeleteDialog"
 
 function PromptsContent() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -152,10 +152,11 @@ function PromptsContent() {
         onSuccess={closeDialog}
       />
 
-      <PromptDeleteDialog
+      <DeleteDialog
         open={dialogType === "delete"}
         onOpenChange={closeDialog}
-        prompt={activePrompt}
+        itemName={activePrompt?.name}
+        title="Delete Prompt"
         onConfirm={handleDeleteConfirmed}
         isLoading={isDeletingPrompt}
       />
