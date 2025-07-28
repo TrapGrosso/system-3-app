@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   Command,
   CommandEmpty,
@@ -29,7 +30,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
-export default function ProspectHeader({ prospect, onUpdateProspect, onDeleteProspect, onAddNote, onCreateTask, onAddToCampaign, onAddToDeepResearch, onAddToGroup }) {
+export default function ProspectHeader({ prospect, deepSearch, onUpdateProspect, onDeleteProspect, onAddNote, onCreateTask, onAddToCampaign, onAddToDeepResearch, onAddToGroup }) {
   const [open, setOpen] = useState(false)
 
   if (!prospect) return null
@@ -87,9 +88,12 @@ export default function ProspectHeader({ prospect, onUpdateProspect, onDeletePro
     },
     {
       value: 'add-to-deep-research',
-      label: 'Add to deep research queue',
+      label: deepSearch?.is_in_queue ? 'Already in deep research queue' : 'Add to deep research queue',
       icon: SearchIcon,
-      onSelect: onAddToDeepResearch
+      onSelect: deepSearch?.is_in_queue 
+        ? () => toast.info('Prospect already queued for deep research')
+        : onAddToDeepResearch,
+      variant: deepSearch?.is_in_queue ? 'secondary' : undefined
     },
     {
       value: 'add-to-group',
@@ -126,6 +130,25 @@ export default function ProspectHeader({ prospect, onUpdateProspect, onDeletePro
               <Badge variant={getStatusVariant(status)}>
                 {status}
               </Badge>
+              {deepSearch?.is_in_queue && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge variant="outline" className="bg-yellow-100 text-yellow-800 cursor-help">
+                      Deep research queued
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="space-y-1">
+                      <p className="font-medium">Queued prompts:</p>
+                      {deepSearch.prompts?.map((prompt, index) => (
+                        <p key={prompt.id || index} className="text-sm">
+                          • {prompt.name}
+                        </p>
+                      ))}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </div>
             
             {headline && (

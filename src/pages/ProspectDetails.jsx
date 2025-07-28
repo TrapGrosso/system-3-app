@@ -118,6 +118,7 @@ export default function ProspectDetails() {
           <TaskProvider>
             <ProspectHeader 
               prospect={data.prospect} 
+              deepSearch={data.deep_search}
               onAddNote={handleOpenNotesDialog}
               onCreateTask={handleOpenTasksDialog}
               onAddToDeepResearch={handleOpenDeepSearchDialog}
@@ -166,6 +167,7 @@ export default function ProspectDetails() {
             enrichment={data.enrichment}
             campaigns={data.campaigns}
             groups={data.groups}
+            variables={data.variables}
             prospect={data.prospect}
             onAddNote={handleOpenNotesDialog}
             onNotesChanged={handleNotesDialogSuccess}

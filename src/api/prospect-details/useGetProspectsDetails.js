@@ -34,7 +34,7 @@ export const usegetProspectDetails = (userId, prospect_id) => {
 }
 
 /**
- * Fetches detailed information for a specific prospect, including associated company, enrichments, notes, tasks, campaigns, and groups.
+ * Fetches detailed information for a specific prospect, including associated company, variables, enrichments, notes, tasks, campaigns, groups, and deep search queue status.
  * 
  * Example Request:
  * GET /getProspectDetails?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&prospect_id=annvanino
@@ -47,18 +47,16 @@ export const usegetProspectDetails = (userId, prospect_id) => {
  *       "company_id": "delxico",
  *       "first_name": "Carlos",
  *       "last_name": "Deleon",
- *       "headline": "Helping New Leaders Transition with Confidence Ranked among San Antonio’s Top 15…",
+ *       "headline": "Helping New Leaders Transition with Confidence Ranked among San Antonio's Top 15…",
  *       "location": "San Antonio",
  *       "status": "new",
  *       "email": null,
  *       "title": "",
- *       "custom_vars": {},
  *       "created_at": "2025-06-14T19:39:55.513832",
  *       "updated_at": "2025-06-14T19:39:55.513832"
  *     },
  *     "company": {
  *       "linkedin_id": "delxico",
- *       "user_id": "bb370a65-08df-4ddc-8a0f-aa5c65fc568f",
  *       "name": "Delxico Consulting, LLC",
  *       "website": "https://www.delxico.com/",
  *       "industry": "Business Consulting and Services",
@@ -68,6 +66,16 @@ export const usegetProspectDetails = (userId, prospect_id) => {
  *       "created_at": "2025-06-14T19:39:55.344781",
  *       "updated_at": "2025-06-14T19:39:55.344781"
  *     },
+ *     "variables": [
+ *       {
+ *         "id": "d4508141-7727-418a-87a3-a10339bcbfa7",
+ *         "name": "company_focus",
+ *         "value": "Leadership consulting and business transformation",
+ *         "created_at": "2025-06-29T15:16:48.706565",
+ *         "updated_at": "2025-06-29T15:16:48.706565",
+ *         "enrichment_ids": ["44daa173-1bf5-48a2-b739-c210393e054a"]
+ *       }
+ *     ],
  *     "enrichment": {
  *       "prospect": [
  *         {
@@ -93,8 +101,6 @@ export const usegetProspectDetails = (userId, prospect_id) => {
  *     "notes": [
  *       {
  *         "id": "3e0ee4ed-e3c7-4a04-9d15-e7493deec8e4",
- *         "user_id": "bb370a65-08df-4ddc-8a0f-aa5c65fc568f",
- *         "prospect_id": "carlosdeleonlang",
  *         "body": "SOME NOTE",
  *         "created_at": "2025-06-29T15:15:59.615752"
  *       }
@@ -102,8 +108,6 @@ export const usegetProspectDetails = (userId, prospect_id) => {
  *     "tasks": [
  *       {
  *         "id": "a27f37e9-ccb0-468d-a3cf-beec772cc914",
- *         "user_id": "bb370a65-08df-4ddc-8a0f-aa5c65fc568f",
- *         "prospect_id": "carlosdeleonlang",
  *         "title": "Some title",
  *         "description": "some description",
  *         "due_date": "2025-07-01",
@@ -130,7 +134,24 @@ export const usegetProspectDetails = (userId, prospect_id) => {
  *         "description": "A group for awesome prospects",
  *         "created_at": "2025-06-29T15:17:34.198751"
  *       }
- *     ]
+ *     ],
+ *     "deep_search": {
+ *       "is_in_queue": true,
+ *       "queue_id": "f1e2d3c4-b5a6-9876-5432-10fedcba9876",
+ *       "created_at": "2025-06-29T15:17:34.198751",
+ *       "prompts": [
+ *         {
+ *           "id": "p1a2b3c4-d5e6-f789-0123-456789abcdef",
+ *           "name": "Initial Research",
+ *           "description": "Gather basic company and prospect information"
+ *         },
+ *         {
+ *           "id": "p2b3c4d5-e6f7-8901-2345-6789abcdef01",
+ *           "name": "Deep Analysis",
+ *           "description": "Perform comprehensive market and competitive analysis"
+ *         }
+ *       ]
+ *     }
  *   }
  * 
  * Example Error Response (400):
