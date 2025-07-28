@@ -42,6 +42,33 @@ export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
     }
   }
 
+  const getRowActions = (task) => [
+    {
+      label: 'Edit',
+      icon: PencilIcon,
+      onClick: () => handleEditTask(task),
+    },
+    {
+      label: 'Delete',
+      icon: TrashIcon,
+      variant: "destructive",
+      disabled: isDeletingTask,
+      onClick: () => handleDeleteTask(task.id),
+    },
+  ]
+
+  const bulkActions = [
+    {
+      label: 'Delete selected',
+      icon: TrashIcon,
+      variant: "destructive",
+      onClick: (ids) => {
+        deleteTasks(ids)
+        setTimeout(() => onTasksChanged?.(), 100)
+      },
+    },
+  ]
+
   const getStatusVariant = (status) => {
     switch (status?.toLowerCase()) {
       case 'open':
@@ -105,41 +132,6 @@ export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
         </div>
       ),
     },
-    {
-      id: 'actions',
-      header: '',
-      enableSorting: false,
-      cell: ({ row }) => (
-        <div className="flex items-center gap-1 w-20">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              handleEditTask(row.original)
-            }}
-            className="h-8 w-8 p-0"
-            disabled={isDeletingTask}
-          >
-            <PencilIcon className="h-4 w-4" />
-            <span className="sr-only">Edit task</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              handleDeleteTask(row.original.id)
-            }}
-            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-            disabled={isDeletingTask}
-          >
-            <TrashIcon className="h-4 w-4" />
-            <span className="sr-only">Delete task</span>
-          </Button>
-        </div>
-      ),
-    },
   ]
 
   if (tasks.length === 0) {
@@ -187,8 +179,11 @@ export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
           columns={columns}
           data={tasks}
           rowId={(row) => row.id}
-          enableSelection={false}
+          enableSelection={true}
+          bulkActions={bulkActions}
+          rowActions={getRowActions}
           emptyMessage="No tasks found"
+          onBulkAction={(action, ids) => action.onClick(ids)}
           onRowClick={() => {}} // Disable row clicks
         />
       </CardContent>
