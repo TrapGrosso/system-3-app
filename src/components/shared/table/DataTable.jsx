@@ -34,6 +34,7 @@ import { SortIcon } from './SortIcon'
  * @param {Array} props.sorting - External sorting state for TanStack table
  * @param {Function} props.onSortingChange - External sorting handler
  * @param {boolean} props.manualSorting - Enable manual sorting
+ * @param {Function} props.rowClassName - Function to get row className: (rowData) => string
  */
 export function DataTable({
   // Core props
@@ -67,6 +68,7 @@ export function DataTable({
   className,
   headerClassName,
   bodyClassName,
+  rowClassName,
   
   ...props
 }) {
@@ -260,7 +262,7 @@ export function DataTable({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="cursor-pointer"
+                  className={`cursor-pointer ${rowClassName ? rowClassName(row.original) : ''}`.trim()}
                   onClick={() => handleRowClick(row.original)}
                   role="button"
                   tabIndex={0}

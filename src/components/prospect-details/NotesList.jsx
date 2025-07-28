@@ -1,27 +1,16 @@
 import React from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { MessageSquareIcon, PlusIcon, PencilIcon, TrashIcon } from 'lucide-react'
 import { useNotes } from '@/contexts/NotesContext'
+import { DataTable } from '@/components/shared/table/DataTable'
 
 export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
   const { 
-    updateProspectNote, 
     deleteNotes, 
     isUpdatingNote, 
     isDeletingNote 
   } = useNotes()
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
 
   const handleAddNote = () => {
     if (onAddNote) {
@@ -44,6 +33,74 @@ export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
       setTimeout(() => onNotesChanged(), 100)
     }
   }
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  const columns = [
+      {
+        header: 'Note',
+        accessorKey: 'body',
+        enableSorting: false,
+        cell: ({ row }) => (
+          <div className="font-medium whitespace-pre-wrap break-words">
+            {row.original.body}
+          </div>
+        ),
+      },
+      {
+        header: 'Created At',
+        accessorKey: 'created_at',
+        enableSorting: false,
+        cell: ({ row }) => (
+          <div className="text-muted-foreground w-48">
+            {formatDate(row.original.created_at)}
+          </div>
+        ),
+      },
+      {
+        id: 'actions',
+        header: '',
+        enableSorting: false,
+        cell: ({ row }) => (
+          <div className="flex items-center gap-1 w-20">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleEditNote(row.original)
+              }}
+              className="h-8 w-8 p-0"
+              disabled={isUpdatingNote || isDeletingNote}
+            >
+              <PencilIcon className="h-4 w-4" />
+              <span className="sr-only">Edit note</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleDeleteNote(row.original.id)
+              }}
+              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+              disabled={isDeletingNote}
+            >
+              <TrashIcon className="h-4 w-4" />
+              <span className="sr-only">Delete note</span>
+            </Button>
+          </div>
+        ),
+      },
+    ]
 
   if (notes.length === 0) {
     return (
@@ -86,53 +143,14 @@ export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
         </div>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Note</TableHead>
-              <TableHead className="w-48">Created At</TableHead>
-              <TableHead className="w-20">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {notes.map((note) => (
-              <TableRow key={note.id}>
-                <TableCell className="font-medium">
-                  <div className="whitespace-pre-wrap break-words">
-                    {note.body}
-                  </div>
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {formatDate(note.created_at)}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEditNote(note)}
-                      className="h-8 w-8 p-0"
-                      disabled={isUpdatingNote || isDeletingNote}
-                    >
-                      <PencilIcon className="h-4 w-4" />
-                      <span className="sr-only">Edit note</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteNote(note.id)}
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                      disabled={isDeletingNote}
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                      <span className="sr-only">Delete note</span>
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <DataTable
+          columns={columns}
+          data={notes}
+          rowId={(row) => row.id}
+          enableSelection={false}
+          emptyMessage="No notes found"
+          onRowClick={() => {}} // Disable row clicks
+        />
       </CardContent>
     </Card>
   )

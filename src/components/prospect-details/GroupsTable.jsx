@@ -1,23 +1,15 @@
 import React from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { UsersIcon, TrashIcon, PlusIcon } from 'lucide-react'
+import { UsersIcon, PlusIcon, TrashIcon } from 'lucide-react'
 import { useGroups } from '@/contexts/GroupsContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
+import { DataTable } from '@/components/shared/table/DataTable'
 
 export default function GroupsTable({ groups = [], prospect, onAddToGroup }) {
   const { user } = useAuth()
   const { removeFromGroup } = useGroups()
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
 
   const handleAddToGroup = () => {
     if (onAddToGroup) {
@@ -41,6 +33,69 @@ export default function GroupsTable({ groups = [], prospect, onAddToGroup }) {
       // Error handling is done in the context
     }
   }
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+  }
+
+  const columns = [
+    {
+      header: 'Group Name',
+      accessorKey: 'name',
+      enableSorting: false,
+      cell: ({ row }) => (
+        <div className="font-medium">
+          {row.original.name}
+        </div>
+      ),
+    },
+    {
+      header: 'Description',
+      accessorKey: 'description',
+      enableSorting: false,
+      cell: ({ row }) => (
+        <div className="text-muted-foreground">
+          {row.original.description || 'No description'}
+        </div>
+      ),
+    },
+    {
+      header: 'Created At',
+      accessorKey: 'created_at',
+      enableSorting: false,
+      cell: ({ row }) => (
+        <div className="text-muted-foreground">
+          {formatDate(row.original.created_at)}
+        </div>
+      ),
+    },
+    {
+      id: 'actions',
+      header: '',
+      enableSorting: false,
+      cell: ({ row }) => (
+        <div className="w-20">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              handleRemoveFromGroup(row.original.id)
+            }}
+            disabled={removeFromGroup.isPending}
+            className="text-destructive hover:text-destructive"
+          >
+            <TrashIcon className="h-4 w-4" />
+            <span className="sr-only">Remove from group</span>
+          </Button>
+        </div>
+      ),
+    },
+  ]
 
   if (groups.length === 0) {
     return (
@@ -83,43 +138,14 @@ export default function GroupsTable({ groups = [], prospect, onAddToGroup }) {
         </div>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Group Name</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Created At</TableHead>
-              <TableHead className="w-20">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {groups.map((group) => (
-              <TableRow key={group.id}>
-                <TableCell className="font-medium">
-                  {group.name}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {group.description || 'No description'}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {formatDate(group.created_at)}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRemoveFromGroup(group.id)}
-                    disabled={removeFromGroup.isPending}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                    <span className="sr-only">Remove from group</span>
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <DataTable
+          columns={columns}
+          data={groups}
+          rowId={(row) => row.id}
+          enableSelection={false}
+          emptyMessage="No groups found"
+          onRowClick={() => {}} // Disable row clicks
+        />
       </CardContent>
     </Card>
   )
