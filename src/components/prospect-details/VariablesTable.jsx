@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { DataTable } from '@/components/shared/table/DataTable'
 import { TablePopoverCell } from '@/components/shared/table/TablePopoverCell'
-import { PlusIcon, PencilIcon, TrashIcon, Code2 } from 'lucide-react'
+import { PlusIcon, PencilIcon, TrashIcon, Code2, ListIcon } from 'lucide-react'
 import { useVariables } from '@/contexts/VariableContext'
 
 export default function VariablesTable({ variables = [], prospect, onAddVariable, onVariablesChanged }) {
@@ -71,6 +71,7 @@ export default function VariablesTable({ variables = [], prospect, onAddVariable
           items={[row.original.value]}
           title={row.original.name}
           triggerVariant="accent"
+          icon={<ListIcon />}
           renderItem={(value) => (
             <div className="p-2 border rounded-md text-sm">
               <p className="text-foreground whitespace-pre-wrap leading-relaxed">
