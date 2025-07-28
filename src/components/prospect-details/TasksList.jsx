@@ -1,10 +1,10 @@
 import React from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CheckSquareIcon, CalendarIcon, PlusIcon, PencilIcon, TrashIcon } from 'lucide-react'
 import { useTasks } from '@/contexts/TaskContext'
+import { DataTable } from '@/components/shared/table/DataTable'
 
 export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
   const { 
@@ -60,6 +60,88 @@ export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
     return new Date(dueDate) < new Date()
   }
 
+  const columns = [
+    {
+      header: 'Title',
+      accessorKey: 'title',
+      enableSorting: false,
+      cell: ({ row }) => (
+        <div className="font-medium">
+          {row.original.title}
+        </div>
+      ),
+    },
+    {
+      header: 'Description',
+      accessorKey: 'description',
+      enableSorting: false,
+      cell: ({ row }) => (
+        <div className="text-muted-foreground max-w-xs truncate">
+          {row.original.description}
+        </div>
+      ),
+    },
+    {
+      header: 'Status',
+      accessorKey: 'status',
+      enableSorting: false,
+      cell: ({ row }) => {
+        const overdue = isOverdue(row.original.due_date, row.original.status)
+        return (
+          <Badge variant={overdue ? 'destructive' : getStatusVariant(row.original.status)}>
+            {overdue ? 'Overdue' : row.original.status}
+          </Badge>
+        )
+      },
+    },
+    {
+      header: 'Due Date',
+      accessorKey: 'due_date',
+      enableSorting: false,
+      cell: ({ row }) => (
+        <div className="text-muted-foreground flex items-center gap-1 w-32">
+          <CalendarIcon className="h-3 w-3" />
+          {formatDate(row.original.due_date)}
+        </div>
+      ),
+    },
+    {
+      id: 'actions',
+      header: '',
+      enableSorting: false,
+      cell: ({ row }) => (
+        <div className="flex items-center gap-1 w-20">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              handleEditTask(row.original)
+            }}
+            className="h-8 w-8 p-0"
+            disabled={isDeletingTask}
+          >
+            <PencilIcon className="h-4 w-4" />
+            <span className="sr-only">Edit task</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              handleDeleteTask(row.original.id)
+            }}
+            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+            disabled={isDeletingTask}
+          >
+            <TrashIcon className="h-4 w-4" />
+            <span className="sr-only">Delete task</span>
+          </Button>
+        </div>
+      ),
+    },
+  ]
+
   if (tasks.length === 0) {
     return (
       <Card>
@@ -101,69 +183,14 @@ export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
         </div>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-32">Due Date</TableHead>
-              <TableHead className="w-20">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {tasks.map((task) => {
-              const overdue = isOverdue(task.due_date, task.status)
-              return (
-                <TableRow key={task.id}>
-                  <TableCell className="font-medium">
-                    {task.title}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    <div className="max-w-xs truncate">
-                      {task.description}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={overdue ? 'destructive' : getStatusVariant(task.status)}>
-                      {overdue ? 'Overdue' : task.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <CalendarIcon className="h-3 w-3" />
-                      {formatDate(task.due_date)}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEditTask(task)}
-                        className="h-8 w-8 p-0"
-                        disabled={isDeletingTask}
-                      >
-                        <PencilIcon className="h-4 w-4" />
-                        <span className="sr-only">Edit task</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteTask(task.id)}
-                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                        disabled={isDeletingTask}
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                        <span className="sr-only">Delete task</span>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
+        <DataTable
+          columns={columns}
+          data={tasks}
+          rowId={(row) => row.id}
+          enableSelection={false}
+          emptyMessage="No tasks found"
+          onRowClick={() => {}} // Disable row clicks
+        />
       </CardContent>
     </Card>
   )
