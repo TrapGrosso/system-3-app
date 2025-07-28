@@ -23,11 +23,11 @@ export const useCreateVariable = (options = {}) => {
   return useMutation({
     mutationFn: createVariable,
     onSuccess: (data) => {
-      console.log('Task created successfully:', data)
+      console.log('Variable created successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {
-      console.error('Error creating task:', error)
+      console.error('Error creating variable:', error)
       options.onError?.(error)
     },
   })

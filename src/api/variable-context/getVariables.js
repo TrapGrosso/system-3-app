@@ -31,7 +31,7 @@ const getVariables = async (params) => {
 // Hook for server-side filtered/sorted/paginated prospects
 export const useGetVariables = ({ userId, prospect_id = null }) => {
   return useQuery({
-    queryKey: ['prospects', userId, prospect_id],
+    queryKey: ['variables', userId, prospect_id],
     queryFn: () => getVariables({ user_id: userId, prospect_id }),
     keepPreviousData: true, // Keep old data visible while refetching
     staleTime: 60000, // 60 seconds - prospects data is relatively stable

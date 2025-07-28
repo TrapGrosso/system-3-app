@@ -23,11 +23,11 @@ export const useUpdateVariable = (options = {}) => {
   return useMutation({
     mutationFn: updateVariable,
     onSuccess: (data) => {
-      console.log('Task updated successfully:', data)
+      console.log('Variable updated successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {
-      console.error('Error updating task:', error)
+      console.error('Error updating variable:', error)
       options.onError?.(error)
     },
   })

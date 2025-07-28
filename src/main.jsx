@@ -9,6 +9,7 @@ import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { DeepSearchQueueProvider } from './contexts/DeepSearchQueueContext'
 import { PromptProvider } from './contexts/PromptContext'
 import { TaskProvider } from './contexts/TaskContext'
+import { VariableProvider } from './contexts/VariableContext'
 
 const queryClient = new QueryClient()
 
@@ -17,15 +18,17 @@ createRoot(document.getElementById('root')).render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TaskProvider>
-          <DeepSearchQueueProvider>
-            <PromptProvider>
-              <GroupsProvider>
-                <ProspectsProvider>
-                    <App />
-                </ProspectsProvider>
-              </GroupsProvider>
-            </PromptProvider>
-          </DeepSearchQueueProvider>
+          <VariableProvider>
+            <DeepSearchQueueProvider>
+              <PromptProvider>
+                <GroupsProvider>
+                  <ProspectsProvider>
+                      <App />
+                  </ProspectsProvider>
+                </GroupsProvider>
+              </PromptProvider>
+            </DeepSearchQueueProvider>
+          </VariableProvider>
         </TaskProvider>
       </AuthProvider>
     </QueryClientProvider>

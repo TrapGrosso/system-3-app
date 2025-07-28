@@ -23,11 +23,11 @@ export const useDeleteVariables = (options = {}) => {
   return useMutation({
     mutationFn: deleteVariables,
     onSuccess: (data) => {
-      console.log('Task(s) deleted successfully:', data)
+      console.log('Variable(s) deleted successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {
-      console.error('Error deleting task(s):', error)
+      console.error('Error deleting variable(s):', error)
       options.onError?.(error)
     },
   })
