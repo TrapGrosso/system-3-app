@@ -73,28 +73,17 @@ export default function GroupsTable({ groups = [], prospect, onAddToGroup }) {
         </div>
       ),
     },
+  ]
+
+  const getRowActions = (group) => [
     {
-      id: 'actions',
-      header: '',
-      enableSorting: false,
-      cell: ({ row }) => (
-        <div className="w-20">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              handleRemoveFromGroup(row.original.id)
-            }}
-            disabled={removeFromGroup.isPending}
-            className="text-destructive hover:text-destructive"
-          >
-            <TrashIcon className="h-4 w-4" />
-            <span className="sr-only">Remove from group</span>
-          </Button>
-        </div>
-      ),
-    },
+      id: 'remove',
+      label: 'Remove from group',
+      icon: TrashIcon,
+      variant: 'destructive',
+      disabled: removeFromGroup.isPending,
+      onSelect: () => handleRemoveFromGroup(group.id)
+    }
   ]
 
   if (groups.length === 0) {
@@ -144,6 +133,7 @@ export default function GroupsTable({ groups = [], prospect, onAddToGroup }) {
           rowId={(row) => row.id}
           enableSelection={false}
           emptyMessage="No groups found"
+          rowActions={getRowActions}
           onRowClick={() => {}} // Disable row clicks
         />
       </CardContent>
