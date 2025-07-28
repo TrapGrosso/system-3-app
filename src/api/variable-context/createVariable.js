@@ -56,7 +56,6 @@ export const useCreateVariable = (options = {}) => {
  *       "prospect_id": "john-doe-123",
  *       "name": "company",
  *       "value": "Acme Inc.",
- *       "tags": null,
  *       "created_at": "2025-07-28T15:46:15.123456",
  *       "updated_at": "2025-07-28T15:46:15.123456",
  *       "enrichment_ids": null
