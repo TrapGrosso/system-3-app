@@ -9,6 +9,8 @@ import { GroupsProvider } from '@/contexts/GroupsContext'
 import { NotesProvider } from '@/contexts/NotesContext'
 import { TaskProvider } from '@/contexts/TaskContext'
 import { usegetProspectDetails } from '@/api/prospect-details/useGetProspectsDetails'
+import { useDeleteEnrichments } from '@/api/prospect-details/deleteEnrichments'
+import { toast } from 'sonner'
 import ProspectNotesDialog from '@/components/dialogs/ProspectNotesDialog'
 import ProspectTasksDialog from '@/components/dialogs/ProspectTasksDialog'
 import ProspectVariablesDialog from '@/components/dialogs/ProspectVariablesDialog'
@@ -31,6 +33,16 @@ export default function ProspectDetails() {
 
   const { data, isLoading, isError, refetch } = usegetProspectDetails(user?.id, linkedinId)
   console.log(data)
+
+  const deleteEnrichments = useDeleteEnrichments({
+    onSuccess: (data) => {
+      toast.success(data.message || 'Enrichment(s) deleted successfully')
+      refetch() // Refresh prospect details to update enrichment data
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to delete enrichment(s)')
+    },
+  })
 
   const handleOpenNotesDialog = () => {
     setNotesDialogOpen(true)
@@ -71,6 +83,13 @@ export default function ProspectDetails() {
 
   const handleGroupsDialogSuccess = () => {
     refetch() // Refresh prospect details to update groups count and data
+  }
+
+  const handleDeleteEnrichment = (enrichmentId) => {
+    deleteEnrichments.mutate({
+      user_id: user.id,
+      enrichment_ids: [enrichmentId]
+    })
   }
 
   if (isLoading) {
@@ -186,6 +205,7 @@ export default function ProspectDetails() {
             onAddVariable={handleOpenVariablesDialog}
             onVariablesChanged={handleVariablesDialogSuccess}
             onAddToGroup={handleOpenGroupsDialog}
+            onDeleteEnrichment={handleDeleteEnrichment}
           />
 
           {/* ProspectNotesDialog - controlled by ProspectDetails state */}

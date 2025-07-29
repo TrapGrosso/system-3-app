@@ -22,8 +22,10 @@ export default function TabsPanel(
     onTasksChanged, 
     onAddVariable,
     onVariablesChanged,
-    onAddToGroup 
+    onAddToGroup,
+    onDeleteEnrichment
   }) {
+  const totalEnrichments = Object.values(enrichment || {}).flat().length
   return (
     <div className="px-4 lg:px-6 pb-6">
       <Tabs defaultValue="notes" className="w-full">
@@ -35,7 +37,7 @@ export default function TabsPanel(
             Tasks {tasks?.length ? `(${tasks.length})` : ''}
           </TabsTrigger>
           <TabsTrigger value="enrichment">
-            Enrichment
+            Enrichment{totalEnrichments ? ` (${totalEnrichments})` : ''}
           </TabsTrigger>
           <TabsTrigger value="campaigns">
             Campaigns {campaigns?.length ? `(${campaigns.length})` : ''}
@@ -65,7 +67,10 @@ export default function TabsPanel(
         </TabsContent>
         
         <TabsContent value="enrichment" className="mt-6">
-          <EnrichmentAccordion enrichment={enrichment} />
+          <EnrichmentAccordion 
+            enrichment={enrichment} 
+            onDeleteEnrichment={onDeleteEnrichment}
+          />
         </TabsContent>
         
         <TabsContent value="campaigns" className="mt-6">

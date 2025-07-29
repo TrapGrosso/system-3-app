@@ -2,10 +2,11 @@ import React, { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ChevronDownIcon, ChevronRightIcon, DatabaseIcon, PencilIcon, TrashIcon } from 'lucide-react'
+import { ChevronDownIcon, ChevronRightIcon, DatabaseIcon, TrashIcon } from 'lucide-react'
 import { toast } from 'sonner'
+import ReactMarkdown from 'react-markdown'
 
-export default function EnrichmentAccordion({ enrichment = {}, onEditEnrichment, onDeleteEnrichment }) {
+export default function EnrichmentAccordion({ enrichment = {}, onDeleteEnrichment }) {
   const [expandedSections, setExpandedSections] = useState({})
 
   const toggleSection = (section) => {
@@ -13,14 +14,6 @@ export default function EnrichmentAccordion({ enrichment = {}, onEditEnrichment,
       ...prev,
       [section]: !prev[section]
     }))
-  }
-
-  const handleEditEnrichment = (item) => {
-    if (onEditEnrichment) {
-      onEditEnrichment(item)
-    } else {
-      toast.info('Edit enrichment functionality not implemented yet')
-    }
   }
 
   const handleDeleteEnrichment = (itemId) => {
@@ -107,16 +100,7 @@ export default function EnrichmentAccordion({ enrichment = {}, onEditEnrichment,
                             {formatDate(item.created_at)}
                           </span>
                         </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditEnrichment(item)}
-                            className="h-6 w-6 p-0"
-                          >
-                            <PencilIcon className="h-3 w-3" />
-                            <span className="sr-only">Edit enrichment</span>
-                          </Button>
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                           <Button
                             variant="ghost"
                             size="sm"
@@ -132,7 +116,9 @@ export default function EnrichmentAccordion({ enrichment = {}, onEditEnrichment,
                       {item.summary && (
                         <div className="mb-2">
                           <p className="text-sm font-medium mb-1">Summary:</p>
-                          <p className="text-sm text-muted-foreground">{item.summary}</p>
+                          <ReactMarkdown className="prose prose-sm dark:prose-invert text-sm text-muted-foreground">
+                            {item.summary}
+                          </ReactMarkdown>
                         </div>
                       )}
                       
