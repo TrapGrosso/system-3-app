@@ -10,6 +10,7 @@ import { DeepSearchQueueProvider } from './contexts/DeepSearchQueueContext'
 import { PromptProvider } from './contexts/PromptContext'
 import { TaskProvider } from './contexts/TaskContext'
 import { VariableProvider } from './contexts/VariableContext'
+import { CompaniesProvider } from './contexts/CompaniesContext'
 
 const queryClient = new QueryClient()
 
@@ -22,9 +23,11 @@ createRoot(document.getElementById('root')).render(
             <DeepSearchQueueProvider>
               <PromptProvider>
                 <GroupsProvider>
-                  <ProspectsProvider>
+                  <CompaniesProvider>
+                    <ProspectsProvider>
                       <App />
-                  </ProspectsProvider>
+                    </ProspectsProvider>
+                  </CompaniesProvider>
                 </GroupsProvider>
               </PromptProvider>
             </DeepSearchQueueProvider>
