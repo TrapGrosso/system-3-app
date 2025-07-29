@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProspects } from '@/contexts/ProspectsContext'
+import { useCompanies } from '@/contexts/CompaniesContext'
 import { useNavigate } from 'react-router-dom'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import ProspectsTable from '@/components/people&companies/ProspectsTable'
+import CompaniesTable from '@/components/people&companies/CompaniesTable'
 import FilterBar from '@/components/people&companies/FilterBar'
 import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
 import ProspectNotesDialog from '@/components/dialogs/ProspectNotesDialog'
@@ -16,6 +18,17 @@ function PeopleCompanies() {
     const { user } = useAuth()
     const navigate = useNavigate()
     const { data, total, query, setQuery, resetFilters, isLoading, refetch } = useProspects()
+    const { 
+        data: companies, 
+        total: companiesTotal, 
+        query: companiesQuery, 
+        setQuery: setCompaniesQuery, 
+        resetFilters: resetCompaniesFilters, 
+        isLoading: companiesLoading, 
+        refetch: refetchCompanies,
+        deleteCompany,
+        updateCompany
+    } = useCompanies()
 
     // State for HandleGroupsDialog
     const [addGroupOpen, setAddGroupOpen] = useState(false)
@@ -124,6 +137,30 @@ function PeopleCompanies() {
         setRemoveFromGroupDialogOpen(true)
     }
 
+    // Companies query handlers
+    const handleCompaniesQueryChange = (queryUpdate) => {
+        setCompaniesQuery(queryUpdate)
+    }
+
+    // Company action handlers
+    const handleBulkDeleteCompanies = (ids) => {
+        // TODO: Implement actual API call when deleteCompany is ready
+        console.log('Bulk delete companies:', ids)
+        alert(`Delete ${ids.length} companies`)
+    }
+
+    const handleDeleteCompany = (id) => {
+        // TODO: Implement actual API call when deleteCompany is ready
+        console.log('Delete company:', id)
+        alert(`Delete company ${id}`)
+    }
+
+    const handleUpdateCompany = (id) => {
+        // TODO: Implement actual API call when updateCompany is ready
+        console.log('Update company:', id)
+        alert(`Update company ${id}`)
+    }
+
   return (
     <DashboardLayout headerText="Dashboard">
       <div className="px-4 lg:px-6">
@@ -156,6 +193,23 @@ function PeopleCompanies() {
           onCreateVariables={handleCreateVariables}
           onBulkCreateVariables={handleBulkCreateVariables}
           onRemoveFromGroup={handleRemoveFromGroup}
+        />
+
+        {/* Companies Section */}
+        <div className="mt-8 mb-4">
+          <h2 className="text-2xl font-semibold">Companies</h2>
+          <p className="text-muted-foreground">View and manage your companies</p>
+        </div>
+
+        <CompaniesTable 
+          data={companies}
+          total={companiesTotal}
+          query={companiesQuery}
+          onQueryChange={handleCompaniesQueryChange}
+          loading={companiesLoading}
+          onBulkDelete={handleBulkDeleteCompanies}
+          onDelete={handleDeleteCompany}
+          onUpdate={handleUpdateCompany}
         />
       </div>
       

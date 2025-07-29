@@ -52,7 +52,7 @@ export const useGetAllCompaniesQuery = ({ userId, ...query }) => {
  * - user_id (required): UUID of the user
  * - page (optional): Page number, default 1
  * - page_size (optional): Results per page, default 10, max 100
- * - sort_by (optional): Column to sort by (name, industry, size, location)
+ * - sort_by (optional): Column to sort by (name, industry, size, location, created_at)
  * - sort_dir (optional): Sort direction, 'asc' or 'desc', default 'asc'
  * - name (optional): Filter companies by name (case-insensitive partial match)
  * - industry (optional): Filter companies by industry (case-insensitive partial match)
@@ -83,24 +83,59 @@ export const useGetAllCompaniesQuery = ({ userId, ...query }) => {
  * GET /getAllCompanies?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&name=corp&size_op=>&size_val=50&sort_by=name
  * 
  * Example Success Response (200):
- * {
- *   "data": [
- *     {
- *       "linkedin_id": "1234567890",
- *       "name": "Tech Corp",
- *       "website": "https://techcorp.com",
- *       "industry": "Software",
- *       "size": "100-249",
- *       "location": "San Francisco, CA",
- *       "prospect_count": 5,
- *       "created_at": "2023-01-15T10:30:00Z",
- *       "updated_at": "2023-01-15T10:30:00Z"
- *     }
- *   ],
- *   "total": 1,
- *   "page": 1,
- *   "page_size": 10
- * }
+ *   {
+ *     "data": [
+ *       {
+ *         "linkedin_id": "distinctive-coaching",
+ *         "name": "Distinctive Coaching for Business Success",
+ *         "website": "https://distinctivecoaching.com/",
+ *         "industry": "Coaching",
+ *         "size": "1",
+ *         "location": "Oak Park, IL, US",
+ *         "prospect_count": 1,
+ *         "prospects": [
+ *           {
+ *             "email": null,
+ *             "title": "Coaching Small Business Owners to 3x Revenue in 6-12 Months Without Adding Hours or Stress",
+ *             "status": "new",
+ *             "headline": "Business Coach | 3X Revenue in 6 Months - Strategist for Service-Based Owners | 19+ Yrs | AI + Time Mastery Expert",
+ *             "location": "Oak Park, Illinois, United States",
+ *             "last_name": "Rosado ⚡️",
+ *             "first_name": "Jason",
+ *             "linkedin_id": "bizcoachjason"
+ *           }
+ *         ] | null,
+ *         "created_at": "2025-07-21T19:16:58.263897",
+ *         "updated_at": "2025-07-21T19:16:58.263897"
+ *       },
+ *       {
+ *         "linkedin_id": "quanta-services",
+ *         "name": "Quanta Services, Inc.",
+ *         "website": "https://www.quantaservices.com/",
+ *         "industry": "Consulting",
+ *         "size": "10001",
+ *         "location": "Houston, Texas",
+ *         "prospect_count": 1,
+ *         "prospects": [
+ *           {
+ *             "email": null,
+ *             "title": "Senior Talent Development Specialist",
+ *             "status": "new",
+ *             "headline": "Senior Talent Development Specialist at Quanta Services, Inc.",
+ *             "location": "Houston, Texas, United States",
+ *             "last_name": "Kaprelian",
+ *             "first_name": "Jason",
+ *             "linkedin_id": "jason-kaprelian"
+ *           }
+ *         ] | null,
+ *         "created_at": "2025-07-21T19:16:57.650766",
+ *         "updated_at": "2025-07-21T19:16:57.650766"
+ *       }
+ *     ],
+ *     "total": 2,
+ *     "page": 1,
+ *     "page_size": 10
+ *   }
  * 
  * Example Error Responses:
  * 
