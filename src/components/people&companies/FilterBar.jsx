@@ -11,6 +11,7 @@ import { useAllPrompts } from "@/contexts/PromptContext"
 import { useAuth } from '@/contexts/AuthContext'
 import { MultiSelectChipPicker } from "../shared/filter/MultiSelectChipPicker"
 import { SingleSelect } from "../shared/filter/SingleSelect"
+import AdvancedFiltersCollapsible from "../shared/ui/AdvancedFiltersCollapsible"
 
 const STATUS_OPTIONS = [
   { value: null, label: 'All Statuses' },
@@ -252,105 +253,108 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
                 />
               </div>
 
-              {/* Other Filters - Responsive Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {/* Status Filter */}
-                <div className="space-y-2">
-                  <Label className="text-[13px] font-medium text-muted-foreground">Status</Label>
-                  <SingleSelect
-                    value={status}
-                    onValueChange={setStatus}
-                    options={STATUS_OPTIONS}
-                    placeholder="All Statuses"
-                  />
+              {/* Advanced Filters Collapsible Section */}
+              <AdvancedFiltersCollapsible label="Advanced filters" defaultOpen={false}>
+                {/* Other Filters - Responsive Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {/* Status Filter */}
+                  <div className="space-y-2">
+                    <Label className="text-[13px] font-medium text-muted-foreground">Status</Label>
+                    <SingleSelect
+                      value={status}
+                      onValueChange={setStatus}
+                      options={STATUS_OPTIONS}
+                      placeholder="All Statuses"
+                    />
+                  </div>
+
+                  {/* Group Membership */}
+                  <div className="space-y-2">
+                    <Label className="text-[13px] font-medium text-muted-foreground">In Group</Label>
+                    <SingleSelect
+                      value={inGroup}
+                      onValueChange={setInGroup}
+                      options={BOOLEAN_OPTIONS}
+                      placeholder="All"
+                    />
+                  </div>
+
+                  {/* Campaign Membership */}
+                  <div className="space-y-2">
+                    <Label className="text-[13px] font-medium text-muted-foreground">In Campaign</Label>
+                    <SingleSelect
+                      value={inCampaign}
+                      onValueChange={setInCampaign}
+                      options={BOOLEAN_OPTIONS}
+                      placeholder="All"
+                    />
+                  </div>
+
+                  {/* BD Enrichment */}
+                  <div className="space-y-2">
+                    <Label className="text-[13px] font-medium text-muted-foreground">BD Enrichment</Label>
+                    <SingleSelect
+                      value={hasBdScrape}
+                      onValueChange={setHasBdScrape}
+                      options={BOOLEAN_OPTIONS}
+                      placeholder="All"
+                    />
+                  </div>
+
+                  {/* Deep Search */}
+                  <div className="space-y-2">
+                    <Label className="text-[13px] font-medium text-muted-foreground">Deep Search</Label>
+                    <SingleSelect
+                      value={hasDeepSearch}
+                      onValueChange={setHasDeepSearch}
+                      options={BOOLEAN_OPTIONS}
+                      placeholder="All"
+                    />
+                  </div>
                 </div>
 
-                {/* Group Membership */}
-                <div className="space-y-2">
-                  <Label className="text-[13px] font-medium text-muted-foreground">In Group</Label>
-                  <SingleSelect
-                    value={inGroup}
-                    onValueChange={setInGroup}
-                    options={BOOLEAN_OPTIONS}
-                    placeholder="All"
-                  />
-                </div>
+                {/* Multi-select filters section */}
+                <div className="space-y-4">
+                  {/* Groups Multi-select */}
+                  <div className="space-y-2">
+                    <Label className="text-[13px] font-medium text-muted-foreground">
+                      Group Names (select multiple)
+                    </Label>
+                    <MultiSelectChipPicker
+                      options={groups.map(group => ({ value: group.name, label: group.name }))}
+                      value={selectedGroupNames}
+                      onValueChange={setSelectedGroupNames}
+                      placeholder={groups.length ? "Choose groups..." : "No groups available"}
+                    />
+                  </div>
 
-                {/* Campaign Membership */}
-                <div className="space-y-2">
-                  <Label className="text-[13px] font-medium text-muted-foreground">In Campaign</Label>
-                  <SingleSelect
-                    value={inCampaign}
-                    onValueChange={setInCampaign}
-                    options={BOOLEAN_OPTIONS}
-                    placeholder="All"
-                  />
-                </div>
+                  {/* Campaigns Multi-select */}
+                  <div className="space-y-2">
+                    <Label className="text-[13px] font-medium text-muted-foreground">
+                      Campaign Names (select multiple)
+                    </Label>
+                    <MultiSelectChipPicker
+                      options={campaigns.map(campaign => ({ value: campaign.name, label: campaign.name }))}
+                      value={selectedCampaignNames}
+                      onValueChange={setSelectedCampaignNames}
+                      placeholder={campaigns.length ? "Choose campaigns..." : "No campaigns available"}
+                    />
+                  </div>
 
-                {/* BD Enrichment */}
-                <div className="space-y-2">
-                  <Label className="text-[13px] font-medium text-muted-foreground">BD Enrichment</Label>
-                  <SingleSelect
-                    value={hasBdScrape}
-                    onValueChange={setHasBdScrape}
-                    options={BOOLEAN_OPTIONS}
-                    placeholder="All"
-                  />
+                  {/* Prompts Multi-select */}
+                  <div className="space-y-2">
+                    <Label className="text-[13px] font-medium text-muted-foreground">
+                      Prompt Names (select multiple)
+                    </Label>
+                    <MultiSelectChipPicker
+                      options={prompts.map(prompt => ({ value: prompt.name, label: prompt.name }))}
+                      value={selectedPromptNames}
+                      onValueChange={setSelectedPromptNames}
+                      placeholder={prompts.length ? "Choose prompts..." : "No prompts available"}
+                    />
+                  </div>
                 </div>
-
-                {/* Deep Search */}
-                <div className="space-y-2">
-                  <Label className="text-[13px] font-medium text-muted-foreground">Deep Search</Label>
-                  <SingleSelect
-                    value={hasDeepSearch}
-                    onValueChange={setHasDeepSearch}
-                    options={BOOLEAN_OPTIONS}
-                    placeholder="All"
-                  />
-                </div>
-              </div>
-
-              {/* Multi-select filters section */}
-              <div className="space-y-4">
-                {/* Groups Multi-select */}
-                <div className="space-y-2">
-                  <Label className="text-[13px] font-medium text-muted-foreground">
-                    Group Names (select multiple)
-                  </Label>
-                  <MultiSelectChipPicker
-                    options={groups.map(group => ({ value: group.name, label: group.name }))}
-                    value={selectedGroupNames}
-                    onValueChange={setSelectedGroupNames}
-                    placeholder={groups.length ? "Choose groups..." : "No groups available"}
-                  />
-                </div>
-
-                {/* Campaigns Multi-select */}
-                <div className="space-y-2">
-                  <Label className="text-[13px] font-medium text-muted-foreground">
-                    Campaign Names (select multiple)
-                  </Label>
-                  <MultiSelectChipPicker
-                    options={campaigns.map(campaign => ({ value: campaign.name, label: campaign.name }))}
-                    value={selectedCampaignNames}
-                    onValueChange={setSelectedCampaignNames}
-                    placeholder={campaigns.length ? "Choose campaigns..." : "No campaigns available"}
-                  />
-                </div>
-
-                {/* Prompts Multi-select */}
-                <div className="space-y-2">
-                  <Label className="text-[13px] font-medium text-muted-foreground">
-                    Prompt Names (select multiple)
-                  </Label>
-                  <MultiSelectChipPicker
-                    options={prompts.map(prompt => ({ value: prompt.name, label: prompt.name }))}
-                    value={selectedPromptNames}
-                    onValueChange={setSelectedPromptNames}
-                    placeholder={prompts.length ? "Choose prompts..." : "No prompts available"}
-                  />
-                </div>
-              </div>
+              </AdvancedFiltersCollapsible>
             </div>
           </div>
         </fieldset>
