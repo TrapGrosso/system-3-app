@@ -9,7 +9,8 @@ import {
   IconMessageCircle,
   IconBolt,
   IconUsersGroup,
-  IconLogs
+  IconLogs,
+  IconListSearch
 } from "@tabler/icons-react"
 
 import { AppSidebar } from "@/components/navigation/app-sidebar"
@@ -35,6 +36,11 @@ export function DashboardLayout({ children, headerText = "Dashboard" }) {
         title: "Dashboard",
         url: "/dashboard",
         icon: IconDashboard
+      },
+      {
+        title: "People & Companies",
+        url: "/people&companies",
+        icon: IconListSearch
       },
       {
         title: "Add Leads",
