@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ChevronDownIcon, ChevronRightIcon, DatabaseIcon, TrashIcon } from 'lucide-react'
 import { toast } from 'sonner'
-import ReactMarkdown from 'react-markdown'
+import MarkdownScrollBox from '@/components/shared/ui/MarkdownScrollBox'
 
 export default function EnrichmentAccordion({ enrichment = {}, onDeleteEnrichment }) {
   const [expandedSections, setExpandedSections] = useState({})
@@ -116,9 +116,7 @@ export default function EnrichmentAccordion({ enrichment = {}, onDeleteEnrichmen
                       {item.summary && (
                         <div className="mb-2">
                           <p className="text-sm font-medium mb-1">Summary:</p>
-                          <ReactMarkdown className="prose prose-sm dark:prose-invert text-sm text-muted-foreground">
-                            {item.summary}
-                          </ReactMarkdown>
+                          <MarkdownScrollBox content={item.summary} />
                         </div>
                       )}
                       

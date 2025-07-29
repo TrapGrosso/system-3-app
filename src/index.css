@@ -118,3 +118,28 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Markdown prose styling overrides for scrollable components */
+.prose :where(h1, h2) {
+  @apply text-base font-semibold;
+}
+
+.prose :where(h3, h4) {
+  @apply text-sm font-semibold;
+}
+
+.prose :where(h5, h6) {
+  @apply text-xs font-semibold;
+}
+
+.prose :where(p) {
+  @apply text-sm leading-relaxed;
+}
+
+.prose :where(ul, ol) {
+  @apply text-sm;
+}
+
+.prose :where(li) {
+  @apply text-sm;
+}
