@@ -16,33 +16,15 @@ import { useProspects } from "@/contexts/ProspectsContext"
 import { useCompanies } from "@/contexts/CompaniesContext"
 import ChangeCompanyTable from "./ChangeCompanyTable"
 import ChangeCompanySubmitSection from "./ChangeCompanySubmitSection"
-
-// AddLeads API function (embedded in dialog)
-const addLeads = async (payload) => {
-  const response = await fetch('https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/addLeads', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
-    },
-    body: JSON.stringify(payload),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error)
-  }
-
-  return response.json()
-}
+import { useAddLeads } from "@/api/add-leads/addLeads"
 
 function ChangeCompanyDialog({ 
   open,
   onOpenChange,
   prospectId,
   trigger,
-  children
+  children,
+  onSuccess
 }) {
   // Local state
   const [step, setStep] = useState(null) // null | 'choose' | 'manual'
@@ -65,13 +47,13 @@ function ChangeCompanyDialog({
   } = useCompanies()
 
   // AddLeads mutation
-  const addLeadsMutation = useMutation({
-    mutationFn: addLeads,
+  const addLeadsMutation = useAddLeads({
     onSuccess: (data) => {
       console.log('Company submitted successfully:', data)
       toast.success(data.message || 'Company submitted successfully')
       handleReset()
       onOpenChange(false)
+      if (onSuccess) onSuccess()
     },
     onError: (error) => {
       console.error('Error submitting company:', error)
@@ -114,16 +96,18 @@ function ChangeCompanyDialog({
   const handleSubmit = async () => {
     if (step === 'choose' && selectedId) {
       // Update prospect with selected company
-      updateProspectCompany(prospectId, selectedId)
+      updateProspectCompany(prospectId, selectedId).then(() => {
+        if (onSuccess) onSuccess()
+        handleReset()
+      })
     } else if (step === 'manual' && manualUrl.trim()) {
       // Submit new company URL
       addLeadsMutation.mutate({
         user_id: user?.id,
-        leads: [{ url: manualUrl.trim() }],
+        leads: [manualUrl.trim()],
         options: {
           add_to_prospect: true,
-          prospect_id: prospectId,
-          source: 'change_company_dialog'
+          prospect_id: prospectId
         }
       })
     }

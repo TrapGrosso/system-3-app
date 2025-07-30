@@ -5,13 +5,9 @@ import { Badge } from '@/components/ui/badge'
 import { ExternalLinkIcon, BuildingIcon, UsersIcon, MapPinIcon, PlusIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
-export default function CompanyCard({ company, onAddCompany }) {
+export default function CompanyCard({ company, prospect, onAddCompany }) {
   const handleAddCompany = () => {
-    if (onAddCompany) {
-      onAddCompany()
-    } else {
-      toast.info('Add company functionality not implemented yet')
-    }
+    onAddCompany()
   }
 
   if (!company) {

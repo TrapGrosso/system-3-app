@@ -16,6 +16,7 @@ import ProspectTasksDialog from '@/components/dialogs/ProspectTasksDialog'
 import ProspectVariablesDialog from '@/components/dialogs/ProspectVariablesDialog'
 import DeepSearchQueueDialog from '@/components/dialogs/DeepSearchQueueDialog'
 import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
+import ChangeCompanyDialog from '@/components/dialogs/changeCompany/ChangeCompanyDialog'
 import {
   ProspectHeader,
   CompanyCard,
@@ -30,9 +31,9 @@ export default function ProspectDetails() {
   const [variablesDialogOpen, setVariablesDialogOpen] = useState(false)
   const [deepSearchDialogOpen, setDeepSearchDialogOpen] = useState(false)
   const [groupsDialogOpen, setGroupsDialogOpen] = useState(false)
+  const [changeCompanyDialogOpen, setChangeCompanyDialogOpen] = useState(false)
 
   const { data, isLoading, isError, refetch } = usegetProspectDetails(user?.id, linkedinId)
-  console.log(data)
 
   const deleteEnrichments = useDeleteEnrichments({
     onSuccess: (data) => {
@@ -83,6 +84,15 @@ export default function ProspectDetails() {
 
   const handleGroupsDialogSuccess = () => {
     refetch() // Refresh prospect details to update groups count and data
+  }
+
+  const handleOpenChangeCompanyDialog = () => {
+    setChangeCompanyDialogOpen(true)
+  }
+
+  const handleChangeCompanyDialogSuccess = () => {
+    refetch() // Refresh prospect details to update company data
+    setChangeCompanyDialogOpen(false)
   }
 
   const handleDeleteEnrichment = (enrichmentId) => {
@@ -155,7 +165,11 @@ export default function ProspectDetails() {
             />
           
           <div className="grid gap-6 px-4 lg:px-6 lg:grid-cols-3 mb-6">
-            <CompanyCard company={data.company} />
+            <CompanyCard 
+              company={data.company} 
+              prospect={data.prospect}
+              onAddCompany={handleOpenChangeCompanyDialog}
+            />
             
             {/* Optional stats cards can go here in the future */}
             <Card className="lg:col-span-1">
@@ -259,6 +273,16 @@ export default function ProspectDetails() {
               open={groupsDialogOpen}
               onOpenChange={setGroupsDialogOpen}
               onSuccess={handleGroupsDialogSuccess}
+            />
+          )}
+
+          {/* ChangeCompanyDialog - controlled by ProspectDetails state */}
+          {data.prospect && (
+            <ChangeCompanyDialog
+              prospectId={data.prospect.linkedin_id}
+              open={changeCompanyDialogOpen}
+              onOpenChange={setChangeCompanyDialogOpen}
+              onSuccess={handleChangeCompanyDialogSuccess}
             />
           )}
           </TaskProvider>
