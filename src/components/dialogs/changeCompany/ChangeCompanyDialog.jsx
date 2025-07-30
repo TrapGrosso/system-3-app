@@ -50,39 +50,19 @@ function ChangeCompanyDialog({
   const [selectedCompany, setSelectedCompany] = useState(null)
   const [manualUrl, setManualUrl] = useState('')
   
-  // Default query state (kept in dialog as requested)
-  const [query, setQuery] = useState({
-    page: 1,
-    page_size: 10,
-    sort_by: 'created_at',
-    sort_dir: 'desc',
-    name: '',
-    industry: '',
-    location: '',
-    size_op: '',
-    size_val: '',
-    prospect_first_name: '',
-    prospect_last_name: '',
-  })
-
   // Hooks - all contexts and mutations in dialog
   const { user } = useAuth()
   const { updateProspectCompany } = useProspects()
   
-  // Companies context - sync our query with context
+  // Companies context - use as single source of truth
   const { 
     data, 
     total, 
     isFetching, 
-    query: ctxQuery, 
-    setQuery: setCtxQuery,
+    query, 
+    setQuery,
     resetFilters 
   } = useCompanies()
-
-  // Sync our query with companies context
-  React.useEffect(() => {
-    setCtxQuery(query)
-  }, [query, setCtxQuery])
 
   // AddLeads mutation
   const addLeadsMutation = useMutation({
@@ -105,7 +85,7 @@ function ChangeCompanyDialog({
   // Query change handler
   const handleQueryChange = React.useCallback((partial) => {
     setQuery(prev => ({ ...prev, ...partial }))
-  }, [])
+  }, [setQuery])
 
   // Row click handler for table
   const handleRowClick = React.useCallback((linkedinId, companyData) => {
@@ -119,19 +99,7 @@ function ChangeCompanyDialog({
     setSelectedId('')
     setSelectedCompany(null)
     setManualUrl('')
-    setQuery({
-      page: 1,
-      page_size: 10,
-      sort_by: 'created_at',
-      sort_dir: 'desc',
-      name: '',
-      industry: '',
-      location: '',
-      size_op: '',
-      size_val: '',
-      prospect_first_name: '',
-      prospect_last_name: '',
-    })
+    resetFilters()
   }
 
   // Handle dialog close
@@ -221,23 +189,8 @@ function ChangeCompanyDialog({
             {/* Filter Bar */}
             <CompaniesFilterBar
               query={query}
-              onApplyFilters={(filters) => handleQueryChange({ ...filters, page: 1 })}
-              onResetFilters={() => {
-                const resetQuery = {
-                  page: 1,
-                  page_size: 10,
-                  sort_by: 'created_at',
-                  sort_dir: 'desc',
-                  name: '',
-                  industry: '',
-                  location: '',
-                  size_op: '',
-                  size_val: '',
-                  prospect_first_name: '',
-                  prospect_last_name: '',
-                }
-                setQuery(resetQuery)
-              }}
+              onApplyFilters={(filters) => setQuery(prev => ({ ...prev, ...filters, page: 1 }))}
+              onResetFilters={resetFilters}
               loading={isFetching}
             />
 
