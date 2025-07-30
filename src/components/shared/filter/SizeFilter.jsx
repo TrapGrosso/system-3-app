@@ -29,9 +29,9 @@ export function SizeFilter({
   }
 
   return (
-    <div className={`flex flex-col sm:flex-row gap-2 ${className || ''}`}>
-      <div className="flex-1 space-y-2">
-        <Label className="text-[13px] font-medium text-muted-foreground">
+    <div className={`flex flex-col gap-3 ${className || ''}`}>
+      <div className="space-y-1">
+        <Label className="text-xs font-medium text-muted-foreground">
           Size Operator
         </Label>
         <SingleSelect
@@ -39,13 +39,13 @@ export function SizeFilter({
           onValueChange={handleOpChange}
           options={SIZE_OPERATOR_OPTIONS}
           placeholder="Any"
-          triggerClassName="h-9 min-w-[100px]"
+          triggerClassName="h-8 w-full"
           selectProps={{ disabled }}
         />
       </div>
       
-      <div className="flex-1 space-y-2">
-        <Label className="text-[13px] font-medium text-muted-foreground">
+      <div className="space-y-1">
+        <Label className="text-xs font-medium text-muted-foreground">
           Size Value
         </Label>
         <Input
@@ -53,7 +53,7 @@ export function SizeFilter({
           value={sizeVal}
           onChange={handleValueChange}
           placeholder="Enter number"
-          className="h-9"
+          className="h-8"
           disabled={disabled}
         />
       </div>

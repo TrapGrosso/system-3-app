@@ -167,7 +167,7 @@ export default function CompaniesFilterBar({ query, onApplyFilters, onResetFilte
                 </div>
 
                 {/* Field Selection */}
-                <div className="w-40 min-w-[140px] space-y-2">
+                <div className="space-y-2">
                   <Label className="text-xs font-medium tracking-wide text-muted-foreground mb-1 block">
                     Search Field
                   </Label>
