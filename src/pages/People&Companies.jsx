@@ -7,6 +7,7 @@ import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import ProspectsTable from '@/components/people&companies/ProspectsTable'
 import CompaniesTable from '@/components/people&companies/CompaniesTable'
 import FilterBar from '@/components/people&companies/FilterBar'
+import CompaniesFilterBar from '@/components/people&companies/CompaniesFilterBar'
 import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
 import ProspectNotesDialog from '@/components/dialogs/ProspectNotesDialog'
 import ProspectTasksDialog from '@/components/dialogs/ProspectTasksDialog'
@@ -201,6 +202,12 @@ function PeopleCompanies() {
           <p className="text-muted-foreground">View and manage your companies</p>
         </div>
 
+        <CompaniesFilterBar
+          query={companiesQuery}
+          onApplyFilters={(q) => setCompaniesQuery({ ...q, page: 1 })}
+          onResetFilters={resetCompaniesFilters}
+          loading={companiesLoading}
+        />
         <CompaniesTable 
           data={companies}
           total={companiesTotal}
