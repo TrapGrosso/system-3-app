@@ -126,7 +126,7 @@ export const ProspectsProvider = ({ children }) => {
 
   const updateProspectCompany = React.useCallback(
     (prospect_id, company_id) => {
-      return updateProspectMutation.mutate({
+      return updateProspectMutation.mutateAsync({
         user_id: user?.id,
         prospect_id,
         updated_company_linkedin_id: company_id
