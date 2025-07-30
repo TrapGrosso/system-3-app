@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useMemo, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useProspectsQuery } from '@/api/prospect-context/fetchProspects'
+import { useDeleteProspects } from '@/api/prospect-context/deleteProspects'
+import { useUpdateProspect } from '@/api/prospect-context/updateProspect'
 import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -7,6 +10,7 @@ const ProspectsContext = createContext(null)
 
 export const ProspectsProvider = ({ children }) => {
   const { user } = useAuth()
+  const queryClient = useQueryClient()
 
   // Query params kept in context
   const [query, setQuery] = useState({
@@ -32,6 +36,30 @@ export const ProspectsProvider = ({ children }) => {
 
   // Use the prospects query hook
   const queryApi = useProspectsQuery({ userId: user?.id, ...query })
+
+  // Delete prospects mutation
+  const deleteProspectsMutation = useDeleteProspects({
+    onSuccess: (data) => {
+      const message = data.message || 'Prospect(s) deleted successfully'
+      toast.success(message)
+      queryClient.invalidateQueries({ queryKey: ['prospects', user?.id] })
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to delete prospect(s)")
+    },
+  })
+
+  // Update prospect mutation
+  const updateProspectMutation = useUpdateProspect({
+    onSuccess: (data) => {
+      const message = data.message || 'Prospect updated successfully'
+      toast.success(message)
+      queryClient.invalidateQueries({ queryKey: ['prospects', user?.id] })
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update prospect")
+    },
+  })
 
   // Centralized error handling with fallback logic
   useEffect(() => {
@@ -73,6 +101,39 @@ export const ProspectsProvider = ({ children }) => {
   useEffect(() => {
     setDidFallback(false)
   }, [query])
+
+  // Helper functions for CRUD operations
+  const updateProspect = React.useCallback(
+    (linkedinId, updates) => {
+      return updateProspectMutation.mutate({
+        user_id: user?.id,
+        prospect_id: linkedinId,
+        ...updates
+      })
+    },
+    [updateProspectMutation, user]
+  )
+
+  const deleteProspect = React.useCallback(
+    (linkedinIds) => {
+      return deleteProspectsMutation.mutate({
+        user_id: user?.id,
+        prospect_ids: Array.isArray(linkedinIds) ? linkedinIds : [linkedinIds]
+      })
+    },
+    [deleteProspectsMutation, user]
+  )
+
+  const updateProspectCompany = React.useCallback(
+    (prospect_id, company_id) => {
+      return updateProspectMutation.mutate({
+        user_id: user?.id,
+        prospect_id,
+        updated_company_linkedin_id: company_id
+      })
+    },
+    [updateProspectMutation, user]
+  )
 
   const value = useMemo(() => ({
     // React Query data and states
@@ -128,16 +189,27 @@ export const ProspectsProvider = ({ children }) => {
       return counts
     },
 
-    // Future CRUD operation stubs
-    updateProspect: async (linkedinId, updates) => {
-      // TODO: Implement prospect update mutation
-      console.log('updateProspect:', linkedinId, updates)
-    },
-    deleteProspect: async (linkedinId) => {
-      // TODO: Implement prospect deletion mutation
-      console.log('deleteProspect:', linkedinId)
-    },
-  }), [queryApi, query])
+    // CRUD operation functions
+    updateProspect,
+    deleteProspect,
+    updateProspectCompany,
+
+    // Raw mutations (following pattern from other contexts)
+    updateProspectMutation,
+    deleteProspectsMutation,
+
+    // Loading states
+    isUpdatingProspect: updateProspectMutation.isPending,
+    isDeletingProspect: deleteProspectsMutation.isPending,
+  }), [
+    queryApi, 
+    query, 
+    updateProspect, 
+    deleteProspect, 
+    updateProspectCompany,
+    updateProspectMutation,
+    deleteProspectsMutation
+  ])
 
   return (
     <ProspectsContext.Provider value={value}>
