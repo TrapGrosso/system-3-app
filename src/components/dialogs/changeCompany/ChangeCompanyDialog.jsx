@@ -66,7 +66,7 @@ function ChangeCompanyDialog({
 
   // Query change handler
   const handleQueryChange = React.useCallback((partial) => {
-    setQuery(prev => ({ ...prev, ...partial }))
+    setQuery(partial)
   }, [setQuery])
 
   // Row click handler for table
@@ -96,10 +96,9 @@ function ChangeCompanyDialog({
   const handleSubmit = async () => {
     if (step === 'choose' && selectedId) {
       // Update prospect with selected company
-      updateProspectCompany(prospectId, selectedId).then(() => {
-        if (onSuccess) onSuccess()
-        handleReset()
-      })
+      await updateProspectCompany(prospectId, selectedId)
+      if (onSuccess) onSuccess()
+      handleReset()
     } else if (step === 'manual' && manualUrl.trim()) {
       // Submit new company URL
       addLeadsMutation.mutate({
@@ -173,7 +172,7 @@ function ChangeCompanyDialog({
             {/* Filter Bar */}
             <CompaniesFilterBar
               query={query}
-              onApplyFilters={(filters) => setQuery(prev => ({ ...prev, ...filters, page: 1 }))}
+              onApplyFilters={(filters) => setQuery({ ...filters, page: 1 })}
               onResetFilters={resetFilters}
               loading={isFetching}
             />
