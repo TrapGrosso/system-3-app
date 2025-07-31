@@ -87,7 +87,7 @@ export const VariableProvider = ({ children }) => {
 
   const addVariableToProspect = React.useCallback(
     (prospect_id, variable_name, variable_value, tags = null) => {
-      return createVariableMutation.mutate({
+      return createVariableMutation.mutateAsync({
         user_id,
         prospect_id,
         variable_name,
@@ -100,7 +100,7 @@ export const VariableProvider = ({ children }) => {
 
   const updateVariableDetails = React.useCallback(
     (variable_id, updates) => {
-      return updateVariableMutation.mutate({
+      return updateVariableMutation.mutateAsync({
         user_id,
         variable_id,
         ...updates
@@ -111,7 +111,7 @@ export const VariableProvider = ({ children }) => {
 
   const deleteVariables = React.useCallback(
     (variable_ids) => {
-      return deleteVariablesMutation.mutate({
+      return deleteVariablesMutation.mutateAsync({
         user_id,
         variable_ids: Array.isArray(variable_ids) ? variable_ids : [variable_ids]
       })

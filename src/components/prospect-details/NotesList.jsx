@@ -26,12 +26,9 @@ export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
     }
   }
 
-  const handleDeleteNote = (noteId) => {
-    deleteNotes([noteId])
-    if (onNotesChanged) {
-      // Call after a brief delay to allow for the mutation to complete
-      setTimeout(() => onNotesChanged(), 100)
-    }
+  const handleDeleteNote = async (noteId) => {
+    await deleteNotes([noteId])
+    onNotesChanged()
   }
 
   const rowActions = (note) => [
@@ -60,9 +57,9 @@ export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
       icon: TrashIcon,
       variant: 'destructive',
       disabled: isDeletingNote,
-      onSelect: (ids) => {
-        deleteNotes(ids)
-        setTimeout(() => onVariablesChanged?.(), 100)
+      onSelect: async (ids) => {
+        await deleteNotes(ids)
+        onNotesChanged()
       },
     }
   ]

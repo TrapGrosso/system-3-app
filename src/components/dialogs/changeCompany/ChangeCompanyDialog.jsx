@@ -34,7 +34,7 @@ function ChangeCompanyDialog({
   
   // Hooks - all contexts and mutations in dialog
   const { user } = useAuth()
-  const { updateProspectCompany } = useProspects()
+  const { updateProspectCompany, isUpdatingProspect } = useProspects()
   
   // Companies context - use as single source of truth
   const { 
@@ -62,7 +62,7 @@ function ChangeCompanyDialog({
   })
 
   // Derived loading state
-  const isSubmitting = addLeadsMutation.isPending || updateProspectCompany.isUpdatingProspect
+  const isSubmitting = addLeadsMutation.isPending || isUpdatingProspect
 
   // Query change handler
   const handleQueryChange = React.useCallback((partial) => {

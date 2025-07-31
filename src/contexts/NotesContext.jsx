@@ -93,7 +93,7 @@ export const NotesProvider = ({ children }) => {
 
   const addNoteToProspect = React.useCallback(
     (prospect_id, note_body) => {
-      return createNoteMutation.mutate({
+      return createNoteMutation.mutateAsync({
         prospect_ids: [prospect_id],
         user_id,
         note_body
@@ -104,7 +104,7 @@ export const NotesProvider = ({ children }) => {
 
   const addGeneralNote = React.useCallback(
     (note_body) => {
-      return createNoteMutation.mutate({
+      return createNoteMutation.mutateAsync({
         user_id,
         note_body
       })
@@ -125,7 +125,7 @@ export const NotesProvider = ({ children }) => {
 
   const deleteNotes = React.useCallback(
     (note_ids) => {
-      return deleteNoteMutation.mutate({
+      return deleteNoteMutation.mutateAsync({
         user_id,
         note_ids: Array.isArray(note_ids) ? note_ids : [note_ids]
       })

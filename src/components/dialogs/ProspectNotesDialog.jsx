@@ -48,10 +48,10 @@ function ProspectNotesDialog({
     }
   }, [open])
 
-  const handleAddNote = () => {
+  const handleAddNote = async () => {
     if (!newNoteContent.trim()) return
     
-    addNoteToProspect(prospect_id, newNoteContent.trim())
+    await addNoteToProspect(prospect_id, newNoteContent.trim())
     setNewNoteContent("")
     onSuccess?.()
   }

@@ -49,10 +49,10 @@ function ProspectVariablesDialog({
     refetch: refetchVariables,
   } = useProspectVariables(prospect_id)
 
-  const handleAddVariable = () => {
+  const handleAddVariable = async () => {
     if (!newVariableName.trim() || !newVariableValue.trim()) return
     
-    addVariableToProspect(
+    await addVariableToProspect(
       prospect_id, 
       newVariableName.trim(), 
       newVariableValue.trim()
@@ -62,8 +62,8 @@ function ProspectVariablesDialog({
     onSuccess?.()
   }
 
-  const handleDeleteVariable = (variableId) => {
-    deleteVariables([variableId])
+  const handleDeleteVariable = async (variableId) => {
+    await deleteVariables([variableId])
     onSuccess?.()
   }
 
@@ -219,8 +219,8 @@ function ProspectVariablesDialog({
                         </p>
                       </div>
                     )}
-                    onSave={(payload) => {
-                      updateVariableDetails(variable.id, payload)
+                    onSave={async (payload) => {
+                      await updateVariableDetails(variable.id, payload)
                       onSuccess?.()
                     }}
                     onDelete={() => handleDeleteVariable(variable.id)}

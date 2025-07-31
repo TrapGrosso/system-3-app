@@ -67,10 +67,10 @@ function ProspectTasksDialog({
     refetch: refetchTasks,
   } = useProspectTasks(prospect_id)
 
-  const handleAddTask = () => {
+  const handleAddTask = async () => {
     if (!newTaskTitle.trim()) return
     
-    addTaskToProspect(
+    await addTaskToProspect(
       prospect_id, 
       newTaskTitle.trim(), 
       newTaskDescription.trim() || undefined,
@@ -82,13 +82,13 @@ function ProspectTasksDialog({
     onSuccess?.()
   }
 
-  const handleDeleteTask = (taskId) => {
+  const handleDeleteTask = async (taskId) => {
     deleteTasks([taskId])
-    onSuccess?.()
+    await onSuccess?.()
   }
 
-  const handleStatusUpdate = (taskId, newStatus) => {
-    updateTaskStatus(taskId, newStatus)
+  const handleStatusUpdate = async (taskId, newStatus) => {
+    await updateTaskStatus(taskId, newStatus)
     setStatusPopoverOpen(null)
     onSuccess?.()
   }
@@ -328,8 +328,8 @@ function ProspectTasksDialog({
                         )}
                       </div>
                     )}
-                    onSave={(payload) => {
-                      updateTaskDetails(task.id, payload)
+                    onSave={async (payload) => {
+                      await updateTaskDetails(task.id, payload)
                       onSuccess?.()
                     }}
                     onDelete={() => handleDeleteTask(task.id)}

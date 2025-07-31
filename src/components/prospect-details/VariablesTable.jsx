@@ -10,11 +10,9 @@ import { useVariables } from '@/contexts/VariableContext'
 export default function VariablesTable({ variables = [], prospect, onAddVariable, onVariablesChanged }) {
   const { deleteVariables, isDeletingVariable } = useVariables()
 
-  const handleDeleteVariable = (variableId) => {
-    deleteVariables([variableId])
-    if (onVariablesChanged) {
-      setTimeout(() => onVariablesChanged(), 100)
-    }
+  const handleDeleteVariable = async (variableId) => {
+    await deleteVariables([variableId])
+    onVariablesChanged?.()
   }
 
   const handleAddVariable = () => {
@@ -44,9 +42,9 @@ export default function VariablesTable({ variables = [], prospect, onAddVariable
       icon: TrashIcon,
       variant: "destructive",
       disabled: isDeletingVariable,
-      onSelect: (ids) => {
-        deleteVariables(ids)
-        setTimeout(() => onVariablesChanged?.(), 100)
+      onSelect: async (ids) => {
+        await deleteVariables(ids)
+        onVariablesChanged?.()
       },
     },
   ]

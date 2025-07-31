@@ -96,7 +96,7 @@ export const PromptProvider = ({ children }) => {
 
   const createPrompt = React.useCallback(
     (payload) => {
-      return createPromptMutation.mutate({
+      return createPromptMutation.mutateAsync({
         user_id,
         ...payload
       })
@@ -106,7 +106,7 @@ export const PromptProvider = ({ children }) => {
 
   const updatePrompt = React.useCallback(
     (prompt_id, payload) => {
-      return updatePromptMutation.mutate({
+      return updatePromptMutation.mutateAsync({
         user_id,
         prompt_id,
         ...payload
@@ -117,7 +117,7 @@ export const PromptProvider = ({ children }) => {
 
   const deletePrompt = React.useCallback(
     (prompt_id) => {
-      return deletePromptMutation.mutate({
+      return deletePromptMutation.mutateAsync({
         user_id,
         prompt_id
       })

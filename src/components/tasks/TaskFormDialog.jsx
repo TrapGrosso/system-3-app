@@ -34,7 +34,7 @@ function TaskFormDialog({ children, ...props }) {
     
     if (!title.trim()) return
 
-    addGeneralTask(
+    await addGeneralTask(
       title.trim(),
       description.trim() || undefined,
       dueDate || undefined

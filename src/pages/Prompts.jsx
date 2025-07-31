@@ -69,9 +69,9 @@ function PromptsContent() {
     duplicatePrompt(prompt.id)
   }, [duplicatePrompt])
 
-  const handleDeleteConfirmed = useCallback(() => {
+  const handleDeleteConfirmed = useCallback(async () => {
     if (activePrompt) {
-      deletePrompt(activePrompt.id)
+      await deletePrompt(activePrompt.id)
       closeDialog()
     }
   }, [activePrompt, deletePrompt, closeDialog])

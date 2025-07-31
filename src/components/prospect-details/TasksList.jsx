@@ -34,12 +34,9 @@ export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
     }
   }
 
-  const handleDeleteTask = (taskId) => {
-    deleteTasks([taskId])
-    if (onTasksChanged) {
-      // Call after a brief delay to allow for the mutation to complete
-      setTimeout(() => onTasksChanged(), 100)
-    }
+  const handleDeleteTask = async (taskId) => {
+    await deleteTasks([taskId])
+    onTasksChanged()
   }
 
   const getRowActions = (task) => [
@@ -62,9 +59,9 @@ export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
       label: 'Delete selected',
       icon: TrashIcon,
       variant: "destructive",
-      onSelect: (ids) => {
-        deleteTasks(ids)
-        setTimeout(() => onTasksChanged?.(), 100)
+      onSelect: async (ids) => {
+        await deleteTasks(ids)
+        onTasksChanged?.()
       },
     },
   ]

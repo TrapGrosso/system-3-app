@@ -96,7 +96,7 @@ export const TaskProvider = ({ children }) => {
 
   const addTaskToProspect = React.useCallback(
     (prospect_id, task_title, task_description = '', task_duedate = null) => {
-      return createTaskMutation.mutate({
+      return createTaskMutation.mutateAsync({
         prospect_ids: [prospect_id],
         user_id,
         task_title,
@@ -109,7 +109,7 @@ export const TaskProvider = ({ children }) => {
 
   const addGeneralTask = React.useCallback(
     (task_title, task_description = '', task_duedate = null) => {
-      return createTaskMutation.mutate({
+      return createTaskMutation.mutateAsync({
         user_id,
         task_title,
         task_description,
@@ -126,7 +126,7 @@ export const TaskProvider = ({ children }) => {
         toast.error(`Invalid status. Must be one of: ${TASK_STATUS.join(', ')}`)
         return
       }
-      return updateTaskMutation.mutate({
+      return updateTaskMutation.mutateAsync({
         user_id,
         task_id,
         updated_status
@@ -142,7 +142,7 @@ export const TaskProvider = ({ children }) => {
         toast.error(`Invalid status. Must be one of: ${TASK_STATUS.join(', ')}`)
         return
       }
-      return updateTaskMutation.mutate({
+      return updateTaskMutation.mutateAsync({
         user_id,
         task_id,
         ...updates
@@ -153,7 +153,7 @@ export const TaskProvider = ({ children }) => {
 
   const deleteTasks = React.useCallback(
     (task_ids) => {
-      return deleteTaskMutation.mutate({
+      return deleteTaskMutation.mutateAsync({
         user_id,
         task_ids: Array.isArray(task_ids) ? task_ids : [task_ids]
       })
