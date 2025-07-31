@@ -105,7 +105,7 @@ export const ProspectsProvider = ({ children }) => {
   // Helper functions for CRUD operations
   const updateProspect = React.useCallback(
     (linkedinId, updates) => {
-      return updateProspectMutation.mutate({
+      return updateProspectMutation.mutateAsync({
         user_id: user?.id,
         prospect_id: linkedinId,
         ...updates
@@ -116,7 +116,7 @@ export const ProspectsProvider = ({ children }) => {
 
   const deleteProspect = React.useCallback(
     (linkedinIds) => {
-      return deleteProspectsMutation.mutate({
+      return deleteProspectsMutation.mutateAsync({
         user_id: user?.id,
         prospect_ids: Array.isArray(linkedinIds) ? linkedinIds : [linkedinIds]
       })

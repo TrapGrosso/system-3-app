@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator'
 import { useDeepSearchQueue } from '@/contexts/DeepSearchQueueContext'
 import DeepSearchQueueTable from '@/components/marketing/DeepSearchQueueTable'
-import { PromptSelectDialog } from '@/components/marketing/PromptSelectDialog'
+import { PromptSelectDialog } from '@/components/dialogs/PromptSelectDialog'
 
 export default function Marketing() {
     const { user } = useAuth()
