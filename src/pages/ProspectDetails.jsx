@@ -22,6 +22,7 @@ import ChangeCompanyDialog from '@/components/dialogs/changeCompany/ChangeCompan
 import UpdateCompanyDialog from '@/components/dialogs/UpdateCompanyDialog'
 import UpdateProspectDialog from '@/components/dialogs/UpdateProspectDialog'
 import { PromptSelectDialog } from '@/components/dialogs/PromptSelectDialog'
+import ResolveDeepSearchItem from '@/components/dialogs/ResolveDeepSearchItem'
 import {
   ProspectHeader,
   CompanyCard,
@@ -44,6 +45,7 @@ export default function ProspectDetails() {
   const [updateCompanyDialogOpen, setUpdateCompanyDialogOpen] = useState(false)
   const [updateProspectDialogOpen, setUpdateProspectDialogOpen] = useState(false)
   const [promptSelectDialogOpen, setPromptSelectDialogOpen] = useState(false)
+  const [resolveDialogOpen, setResolveDialogOpen] = useState(false)
 
   const { data, isLoading, isError, refetch } = usegetProspectDetails(user?.id, linkedinId)
 
@@ -152,6 +154,15 @@ export default function ProspectDetails() {
     setPromptSelectDialogOpen(false)
   }
 
+  const handleOpenResolveDialog = () => {
+    setResolveDialogOpen(true)
+  }
+
+  const handleResolveDialogSuccess = () => {
+    refetch() // Refresh prospect details to update data
+    setResolveDialogOpen(false)
+  }
+
   const handleRemoveFromQueue = async () => {
     try {
       await deleteQueueItem(data.deep_search.queue_id)
@@ -222,6 +233,7 @@ export default function ProspectDetails() {
               onDeleteProspect={handleDeleteProspect}
               onUpdateQueuePrompt={handleOpenPromptSelectDialog}
               onRemoveFromQueue={handleRemoveFromQueue}
+              onResolveDeepSearchItem={handleOpenResolveDialog}
               onAddNote={handleOpenNotesDialog}
               onCreateTask={handleOpenTasksDialog}
               onAddToDeepResearch={handleOpenDeepSearchDialog}
@@ -379,6 +391,16 @@ export default function ProspectDetails() {
               onOpenChange={setPromptSelectDialogOpen}
               queueItemIds={[data.deep_search.queue_id]}
               onSuccess={handlePromptSelectDialogSuccess}
+            />
+          )}
+
+          {/* ResolveDeepSearchItem - controlled by ProspectDetails state */}
+          {data.deep_search?.is_in_queue && (
+            <ResolveDeepSearchItem
+              queueIds={[data.deep_search.queue_id]}
+              open={resolveDialogOpen}
+              onOpenChange={setResolveDialogOpen}
+              onSuccess={handleResolveDialogSuccess}
             />
           )}
           </TaskProvider>

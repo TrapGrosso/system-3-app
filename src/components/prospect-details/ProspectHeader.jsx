@@ -14,7 +14,8 @@ import {
   SearchIcon, 
   UsersIcon,
   EditIcon,
-  XIcon
+  XIcon,
+  Settings
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -25,6 +26,7 @@ export default function ProspectHeader({
   onDeleteProspect, 
   onUpdateQueuePrompt, 
   onRemoveFromQueue, 
+  onResolveDeepSearchItem,
   onAddNote, 
   onCreateTask, 
   onAddToCampaign, 
@@ -69,6 +71,12 @@ export default function ProspectHeader({
     },
     'separator',
     ...(deepSearch?.is_in_queue ? [
+      {
+        id: 'resolve-deepsearch-item',
+        label: 'Resolve deep search item',
+        icon: Settings,
+        onSelect: onResolveDeepSearchItem
+      },
       {
         id: 'update-deepsearch-prompt',
         label: 'Update deep search queue prompt',
