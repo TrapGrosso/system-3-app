@@ -96,7 +96,7 @@ export const DeepSearchQueueProvider = ({ children }) => {
 
   const deleteProspects = React.useCallback(
     (queue_item_ids) => {
-      return deleteQueueMutation.mutate({
+      return deleteQueueMutation.mutateAsync({
         user_id,
         queue_item_ids: Array.isArray(queue_item_ids) ? queue_item_ids : [queue_item_ids]
       })

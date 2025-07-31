@@ -1,22 +1,9 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { ActionDropdown } from '@/components/shared/ui/ActionDropdown'
 import { 
   MoreHorizontalIcon, 
   PencilIcon, 
@@ -26,12 +13,24 @@ import {
   TargetIcon, 
   SearchIcon, 
   UsersIcon,
-  ChevronDownIcon
+  EditIcon,
+  XIcon
 } from 'lucide-react'
 import { toast } from 'sonner'
 
-export default function ProspectHeader({ prospect, deepSearch, onUpdateProspect, onDeleteProspect, onAddNote, onCreateTask, onAddToCampaign, onAddToDeepResearch, onAddToGroup }) {
-  const [open, setOpen] = useState(false)
+export default function ProspectHeader({ 
+  prospect, 
+  deepSearch, 
+  onUpdateProspect, 
+  onDeleteProspect, 
+  onUpdateQueuePrompt, 
+  onRemoveFromQueue, 
+  onAddNote, 
+  onCreateTask, 
+  onAddToCampaign, 
+  onAddToDeepResearch, 
+  onAddToGroup 
+}) {
 
   if (!prospect) return null
 
@@ -56,38 +55,55 @@ export default function ProspectHeader({ prospect, deepSearch, onUpdateProspect,
 
   const actions = [
     {
-      value: 'update-prospect',
+      id: 'update-prospect',
       label: 'Update prospect',
       icon: PencilIcon,
       onSelect: onUpdateProspect
     },
     {
-      value: 'delete-prospect',
+      id: 'delete-prospect',
       label: 'Delete prospect',
       icon: TrashIcon,
       onSelect: onDeleteProspect,
       variant: 'destructive'
     },
+    'separator',
+    ...(deepSearch?.is_in_queue ? [
+      {
+        id: 'update-deepsearch-prompt',
+        label: 'Update deep search queue prompt',
+        icon: EditIcon,
+        onSelect: onUpdateQueuePrompt
+      },
+      {
+        id: 'remove-from-deepsearch-queue',
+        label: 'Remove from deepsearch queue',
+        icon: XIcon,
+        onSelect: onRemoveFromQueue,
+        variant: 'destructive'
+      },
+      'separator'
+    ] : []),
     {
-      value: 'add-note',
+      id: 'add-note',
       label: 'Add note',
       icon: MessageSquareIcon,
       onSelect: onAddNote
     },
     {
-      value: 'create-task',
+      id: 'create-task',
       label: 'Create task',
       icon: CheckSquareIcon,
       onSelect: onCreateTask
     },
     {
-      value: 'add-to-campaign',
+      id: 'add-to-campaign',
       label: 'Add to campaign',
       icon: TargetIcon,
       onSelect: onAddToCampaign
     },
     {
-      value: 'add-to-deep-research',
+      id: 'add-to-deep-research',
       label: deepSearch?.is_in_queue ? 'Already in deep research queue' : 'Add to deep research queue',
       icon: SearchIcon,
       onSelect: deepSearch?.is_in_queue 
@@ -96,21 +112,12 @@ export default function ProspectHeader({ prospect, deepSearch, onUpdateProspect,
       variant: deepSearch?.is_in_queue ? 'secondary' : undefined
     },
     {
-      value: 'add-to-group',
+      id: 'add-to-group',
       label: 'Add to group',
       icon: UsersIcon,
       onSelect: onAddToGroup
     }
   ]
-
-  const handleActionSelect = (action) => {
-    setOpen(false)
-    if (action.onSelect) {
-      action.onSelect()
-    } else {
-      toast.info(`${action.label} functionality not implemented yet`)
-    }
-  }
 
   return (
     <Card className="mx-4 lg:mx-6 mb-6">
@@ -165,44 +172,17 @@ export default function ProspectHeader({ prospect, deepSearch, onUpdateProspect,
           </div>
 
           <div className="flex gap-2">
-            <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={open}
-                  className="justify-between"
-                >
-                  <MoreHorizontalIcon className="h-4 w-4 mr-2" />
-                  Actions
-                  <ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-56 p-0" align="end">
-                <Command>
-                  <CommandInput placeholder="Search actions..." className="h-9" />
-                  <CommandEmpty>No actions found.</CommandEmpty>
-                  <CommandList>
-                    <CommandGroup>
-                      {actions.map((action) => {
-                        const Icon = action.icon
-                        return (
-                          <CommandItem
-                            key={action.value}
-                            value={action.value}
-                            onSelect={() => handleActionSelect(action)}
-                            className={action.variant === 'destructive' ? 'text-destructive' : ''}
-                          >
-                            <Icon className="mr-2 h-4 w-4" />
-                            {action.label}
-                          </CommandItem>
-                        )
-                      })}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            <ActionDropdown
+              items={actions}
+              triggerProps={{
+                variant: "outline",
+                size: "sm",
+                icon: MoreHorizontalIcon,
+                className: "justify-between"
+              }}
+              align="end"
+              side="bottom"
+            />
           </div>
         </div>
       </CardHeader>

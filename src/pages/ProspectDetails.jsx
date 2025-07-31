@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { DashboardLayout } from '@/components/layouts/DashboardLayout'
 import { Spinner } from '@/components/ui/spinner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useAuth } from '@/contexts/AuthContext'
+import { useProspects } from '@/contexts/ProspectsContext'
+import { useDeepSearchQueue } from '@/contexts/DeepSearchQueueContext'
 import { GroupsProvider } from '@/contexts/GroupsContext'
 import { NotesProvider } from '@/contexts/NotesContext'
 import { TaskProvider } from '@/contexts/TaskContext'
@@ -18,6 +20,8 @@ import DeepSearchQueueDialog from '@/components/dialogs/DeepSearchQueueDialog'
 import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
 import ChangeCompanyDialog from '@/components/dialogs/changeCompany/ChangeCompanyDialog'
 import UpdateCompanyDialog from '@/components/dialogs/UpdateCompanyDialog'
+import UpdateProspectDialog from '@/components/dialogs/UpdateProspectDialog'
+import { PromptSelectDialog } from '@/components/dialogs/PromptSelectDialog'
 import {
   ProspectHeader,
   CompanyCard,
@@ -27,6 +31,10 @@ import {
 export default function ProspectDetails() {
   const { user } = useAuth()
   const { linkedinId } = useParams()
+  const navigate = useNavigate()
+  const { deleteProspect } = useProspects()
+  const { deleteProspects: deleteQueueItem } = useDeepSearchQueue()
+  
   const [notesDialogOpen, setNotesDialogOpen] = useState(false)
   const [tasksDialogOpen, setTasksDialogOpen] = useState(false)
   const [variablesDialogOpen, setVariablesDialogOpen] = useState(false)
@@ -34,6 +42,8 @@ export default function ProspectDetails() {
   const [groupsDialogOpen, setGroupsDialogOpen] = useState(false)
   const [changeCompanyDialogOpen, setChangeCompanyDialogOpen] = useState(false)
   const [updateCompanyDialogOpen, setUpdateCompanyDialogOpen] = useState(false)
+  const [updateProspectDialogOpen, setUpdateProspectDialogOpen] = useState(false)
+  const [promptSelectDialogOpen, setPromptSelectDialogOpen] = useState(false)
 
   const { data, isLoading, isError, refetch } = usegetProspectDetails(user?.id, linkedinId)
 
@@ -113,6 +123,45 @@ export default function ProspectDetails() {
     })
   }
 
+  // New prospect action handlers
+  const handleOpenUpdateProspectDialog = () => {
+    setUpdateProspectDialogOpen(true)
+  }
+
+  const handleUpdateProspectDialogSuccess = () => {
+    refetch() // Refresh prospect details to update prospect data
+    setUpdateProspectDialogOpen(false)
+  }
+
+  const handleDeleteProspect = async () => {
+    try {
+      await deleteProspect(data.prospect.linkedin_id)
+      navigate('/dashboard')
+    } catch (error) {
+      // Error handling is done in the context layer via toast
+      console.error('Failed to delete prospect:', error)
+    }
+  }
+
+  const handleOpenPromptSelectDialog = () => {
+    setPromptSelectDialogOpen(true)
+  }
+
+  const handlePromptSelectDialogSuccess = () => {
+    refetch() // Refresh prospect details to update queue data
+    setPromptSelectDialogOpen(false)
+  }
+
+  const handleRemoveFromQueue = async () => {
+    try {
+      await deleteQueueItem(data.deep_search.queue_id)
+      refetch() // Refresh prospect details to update queue status
+    } catch (error) {
+      // Error handling is done in the context layer via toast
+      console.error('Failed to remove from queue:', error)
+    }
+  }
+
   if (isLoading) {
     return (
       <DashboardLayout headerText="Prospect Details">
@@ -169,6 +218,10 @@ export default function ProspectDetails() {
             <ProspectHeader 
               prospect={data.prospect} 
               deepSearch={data.deep_search}
+              onUpdateProspect={handleOpenUpdateProspectDialog}
+              onDeleteProspect={handleDeleteProspect}
+              onUpdateQueuePrompt={handleOpenPromptSelectDialog}
+              onRemoveFromQueue={handleRemoveFromQueue}
               onAddNote={handleOpenNotesDialog}
               onCreateTask={handleOpenTasksDialog}
               onAddToDeepResearch={handleOpenDeepSearchDialog}
@@ -306,6 +359,26 @@ export default function ProspectDetails() {
               onOpenChange={setUpdateCompanyDialogOpen}
               company={data.company}
               onSuccess={handleUpdateCompanyDialogSuccess}
+            />
+          )}
+
+          {/* UpdateProspectDialog - controlled by ProspectDetails state */}
+          {data.prospect && (
+            <UpdateProspectDialog
+              open={updateProspectDialogOpen}
+              onOpenChange={setUpdateProspectDialogOpen}
+              prospect={data.prospect}
+              onSuccess={handleUpdateProspectDialogSuccess}
+            />
+          )}
+
+          {/* PromptSelectDialog - controlled by ProspectDetails state */}
+          {data.deep_search?.is_in_queue && (
+            <PromptSelectDialog
+              open={promptSelectDialogOpen}
+              onOpenChange={setPromptSelectDialogOpen}
+              queueItemIds={[data.deep_search.queue_id]}
+              onSuccess={handlePromptSelectDialogSuccess}
             />
           )}
           </TaskProvider>
