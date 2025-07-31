@@ -12,6 +12,7 @@ import PromptMultiSelect from "@/components/shared/dialog/PromptMultiSelect"
 import DialogWrapper from "@/components/shared/dialog/DialogWrapper"
 import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 import GroupSingleSelect from "@/components/shared/dialog/GroupSingleSelect"
+import CheckboxMatrix from "@/components/shared/dialog/CheckboxMatrix"
 
 // Multi-select options for lead processing
 const MULTI_OPTIONS = [
@@ -39,10 +40,6 @@ function SubmitLeadsDialog({
   
   // Get groups context
   const {
-    groups,
-    isLoadingGroups,
-    isErrorGroups,
-    refetchGroups,
     getGroupById,
   } = useGroups()
 
@@ -72,13 +69,6 @@ function SubmitLeadsDialog({
     }
   }
 
-  const handleOptionToggle = (optionValue) => {
-    setSelectedOptions(prev => 
-      prev.includes(optionValue) 
-        ? prev.filter(val => val !== optionValue)
-        : [...prev, optionValue]
-    )
-  }
 
   const selectedGroup = getGroupById(selectedGroupId)
   const urlCount = urls.length
@@ -116,26 +106,13 @@ function SubmitLeadsDialog({
         <Separator />
 
         {/* Processing Options */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium">
-            Processing options
-          </Label>
-          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
-            {MULTI_OPTIONS.map((option) => (
-              <label
-                key={option.value}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <Checkbox
-                  checked={selectedOptions.includes(option.value)}
-                  onCheckedChange={() => handleOptionToggle(option.value)}
-                  disabled={isPending}
-                />
-                <span className="text-sm">{option.label}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+        <CheckboxMatrix
+          label="Processing options"
+          options={MULTI_OPTIONS}
+          value={selectedOptions}
+          onChange={setSelectedOptions}
+          disabled={isPending}
+        />
 
         {/* Deep Search Queue Prompts */}
         {selectedOptions.includes('add_to_ds_queue') && (
