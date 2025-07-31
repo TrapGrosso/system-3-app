@@ -106,10 +106,11 @@ export const DeepSearchQueueProvider = ({ children }) => {
 
   // Resolve prospects wrapper
   const resolveProspects = React.useCallback(
-    (queue_ids) => {
-      return resolveQueueMutation.mutate({
+    (queue_ids, options) => {
+      return resolveQueueMutation.mutateAsync({
         user_id,
-        queue_item_ids: Array.isArray(queue_ids) ? queue_ids : [queue_ids]
+        queue_item_ids: Array.isArray(queue_ids) ? queue_ids : [queue_ids],
+        options
       })
     },
     [resolveQueueMutation, user_id]

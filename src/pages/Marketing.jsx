@@ -1,6 +1,5 @@
 import * as React from "react"
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@/contexts/AuthContext'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -8,9 +7,9 @@ import { Separator } from '@/components/ui/separator'
 import { useDeepSearchQueue } from '@/contexts/DeepSearchQueueContext'
 import DeepSearchQueueTable from '@/components/marketing/DeepSearchQueueTable'
 import { PromptSelectDialog } from '@/components/dialogs/PromptSelectDialog'
+import { ResolveDeepSearchItem } from '@/components/dialogs'
 
 export default function Marketing() {
-    const { user } = useAuth()
     const navigate = useNavigate()
     
     const { 
@@ -24,6 +23,7 @@ export default function Marketing() {
 
     // Dialog state
     const [promptDialogOpen, setPromptDialogOpen] = React.useState(false)
+    const [resolveDialogOpen, setResolveDialogOpen] = React.useState(false)
     const [selectedQueueItemIds, setSelectedQueueItemIds] = React.useState([])
     
     // Business logic handlers
@@ -37,8 +37,19 @@ export default function Marketing() {
     }, [deleteProspects])
 
     const handleResolve = React.useCallback((queueItemIds) => {
-        resolveProspects(queueItemIds)
-    }, [resolveProspects])
+        setSelectedQueueItemIds(queueItemIds)
+        setResolveDialogOpen(true)
+    }, [])
+
+    const handleResolveEntireQueue = React.useCallback(() => {
+        const allQueueItemIds = queueItems.map(item => item.id)
+        setSelectedQueueItemIds(allQueueItemIds)
+        setResolveDialogOpen(true)
+    }, [queueItems])
+
+    const handleResolveSuccess = React.useCallback(() => {
+        setSelectedQueueItemIds([])
+    }, [])
 
     const handleRowClick = React.useCallback((prospectId) => {
         navigate(`/prospects/${prospectId}`)
@@ -64,10 +75,7 @@ export default function Marketing() {
                                     </p>
                                 </div>
                                 <Button 
-                                    onClick={() => {
-                                        const allQueueItemIds = queueItems.map(item => item.id)
-                                        resolveProspects(allQueueItemIds)
-                                    }}
+                                    onClick={handleResolveEntireQueue}
                                     disabled={queueItems.length === 0 || isResolvingQueue}
                                 >
                                     {isResolvingQueue ? "Resolving..." : "Resolve Entire Queue"}
@@ -94,6 +102,13 @@ export default function Marketing() {
                     onOpenChange={setPromptDialogOpen}
                     queueItemIds={selectedQueueItemIds}
                     selectedCount={selectedQueueItemIds.length}
+                />
+
+                <ResolveDeepSearchItem
+                    open={resolveDialogOpen}
+                    onOpenChange={setResolveDialogOpen}
+                    queueIds={selectedQueueItemIds}
+                    onSuccess={handleResolveSuccess}
                 />
             </div>
         </DashboardLayout>
