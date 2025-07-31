@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useMemo, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useGetAllCompaniesQuery } from '@/api/company-context/getAllCompanies'
+import { useDeleteCompanies } from '@/api/company-context/deleteCompanies'
+import { useUpdateCompany } from '@/api/company-context/updateCompany'
 import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -7,6 +10,7 @@ const CompaniesContext = createContext(null)
 
 export const CompaniesProvider = ({ children }) => {
   const { user } = useAuth()
+  const queryClient = useQueryClient()
 
   // Query params kept in context
   const [query, setQuery] = useState({
@@ -29,6 +33,30 @@ export const CompaniesProvider = ({ children }) => {
 
   // Use the companies query hook
   const queryApi = useGetAllCompaniesQuery({ userId: user?.id, ...query })
+
+  // Delete companies mutation
+  const deleteCompaniesMutation = useDeleteCompanies({
+    onSuccess: (data) => {
+      const message = data.message || 'Company(ies) deleted successfully'
+      toast.success(message)
+      queryClient.invalidateQueries({ queryKey: ['companies', user?.id] })
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to delete company(ies)")
+    },
+  })
+
+  // Update company mutation
+  const updateCompanyMutation = useUpdateCompany({
+    onSuccess: (data) => {
+      const message = data.message || 'Company updated successfully'
+      toast.success(message)
+      queryClient.invalidateQueries({ queryKey: ['companies', user?.id] })
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update company")
+    },
+  })
 
   // Centralized error handling with fallback logic
   useEffect(() => {
@@ -67,6 +95,28 @@ export const CompaniesProvider = ({ children }) => {
   useEffect(() => {
     setDidFallback(false)
   }, [query])
+
+  // Helper functions for CRUD operations
+  const updateCompany = React.useCallback(
+    (linkedinId, updates) => {
+      return updateCompanyMutation.mutateAsync({
+        user_id: user?.id,
+        company_id: linkedinId,
+        ...updates
+      })
+    },
+    [updateCompanyMutation, user]
+  )
+
+  const deleteCompany = React.useCallback(
+    (linkedinIds) => {
+      return deleteCompaniesMutation.mutateAsync({
+        user_id: user?.id,
+        company_ids: Array.isArray(linkedinIds) ? linkedinIds : [linkedinIds]
+      })
+    },
+    [deleteCompaniesMutation, user]
+  )
 
   const value = useMemo(() => ({
     // React Query data and states
@@ -111,16 +161,25 @@ export const CompaniesProvider = ({ children }) => {
     },
     getTotalCount: () => queryApi.data?.total || 0,
 
-    // Future CRUD operation stubs
-    updateCompany: async (linkedinId, updates) => {
-      // TODO: Implement company update mutation
-      console.log('updateCompany:', linkedinId, updates)
-    },
-    deleteCompany: async (linkedinId) => {
-      // TODO: Implement company deletion mutation
-      console.log('deleteCompany:', linkedinId)
-    },
-  }), [queryApi, query])
+    // CRUD operation functions
+    updateCompany,
+    deleteCompany,
+
+    // Raw mutations (following pattern from other contexts)
+    updateCompanyMutation,
+    deleteCompaniesMutation,
+
+    // Loading states
+    isUpdatingCompany: updateCompanyMutation.isPending,
+    isDeletingCompany: deleteCompaniesMutation.isPending,
+  }), [
+    queryApi, 
+    query, 
+    updateCompany, 
+    deleteCompany,
+    updateCompanyMutation,
+    deleteCompaniesMutation
+  ])
 
   return (
     <CompaniesContext.Provider value={value}>
