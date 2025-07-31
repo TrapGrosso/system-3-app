@@ -85,7 +85,7 @@ export const DeepSearchQueueProvider = ({ children }) => {
 
   const updateProspects = React.useCallback(
     (prospect_ids, updated_prompt_ids) => {
-      return updateQueueMutation.mutate({
+      return updateQueueMutation.mutateAsync({
         user_id,
         prospect_ids: Array.isArray(prospect_ids) ? prospect_ids : [prospect_ids],
         updated_prompt_ids: Array.isArray(updated_prompt_ids) ? updated_prompt_ids : [updated_prompt_ids]
