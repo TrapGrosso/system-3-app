@@ -74,7 +74,7 @@ export const DeepSearchQueueProvider = ({ children }) => {
   // Core mutation wrappers
   const addProspects = React.useCallback(
     (prospect_ids, prompt_ids) => {
-      return addToQueueMutation.mutate({
+      return addToQueueMutation.mutateAsync({
         user_id,
         prospect_ids: Array.isArray(prospect_ids) ? prospect_ids : [prospect_ids],
         prompt_ids: Array.isArray(prompt_ids) ? prompt_ids : [prompt_ids]

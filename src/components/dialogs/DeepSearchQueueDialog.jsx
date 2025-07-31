@@ -22,10 +22,10 @@ function DeepSearchQueueDialog({
   const { user } = useAuth()
   const { addProspects, isAddingToQueue } = useDeepSearchQueue()
   
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedPromptIds.length || !prospect_ids.length || !user?.id) return
     
-    addProspects(prospect_ids, selectedPromptIds)
+    await addProspects(prospect_ids, selectedPromptIds)
     setSelectedPromptIds([])
     onSuccess?.()
   }
