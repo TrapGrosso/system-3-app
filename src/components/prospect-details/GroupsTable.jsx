@@ -9,7 +9,7 @@ import { DataTable } from '@/components/shared/table/DataTable'
 
 export default function GroupsTable({ groups = [], prospect, onAddToGroup }) {
   const { user } = useAuth()
-  const { removeFromGroup } = useGroups()
+  const { removeFromGroup, isRemovingFromGroup } = useGroups()
 
   const handleAddToGroup = () => {
     if (onAddToGroup) {
@@ -18,14 +18,13 @@ export default function GroupsTable({ groups = [], prospect, onAddToGroup }) {
   }
 
   const handleRemoveFromGroup = async (groupId) => {
-    if (!prospect?.linkedin_id || !user?.id) {
+    if (!prospect?.linkedin_id) {
       toast.error('Missing required data')
       return
     }
 
     try {
-      await removeFromGroup.mutateAsync({
-        user_id: user.id,
+      await removeFromGroup({
         prospect_ids: [prospect.linkedin_id],
         group_id: groupId
       })
@@ -81,7 +80,7 @@ export default function GroupsTable({ groups = [], prospect, onAddToGroup }) {
       label: 'Remove from group',
       icon: TrashIcon,
       variant: 'destructive',
-      disabled: removeFromGroup.isPending,
+      disabled: isRemovingFromGroup,
       onSelect: () => handleRemoveFromGroup(group.id)
     }
   ]

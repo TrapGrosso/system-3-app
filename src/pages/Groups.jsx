@@ -20,6 +20,9 @@ function GroupsContent() {
         emptyGroup,
         removeFromGroup,
         refetchGroups,
+        isDeletingGroup,
+        isEmptyingGroup,
+        isRemovingFromGroup,
     } = useGroups()
 
     // Fetch prospects for selected group
@@ -34,49 +37,45 @@ function GroupsContent() {
         setSelectedGroup(group)
     }
 
-    const handleEmptyGroup = (group) => {
-        emptyGroup.mutate({
-            user_id: user?.id,
-            group_id: group.id
-        }, {
-            onSuccess: () => {
-                // If the emptied group is currently selected, clear selection since it has no prospects
-                if (selectedGroup?.id === group.id) {
-                    setSelectedGroup(null)
-                }
-                refetchGroups()
+    const handleEmptyGroup = async (group) => {
+        try {
+            await emptyGroup(group.id)
+            // If the emptied group is currently selected, clear selection since it has no prospects
+            if (selectedGroup?.id === group.id) {
+                setSelectedGroup(null)
             }
-        })
+            refetchGroups()
+        } catch (error) {
+            // Error handling is done in the context
+        }
     }
 
-    const handleDeleteGroup = (group) => {
-        deleteGroup.mutate({
-            user_id: user?.id,
-            group_id: group.id
-        }, {
-            onSuccess: () => {
-                // If the deleted group is currently selected, clear selection
-                if (selectedGroup?.id === group.id) {
-                    setSelectedGroup(null)
-                }
-                refetchGroups()
+    const handleDeleteGroup = async (group) => {
+        try {
+            await deleteGroup(group.id)
+            // If the deleted group is currently selected, clear selection
+            if (selectedGroup?.id === group.id) {
+                setSelectedGroup(null)
             }
-        })
+            refetchGroups()
+        } catch (error) {
+            // Error handling is done in the context
+        }
     }
 
-    const handleRemoveProspect = (prospect) => {
+    const handleRemoveProspect = async (prospect) => {
         if (!selectedGroup) return
 
-        removeFromGroup.mutate({
-            user_id: user?.id,
-            group_id: selectedGroup.id,
-            prospect_ids: [prospect.linkedin_id]
-        }, {
-            onSuccess: () => {
-                refetchProspects()
-                refetchGroups() // Refresh to update prospect counts
-            }
-        })
+        try {
+            await removeFromGroup({
+                group_id: selectedGroup.id,
+                prospect_ids: [prospect.linkedin_id]
+            })
+            refetchProspects()
+            refetchGroups() // Refresh to update prospect counts
+        } catch (error) {
+            // Error handling is done in the context
+        }
     }
 
     const handleCreateGroupSuccess = () => {
@@ -115,6 +114,8 @@ function GroupsContent() {
                             onEmpty={handleEmptyGroup}
                             onDelete={handleDeleteGroup}
                             onRefetch={refetchGroups}
+                            isEmptyingGroup={isEmptyingGroup}
+                            isDeletingGroup={isDeletingGroup}
                         />
                     </div>
                     
@@ -128,6 +129,7 @@ function GroupsContent() {
                                 isError={isErrorProspects}
                                 onRemoveProspect={handleRemoveProspect}
                                 onRefetch={refetchProspects}
+                                isRemovingFromGroup={isRemovingFromGroup}
                             />
                         )}
                     </div>

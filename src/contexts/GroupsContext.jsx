@@ -116,6 +116,37 @@ export const GroupsProvider = ({ children }) => {
     [queryClient, user_id]
   )
 
+  // Wrapper functions for mutations
+  const createGroup = React.useCallback(
+    (payload) => createGroupMutation.mutateAsync({ user_id, ...payload }),
+    [createGroupMutation, user_id]
+  )
+
+  const deleteGroup = React.useCallback(
+    (group_id) => deleteGroupMutation.mutateAsync({ user_id, group_id }),
+    [deleteGroupMutation, user_id]
+  )
+
+  const addToGroup = React.useCallback(
+    (payload) => addToGroupMutation.mutateAsync({ user_id, ...payload }),
+    [addToGroupMutation, user_id]
+  )
+
+  const removeFromGroup = React.useCallback(
+    (payload) => removeFromGroupMutation.mutateAsync({ user_id, ...payload }),
+    [removeFromGroupMutation, user_id]
+  )
+
+  const removeFromAllGroups = React.useCallback(
+    (prospect_id) => removeFromAllGroupsMutation.mutateAsync({ user_id, prospect_id }),
+    [removeFromAllGroupsMutation, user_id]
+  )
+
+  const emptyGroup = React.useCallback(
+    (group_id) => emptyGroupMutation.mutateAsync({ user_id, group_id }),
+    [emptyGroupMutation, user_id]
+  )
+
   const value = React.useMemo(
     () => ({
       // Data
@@ -124,19 +155,35 @@ export const GroupsProvider = ({ children }) => {
       isErrorGroups,
       user_id,
 
-      // Mutations
-      createGroup: createGroupMutation,
-      deleteGroup: deleteGroupMutation,
-      addToGroup: addToGroupMutation,
-      removeFromGroup: removeFromGroupMutation,
-      removeFromAllGroups: removeFromAllGroupsMutation,
-      emptyGroup: emptyGroupMutation,
+      // Raw Mutations
+      createGroupMutation,
+      deleteGroupMutation,
+      addToGroupMutation,
+      removeFromGroupMutation,
+      removeFromAllGroupsMutation,
+      emptyGroupMutation,
+
+      // Wrapper functions
+      createGroup,
+      deleteGroup,
+      addToGroup,
+      removeFromGroup,
+      removeFromAllGroups,
+      emptyGroup,
 
       // Helpers
       refetchGroups,
       invalidateGroups,
       invalidateProspectGroups,
       getGroupById,
+
+      // Loading states
+      isCreatingGroup: createGroupMutation.isPending,
+      isDeletingGroup: deleteGroupMutation.isPending,
+      isAddingToGroup: addToGroupMutation.isPending,
+      isRemovingFromGroup: removeFromGroupMutation.isPending,
+      isRemovingFromAllGroups: removeFromAllGroupsMutation.isPending,
+      isEmptyingGroup: emptyGroupMutation.isPending,
     }),
     [
       groups,
@@ -149,6 +196,12 @@ export const GroupsProvider = ({ children }) => {
       removeFromGroupMutation,
       removeFromAllGroupsMutation,
       emptyGroupMutation,
+      createGroup,
+      deleteGroup,
+      addToGroup,
+      removeFromGroup,
+      removeFromAllGroups,
+      emptyGroup,
       refetchGroups,
       invalidateGroups,
       invalidateProspectGroups,

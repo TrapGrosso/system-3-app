@@ -25,10 +25,11 @@ function RemoveFromGroupDialog({
 
   // Get groups context
   const {
-    user_id,
     removeFromGroup,
     removeFromAllGroups,
     invalidateProspectGroups,
+    isRemovingFromGroup,
+    isRemovingFromAllGroups,
   } = useGroups()
   
   // Get prospect groups
@@ -39,43 +40,40 @@ function RemoveFromGroupDialog({
     refetch: refetchGroups,
   } = useProspectGroups(prospect_id)
 
-  const handleRemoveFromGroup = (groupId) => {
+  const handleRemoveFromGroup = async (groupId) => {
     setRemovingGroupId(groupId)
-    removeFromGroup.mutate({
-      user_id,
-      group_id: groupId,
-      prospect_ids: [prospect_id]
-    }, {
-      onSuccess: () => {
-        invalidateProspectGroups(prospect_id)
-        refetchGroups()
-        onSuccess?.()
-      },
-      onSettled: () => {
-        setRemovingGroupId(null)
-      }
-    })
+    try {
+      await removeFromGroup({
+        group_id: groupId,
+        prospect_ids: [prospect_id]
+      })
+      invalidateProspectGroups(prospect_id)
+      refetchGroups()
+      onSuccess?.()
+    } catch (error) {
+      // Error handling is done in the context
+    } finally {
+      setRemovingGroupId(null)
+    }
   }
 
-  const handleRemoveFromAllGroups = () => {
-    removeFromAllGroups.mutate({
-      user_id,
-      prospect_id
-    }, {
-      onSuccess: () => {
-        invalidateProspectGroups(prospect_id)
-        refetchGroups()
-        onSuccess?.()
-      }
-    })
+  const handleRemoveFromAllGroups = async () => {
+    try {
+      await removeFromAllGroups(prospect_id)
+      invalidateProspectGroups(prospect_id)
+      refetchGroups()
+      onSuccess?.()
+    } catch (error) {
+      // Error handling is done in the context
+    }
   }
 
   const handleOpenChange = (newOpen) => {
     onOpenChange(newOpen)
   }
 
-  const isRemovingOne = removeFromGroup.isPending
-  const isRemovingAll = removeFromAllGroups.isPending
+  const isRemovingOne = isRemovingFromGroup
+  const isRemovingAll = isRemovingFromAllGroups
   const isAnyLoading = isRemovingOne || isRemovingAll
 
   return (

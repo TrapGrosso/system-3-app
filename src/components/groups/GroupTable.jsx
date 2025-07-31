@@ -40,6 +40,8 @@ function GroupTable({
   onEmpty, 
   onDelete, 
   onRefetch,
+  isEmptyingGroup,
+  isDeletingGroup,
   className 
 }) {
   const [currentPage, setCurrentPage] = React.useState(1)
@@ -224,6 +226,7 @@ function GroupTable({
                       className="h-8 w-8"
                       onClick={(e) => handleEmptyGroup(e, group)}
                       title="Empty group"
+                      disabled={isEmptyingGroup || isDeletingGroup}
                     >
                       <TrashX className="h-4 w-4" />
                       <span className="sr-only">Empty group</span>
@@ -234,6 +237,7 @@ function GroupTable({
                       className="h-8 w-8 text-destructive hover:text-destructive"
                       onClick={(e) => handleDeleteGroup(e, group)}
                       title="Delete group"
+                      disabled={isEmptyingGroup || isDeletingGroup}
                     >
                       <Trash2 className="h-4 w-4" />
                       <span className="sr-only">Delete group</span>

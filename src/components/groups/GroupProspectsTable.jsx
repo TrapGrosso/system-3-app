@@ -38,6 +38,7 @@ function GroupProspectsTable({
   isError, 
   onRemoveProspect, 
   onRefetch,
+  isRemovingFromGroup,
   className 
 }) {
   const navigate = useNavigate()
@@ -250,6 +251,7 @@ function GroupProspectsTable({
                       className="h-8 w-8 text-destructive hover:text-destructive"
                       onClick={(e) => handleRemoveProspect(e, prospect)}
                       title="Remove from group"
+                      disabled={isRemovingFromGroup}
                     >
                       <Trash2 className="h-4 w-4" />
                       <span className="sr-only">Remove from group</span>

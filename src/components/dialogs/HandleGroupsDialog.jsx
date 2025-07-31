@@ -34,58 +34,58 @@ function HandleGroupsDialog({
     createGroup,
     deleteGroup,
     addToGroup,
-    refetchGroups,
     getGroupById,
+    isCreatingGroup,
+    isDeletingGroup,
+    isAddingToGroup,
   } = useGroups()
   
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedGroupId || !prospect_ids.length) return
     
-    addToGroup.mutate({
-      prospect_ids,
-      group_id: selectedGroupId,
-      user_id
-    }, {
-      onSuccess: (data) => {
-        setSelectedGroupId("")
-        onOpenChange(false)
-        onSuccess?.(data)
-      }
-    })
+    try {
+      const data = await addToGroup({
+        prospect_ids,
+        group_id: selectedGroupId,
+      })
+      setSelectedGroupId("")
+      onOpenChange(false)
+      onSuccess?.(data)
+    } catch (error) {
+      // Error handling is done in the context
+    }
   }
 
-  const handleCreateGroup = () => {
+  const handleCreateGroup = async () => {
     if (!groupName.trim()) return
     
-    createGroup.mutate({
-      user_id,
-      group_name: groupName.trim(),
-      group_description: groupDescription.trim()
-    }, {
-      onSuccess: (data) => {
-        // Auto-select the newly created group
-        setSelectedGroupId(data.data.group.id)
-        // Clear form
-        setGroupName("")
-        setGroupDescription("")
-        // Switch back to add tab
-        setActiveTab("add")
-      }
-    })
+    try {
+      const data = await createGroup({
+        group_name: groupName.trim(),
+        group_description: groupDescription.trim()
+      })
+      // Auto-select the newly created group
+      setSelectedGroupId(data.data.group.id)
+      // Clear form
+      setGroupName("")
+      setGroupDescription("")
+      // Switch back to add tab
+      setActiveTab("add")
+    } catch (error) {
+      // Error handling is done in the context
+    }
   }
 
-  const handleDeleteGroup = (groupId) => {
-    deleteGroup.mutate({
-      user_id,
-      group_id: groupId
-    }, {
-      onSuccess: (data) => {
-        // Clear selection if deleted group was selected
-        if (data.data.group_id === selectedGroupId) {
-          setSelectedGroupId("")
-        }
+  const handleDeleteGroup = async (groupId) => {
+    try {
+      const data = await deleteGroup(groupId)
+      // Clear selection if deleted group was selected
+      if (data.data.group_id === selectedGroupId) {
+        setSelectedGroupId("")
       }
-    })
+    } catch (error) {
+      // Error handling is done in the context
+    }
   }
 
   const handleOpenChange = (newOpen) => {
@@ -100,9 +100,9 @@ function HandleGroupsDialog({
   }
 
   const selectedGroup = getGroupById(selectedGroupId)
-  const isSubmitting = addToGroup.isPending
-  const isCreating = createGroup.isPending
-  const isDeleting = deleteGroup.isPending
+  const isSubmitting = isAddingToGroup
+  const isCreating = isCreatingGroup
+  const isDeleting = isDeletingGroup
 
 
   return (
