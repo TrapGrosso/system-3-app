@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils"
 function FormField({
   id,
   label,
-  type = "text", // "text" | "textarea" | "select" | "date"
+  type = "text", // "text" | "textarea" | "select" | "date" | "number"
   value,
   onChange,
   placeholder,
@@ -120,6 +120,20 @@ function FormField({
               />
             </PopoverContent>
           </Popover>
+        )
+      
+      case "number":
+        return (
+          <Input
+            id={id}
+            type="number"
+            value={value || ""}
+            onChange={handleChange}
+            placeholder={placeholder}
+            disabled={disabled}
+            maxLength={maxLength}
+            {...props}
+          />
         )
       
       default: // "text"

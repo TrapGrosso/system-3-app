@@ -3,12 +3,33 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ExternalLinkIcon, BuildingIcon, UsersIcon, MapPinIcon, PlusIcon } from 'lucide-react'
+import { ActionDropdown } from '@/components/shared/ui/ActionDropdown'
+import { useProspects } from '@/contexts/ProspectsContext'
 import { toast } from 'sonner'
 
-export default function CompanyCard({ company, prospect, onAddCompany }) {
+export default function CompanyCard({ company, prospect, onAddCompany, onEditCompany, refetchProspectDetails }) {
+  const { updateProspectCompany, isUpdatingProspect } = useProspects()
+
   const handleAddCompany = () => {
     onAddCompany()
   }
+
+  const handleEditCompany = () => {
+    onEditCompany()
+  }
+
+  const handleRemoveCompany = async () => {
+    await updateProspectCompany(prospect.linkedin_id, null)
+    refetchProspectDetails()
+  }
+
+  const dropdownItems = [
+    { label: "Edit company", onSelect: handleEditCompany },
+    "separator",
+    { label: "Remove company from prospect", onSelect: handleRemoveCompany, variant: "destructive", disabled: isUpdatingProspect },
+    "separator",
+    { label: "Change company", onSelect: handleAddCompany }
+  ]
 
   if (!company) {
     return (
@@ -42,7 +63,7 @@ export default function CompanyCard({ company, prospect, onAddCompany }) {
 
   return (
     <Card className="lg:col-span-2">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-start justify-between">
         <div className="flex items-start gap-3">
           <div className="p-2 bg-muted rounded-lg">
             <BuildingIcon className="h-6 w-6" />
@@ -64,6 +85,7 @@ export default function CompanyCard({ company, prospect, onAddCompany }) {
             )}
           </div>
         </div>
+        <ActionDropdown items={dropdownItems} align="end" side="bottom" />
       </CardHeader>
       
       <CardContent className="space-y-4">

@@ -17,6 +17,7 @@ import ProspectVariablesDialog from '@/components/dialogs/ProspectVariablesDialo
 import DeepSearchQueueDialog from '@/components/dialogs/DeepSearchQueueDialog'
 import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
 import ChangeCompanyDialog from '@/components/dialogs/changeCompany/ChangeCompanyDialog'
+import UpdateCompanyDialog from '@/components/dialogs/UpdateCompanyDialog'
 import {
   ProspectHeader,
   CompanyCard,
@@ -32,6 +33,7 @@ export default function ProspectDetails() {
   const [deepSearchDialogOpen, setDeepSearchDialogOpen] = useState(false)
   const [groupsDialogOpen, setGroupsDialogOpen] = useState(false)
   const [changeCompanyDialogOpen, setChangeCompanyDialogOpen] = useState(false)
+  const [updateCompanyDialogOpen, setUpdateCompanyDialogOpen] = useState(false)
 
   const { data, isLoading, isError, refetch } = usegetProspectDetails(user?.id, linkedinId)
 
@@ -93,6 +95,15 @@ export default function ProspectDetails() {
   const handleChangeCompanyDialogSuccess = () => {
     refetch() // Refresh prospect details to update company data
     setChangeCompanyDialogOpen(false)
+  }
+
+  const handleOpenUpdateCompanyDialog = () => {
+    setUpdateCompanyDialogOpen(true)
+  }
+
+  const handleUpdateCompanyDialogSuccess = () => {
+    refetch() // Refresh prospect details to update company data
+    setUpdateCompanyDialogOpen(false)
   }
 
   const handleDeleteEnrichment = (enrichmentId) => {
@@ -169,6 +180,8 @@ export default function ProspectDetails() {
               company={data.company} 
               prospect={data.prospect}
               onAddCompany={handleOpenChangeCompanyDialog}
+              onEditCompany={handleOpenUpdateCompanyDialog}
+              refetchProspectDetails={refetch}
             />
             
             {/* Optional stats cards can go here in the future */}
@@ -283,6 +296,16 @@ export default function ProspectDetails() {
               open={changeCompanyDialogOpen}
               onOpenChange={setChangeCompanyDialogOpen}
               onSuccess={handleChangeCompanyDialogSuccess}
+            />
+          )}
+
+          {/* UpdateCompanyDialog - controlled by ProspectDetails state */}
+          {data.company && (
+            <UpdateCompanyDialog
+              open={updateCompanyDialogOpen}
+              onOpenChange={setUpdateCompanyDialogOpen}
+              company={data.company}
+              onSuccess={handleUpdateCompanyDialogSuccess}
             />
           )}
           </TaskProvider>

@@ -39,7 +39,7 @@ function UpdateCompanyDialog({
         name: company.name || "",
         website: company.website || "",
         industry: company.industry || "",
-        size: company.size || "",
+        size: company.size !== undefined && company.size !== null ? String(company.size) : "",
         location: company.location || "",
       })
     }
@@ -74,8 +74,11 @@ function UpdateCompanyDialog({
       updates.updated_industry = formData.industry.trim() || undefined
     }
     
-    if (formData.size.trim() !== (company.size || "")) {
-      updates.updated_size = formData.size.trim() || undefined
+    // Convert company.size to string for comparison
+    const currSize = String(company.size ?? "")
+    if (formData.size.trim() !== currSize) {
+      // Convert to number for API, or undefined if empty
+      updates.updated_size = formData.size.trim() === "" ? undefined : Number(formData.size.trim())
     }
     
     if (formData.location.trim() !== (company.location || "")) {
@@ -168,9 +171,10 @@ function UpdateCompanyDialog({
         <FormField
           id="company-size"
           label="Company Size"
+          type="number"
           value={formData.size}
           onChange={(v) => handleInputChange("size", v)}
-          placeholder="e.g., 1-10, 50-200, 1000+"
+          placeholder="e.g., 1, 50, 1000"
           maxLength={50}
           helper="Number of employees (optional)"
           disabled={isLoading}
