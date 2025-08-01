@@ -21,7 +21,9 @@ const PRECISION_OPTIONS = [
 ]
 
 // Placeholder flags for future use
-const FLAG_OPTIONS = []
+const FLAG_OPTIONS = [
+  { value: 'save_tokens', label: 'Save tokens' }
+]
 
 function ResolveDeepSearchItem({
   open,
@@ -49,7 +51,7 @@ function ResolveDeepSearchItem({
     if (maxSearchesNum <= 0 || maxScrapesNum <= 0) return
 
     const options = {
-      precision,
+      agent_precision: precision,
       max_searches: maxSearchesNum,
       max_scrapes: maxScrapesNum,
       flags: selectedFlags
@@ -159,7 +161,7 @@ function ResolveDeepSearchItem({
           options={FLAG_OPTIONS}
           value={selectedFlags}
           onChange={setSelectedFlags}
-          disabled={true}
+          disabled={!isFormValid || isResolvingQueue}
         />
       </DialogWrapper.Body>
 
