@@ -18,7 +18,7 @@ import CheckboxMatrix from "@/components/shared/dialog/CheckboxMatrix"
 const MULTI_OPTIONS = [
   { value: "send_notification", label: "Send email notification when finished" },
   { value: "find_emails", label: "find emails" },
-  { value: "ignore_prospect_company", label: "Ignore prospect's company" },
+  { value: "ignore_prospect_companies", label: "Ignore prospect's companies" },
   { value: "ignore_all_companies", label: "Ignore all companies" },
   { value: "add_to_ds_queue", label: "Add prospects to deep search queue" },
   { value: "ignore_other_companies", label: "Ignore provided companies" },

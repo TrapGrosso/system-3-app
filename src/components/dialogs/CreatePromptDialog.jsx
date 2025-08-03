@@ -6,56 +6,7 @@ import { Button } from "@/components/ui/button"
 import DialogWrapper from "@/components/shared/dialog/DialogWrapper"
 import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 import FormField from "@/components/shared/ui/FormField"
-import DialogAdvancedSettingsCollapsible from "@/components/shared/dialog/DialogAdvancedSettingsCollapsible"
-
 import { usePrompts } from "@/contexts/PromptContext"
-
-// Model settings constants
-const DEFAULT_MODEL_SETTINGS = {
-  temperature: 0.7,
-  top_p: 1,
-  max_tokens: 1024,
-  frequency_penalty: 0,
-  presence_penalty: 0,
-}
-
-const MODEL_SETTINGS_FIELDS = [
-  {
-    key: "temperature",
-    label: "Temperature",
-    type: "text",
-    helper: "Controls randomness: 0 = focused, 2 = creative",
-    defaultValue: 0.7
-  },
-  {
-    key: "top_p",
-    label: "Top P",
-    type: "text",
-    helper: "Controls diversity via nucleus sampling",
-    defaultValue: 1
-  },
-  {
-    key: "max_tokens",
-    label: "Max Tokens",
-    type: "text",
-    helper: "Maximum length of the response",
-    defaultValue: 1024
-  },
-  {
-    key: "frequency_penalty",
-    label: "Frequency Penalty",
-    type: "text",
-    helper: "Reduces repetition of tokens",
-    defaultValue: 0
-  },
-  {
-    key: "presence_penalty",
-    label: "Presence Penalty",
-    type: "text",
-    helper: "Encourages talking about new topics",
-    defaultValue: 0
-  }
-]
 
 function CreatePromptDialog({ 
   open,
@@ -71,8 +22,7 @@ function CreatePromptDialog({
     description: "",
     prompt_text: "",
     tags: "",
-    variable_display_name: "",
-    model_settings: { ...DEFAULT_MODEL_SETTINGS }
+    variable_display_name: ""
   })
 
   // Get prompts context
@@ -89,15 +39,6 @@ function CreatePromptDialog({
     }))
   }
 
-  const handleModelSettingChange = (setting, value) => {
-    setFormData(prev => ({
-      ...prev,
-      model_settings: {
-        ...prev.model_settings,
-        [setting]: value
-      }
-    }))
-  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -120,12 +61,9 @@ function CreatePromptDialog({
     setHasSubmitted(true)
 
     // Build additional_metadata
-    const additional_metadata = {
-      ...formData.model_settings,
-      ...(formData.agent_type === 'create_variable' && formData.variable_display_name.trim()
-        ? { variable_name: formData.variable_display_name.trim() }
-        : {}),
-    }
+    const additional_metadata = formData.agent_type === 'create_variable' && formData.variable_display_name.trim()
+      ? { variable_name: formData.variable_display_name.trim() }
+      : undefined
 
     createPrompt({
       prompt_name: formData.name.trim(),
@@ -145,8 +83,7 @@ function CreatePromptDialog({
       description: "",
       prompt_text: "",
       tags: "",
-      variable_display_name: "",
-      model_settings: { ...DEFAULT_MODEL_SETTINGS }
+      variable_display_name: ""
     })
   }
 
@@ -273,14 +210,6 @@ function CreatePromptDialog({
               disabled={isCreatingPrompt}
             />
 
-            {/* Advanced Settings - Collapsible */}
-            <DialogAdvancedSettingsCollapsible
-              settings={formData.model_settings}
-              onChange={handleModelSettingChange}
-              disabled={isCreatingPrompt}
-              fieldConfig={MODEL_SETTINGS_FIELDS}
-              description="Configure advanced model parameters for fine-tuning AI behavior"
-            />
           </>
         )}
       </form>

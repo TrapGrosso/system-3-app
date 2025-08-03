@@ -22,7 +22,8 @@ const PRECISION_OPTIONS = [
 
 // Placeholder flags for future use
 const FLAG_OPTIONS = [
-  { value: 'save_tokens', label: 'Save tokens' }
+  { value: 'reduce_search_tokens', label: 'Reduce search token usage' },
+  { value: 'cache_linkedin_scrape', label: 'Cache linkedin scrape' }
 ]
 
 function ResolveDeepSearchItem({
