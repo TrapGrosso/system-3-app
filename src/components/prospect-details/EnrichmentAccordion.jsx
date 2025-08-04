@@ -5,23 +5,31 @@ import { Badge } from '@/components/ui/badge'
 import { ChevronDownIcon, ChevronRightIcon, DatabaseIcon, TrashIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import MarkdownScrollBox from '@/components/shared/ui/MarkdownScrollBox'
+import DeleteDialog from '@/components/dialogs/DeleteDialog'
+import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
 
 export default function EnrichmentAccordion({ enrichment = {}, onDeleteEnrichment }) {
   const [expandedSections, setExpandedSections] = useState({})
+
+  const {
+    openDialog: openDeleteDialog,
+    currentItem: enrichmentToDelete,
+    DeleteDialogProps
+  } = useDeleteDialog(
+    async (enrichmentItem) => {
+      if (onDeleteEnrichment) {
+        onDeleteEnrichment(enrichmentItem.id)
+      } else {
+        toast.info('Delete enrichment functionality not implemented yet')
+      }
+    }
+  )
 
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
       ...prev,
       [section]: !prev[section]
     }))
-  }
-
-  const handleDeleteEnrichment = (itemId) => {
-    if (onDeleteEnrichment) {
-      onDeleteEnrichment(itemId)
-    } else {
-      toast.info('Delete enrichment functionality not implemented yet')
-    }
   }
 
   const formatDate = (dateString) => {
@@ -104,7 +112,7 @@ export default function EnrichmentAccordion({ enrichment = {}, onDeleteEnrichmen
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDeleteEnrichment(item.id)}
+                            onClick={() => openDeleteDialog(item)}
                             className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                           >
                             <TrashIcon className="h-3 w-3" />
@@ -136,6 +144,14 @@ export default function EnrichmentAccordion({ enrichment = {}, onDeleteEnrichmen
           )
         })}
       </CardContent>
+
+      {enrichmentToDelete && (
+        <DeleteDialog
+          {...DeleteDialogProps}
+          title="Delete enrichment"
+          itemName={`${enrichmentToDelete.type} - ${enrichmentToDelete.source}`}
+        />
+      )}
     </Card>
   )
 }

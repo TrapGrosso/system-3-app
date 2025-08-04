@@ -1,4 +1,5 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -18,21 +19,47 @@ import {
   Settings
 } from 'lucide-react'
 import { toast } from 'sonner'
+import DeleteDialog from '@/components/dialogs/DeleteDialog'
+import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
+import { useProspects } from '@/contexts/ProspectsContext'
+import { useDeepSearchQueue } from '@/contexts/DeepSearchQueueContext'
 
 export default function ProspectHeader({ 
   prospect, 
   deepSearch, 
   onUpdateProspect, 
-  onDeleteProspect, 
   onUpdateQueuePrompt, 
-  onRemoveFromQueue, 
   onResolveDeepSearchItem,
   onAddNote, 
   onCreateTask, 
   onAddToCampaign, 
   onAddToDeepResearch, 
-  onAddToGroup 
+  onAddToGroup,
+  onRefetch
 }) {
+  const navigate = useNavigate()
+  const { deleteProspect } = useProspects()
+  const { deleteProspects: deleteQueueItem } = useDeepSearchQueue()
+
+  const {
+    openDialog: openDeleteProspectDialog,
+    DeleteDialogProps: deleteProspectDialogProps
+  } = useDeleteDialog(
+    async () => {
+      await deleteProspect(prospect.linkedin_id)
+      navigate('/dashboard')
+    }
+  )
+
+  const {
+    openDialog: openRemoveQueueDialog,
+    DeleteDialogProps: removeQueueDialogProps
+  } = useDeleteDialog(
+    async () => {
+      await deleteQueueItem(deepSearch.queue_id)
+      onRefetch?.()
+    }
+  )
 
   if (!prospect) return null
 
@@ -66,7 +93,7 @@ export default function ProspectHeader({
       id: 'delete-prospect',
       label: 'Delete prospect',
       icon: TrashIcon,
-      onSelect: onDeleteProspect,
+      onSelect: openDeleteProspectDialog,
       variant: 'destructive'
     },
     'separator',
@@ -87,7 +114,7 @@ export default function ProspectHeader({
         id: 'remove-from-deepsearch-queue',
         label: 'Remove from deepsearch queue',
         icon: XIcon,
-        onSelect: onRemoveFromQueue,
+        onSelect: openRemoveQueueDialog,
         variant: 'destructive'
       },
       'separator'
@@ -194,6 +221,21 @@ export default function ProspectHeader({
           </div>
         </div>
       </CardHeader>
+
+      <DeleteDialog
+        {...deleteProspectDialogProps}
+        title="Delete prospect"
+        itemName={`${first_name} ${last_name}`}
+      />
+
+      {deepSearch?.is_in_queue && (
+        <DeleteDialog
+          {...removeQueueDialogProps}
+          title="Remove from deep search queue"
+          description="The prospect will be removed from the deep-search queue. Continue?"
+          confirmLabel="Remove"
+        />
+      )}
     </Card>
   )
 }

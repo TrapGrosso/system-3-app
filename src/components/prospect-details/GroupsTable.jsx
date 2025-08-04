@@ -6,30 +6,38 @@ import { useGroups } from '@/contexts/GroupsContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 import { DataTable } from '@/components/shared/table/DataTable'
+import DeleteDialog from '@/components/dialogs/DeleteDialog'
+import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
 
 export default function GroupsTable({ groups = [], prospect, onAddToGroup }) {
   const { user } = useAuth()
   const { removeFromGroup, isRemovingFromGroup } = useGroups()
 
+  const {
+    openDialog: openRemoveDialog,
+    currentItem: groupToRemove,
+    DeleteDialogProps
+  } = useDeleteDialog(
+    async (group) => {
+      if (!prospect?.linkedin_id) {
+        toast.error('Missing required data')
+        return
+      }
+
+      try {
+        await removeFromGroup({
+          prospect_ids: [prospect.linkedin_id],
+          group_id: group.id
+        })
+      } catch (error) {
+        // Error handling is done in the context
+      }
+    }
+  )
+
   const handleAddToGroup = () => {
     if (onAddToGroup) {
       onAddToGroup()
-    }
-  }
-
-  const handleRemoveFromGroup = async (groupId) => {
-    if (!prospect?.linkedin_id) {
-      toast.error('Missing required data')
-      return
-    }
-
-    try {
-      await removeFromGroup({
-        prospect_ids: [prospect.linkedin_id],
-        group_id: groupId
-      })
-    } catch (error) {
-      // Error handling is done in the context
     }
   }
 
@@ -81,7 +89,7 @@ export default function GroupsTable({ groups = [], prospect, onAddToGroup }) {
       icon: TrashIcon,
       variant: 'destructive',
       disabled: isRemovingFromGroup,
-      onSelect: () => handleRemoveFromGroup(group.id)
+      onSelect: () => openRemoveDialog(group)
     }
   ]
 
@@ -136,6 +144,15 @@ export default function GroupsTable({ groups = [], prospect, onAddToGroup }) {
           onRowClick={() => {}} // Disable row clicks
         />
       </CardContent>
+
+      {groupToRemove && (
+        <DeleteDialog
+          {...DeleteDialogProps}
+          title="Remove from group"
+          itemName={groupToRemove.name}
+          confirmLabel="Remove"
+        />
+      )}
     </Card>
   )
 }

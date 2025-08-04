@@ -33,8 +33,6 @@ export default function ProspectDetails() {
   const { user } = useAuth()
   const { linkedinId } = useParams()
   const navigate = useNavigate()
-  const { deleteProspect } = useProspects()
-  const { deleteProspects: deleteQueueItem } = useDeepSearchQueue()
   
   const [notesDialogOpen, setNotesDialogOpen] = useState(false)
   const [tasksDialogOpen, setTasksDialogOpen] = useState(false)
@@ -135,16 +133,6 @@ export default function ProspectDetails() {
     setUpdateProspectDialogOpen(false)
   }
 
-  const handleDeleteProspect = async () => {
-    try {
-      await deleteProspect(data.prospect.linkedin_id)
-      navigate('/dashboard')
-    } catch (error) {
-      // Error handling is done in the context layer via toast
-      console.error('Failed to delete prospect:', error)
-    }
-  }
-
   const handleOpenPromptSelectDialog = () => {
     setPromptSelectDialogOpen(true)
   }
@@ -161,16 +149,6 @@ export default function ProspectDetails() {
   const handleResolveDialogSuccess = () => {
     refetch() // Refresh prospect details to update data
     setResolveDialogOpen(false)
-  }
-
-  const handleRemoveFromQueue = async () => {
-    try {
-      await deleteQueueItem(data.deep_search.queue_id)
-      refetch() // Refresh prospect details to update queue status
-    } catch (error) {
-      // Error handling is done in the context layer via toast
-      console.error('Failed to remove from queue:', error)
-    }
   }
 
   if (isLoading) {
@@ -230,14 +208,13 @@ export default function ProspectDetails() {
               prospect={data.prospect} 
               deepSearch={data.deep_search}
               onUpdateProspect={handleOpenUpdateProspectDialog}
-              onDeleteProspect={handleDeleteProspect}
               onUpdateQueuePrompt={handleOpenPromptSelectDialog}
-              onRemoveFromQueue={handleRemoveFromQueue}
               onResolveDeepSearchItem={handleOpenResolveDialog}
               onAddNote={handleOpenNotesDialog}
               onCreateTask={handleOpenTasksDialog}
               onAddToDeepResearch={handleOpenDeepSearchDialog}
               onAddToGroup={handleOpenGroupsDialog}
+              onRefetch={refetch}
             />
           
           <div className="grid gap-6 px-4 lg:px-6 lg:grid-cols-3 mb-6">
@@ -403,6 +380,7 @@ export default function ProspectDetails() {
               onSuccess={handleResolveDialogSuccess}
             />
           )}
+
           </TaskProvider>
         </NotesProvider>
       </GroupsProvider>

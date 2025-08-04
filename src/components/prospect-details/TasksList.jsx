@@ -5,12 +5,23 @@ import { Badge } from '@/components/ui/badge'
 import { CheckSquareIcon, CalendarIcon, PlusIcon, PencilIcon, TrashIcon } from 'lucide-react'
 import { useTasks } from '@/contexts/TaskContext'
 import { DataTable } from '@/components/shared/table/DataTable'
+import DeleteDialog from '@/components/dialogs/DeleteDialog'
+import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
 
 export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
   const { 
     deleteTasks, 
     isDeletingTask 
   } = useTasks()
+
+  const {
+    openDialog: openDeleteDialog,
+    currentItem: taskToDelete,
+    DeleteDialogProps
+  } = useDeleteDialog(
+    async (task) => await deleteTasks([task.id]),
+    onTasksChanged
+  )
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -34,11 +45,6 @@ export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
     }
   }
 
-  const handleDeleteTask = async (taskId) => {
-    await deleteTasks([taskId])
-    onTasksChanged()
-  }
-
   const getRowActions = (task) => [
     {
       label: 'Edit',
@@ -50,7 +56,7 @@ export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
       icon: TrashIcon,
       variant: "destructive",
       disabled: isDeletingTask,
-      onSelect: () => handleDeleteTask(task.id),
+      onSelect: () => openDeleteDialog(task),
     },
   ]
 
@@ -184,6 +190,14 @@ export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
           onRowClick={() => {}} // Disable row clicks
         />
       </CardContent>
+
+      {taskToDelete && (
+        <DeleteDialog
+          {...DeleteDialogProps}
+          title="Delete task"
+          itemName={taskToDelete.title}
+        />
+      )}
     </Card>
   )
 }

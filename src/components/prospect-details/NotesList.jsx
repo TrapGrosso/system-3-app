@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button'
 import { MessageSquareIcon, PlusIcon, PencilIcon, TrashIcon } from 'lucide-react'
 import { useNotes } from '@/contexts/NotesContext'
 import { DataTable } from '@/components/shared/table/DataTable'
+import DeleteDialog from '@/components/dialogs/DeleteDialog'
+import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
 
 export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
   const { 
@@ -11,6 +13,15 @@ export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
     isUpdatingNote, 
     isDeletingNote 
   } = useNotes()
+
+  const {
+    openDialog: openDeleteDialog,
+    currentItem: noteToDelete,
+    DeleteDialogProps
+  } = useDeleteDialog(
+    async (note) => await deleteNotes([note.id]),
+    onNotesChanged
+  )
 
   const handleAddNote = () => {
     if (onAddNote) {
@@ -26,11 +37,6 @@ export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
     }
   }
 
-  const handleDeleteNote = async (noteId) => {
-    await deleteNotes([noteId])
-    onNotesChanged()
-  }
-
   const rowActions = (note) => [
     {
       id: 'edit',
@@ -44,7 +50,7 @@ export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
       label: 'Delete',
       icon: TrashIcon,
       variant: 'destructive',
-      onSelect: () => handleDeleteNote(note.id),
+      onSelect: () => openDeleteDialog(note),
       disabled: isDeletingNote
     }
   ]
@@ -149,6 +155,14 @@ export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
           onRowClick={() => {}} // Disable row clicks
         />
       </CardContent>
+
+      {noteToDelete && (
+        <DeleteDialog
+          {...DeleteDialogProps}
+          title="Delete note"
+          itemName={noteToDelete.body.slice(0, 40) + (noteToDelete.body.length > 40 ? '...' : '')}
+        />
+      )}
     </Card>
   )
 }

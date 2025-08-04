@@ -106,7 +106,8 @@ function ChangeCompanyDialog({
         leads: [manualUrl.trim()],
         options: {
           add_to_prospect: true,
-          prospect_id: prospectId
+          prospect_id: prospectId,
+          flags: []
         }
       })
     }

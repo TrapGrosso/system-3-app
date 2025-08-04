@@ -6,9 +6,19 @@ import { ExternalLinkIcon, BuildingIcon, UsersIcon, MapPinIcon, PlusIcon } from 
 import { ActionDropdown } from '@/components/shared/ui/ActionDropdown'
 import { useProspects } from '@/contexts/ProspectsContext'
 import { toast } from 'sonner'
+import DeleteDialog from '@/components/dialogs/DeleteDialog'
+import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
 
 export default function CompanyCard({ company, prospect, onAddCompany, onEditCompany, refetchProspectDetails }) {
   const { updateProspectCompany, isUpdatingProspect } = useProspects()
+
+  const {
+    openDialog: openRemoveDialog,
+    DeleteDialogProps
+  } = useDeleteDialog(
+    async () => await updateProspectCompany(prospect.linkedin_id, null),
+    refetchProspectDetails
+  )
 
   const handleAddCompany = () => {
     onAddCompany()
@@ -18,15 +28,10 @@ export default function CompanyCard({ company, prospect, onAddCompany, onEditCom
     onEditCompany()
   }
 
-  const handleRemoveCompany = async () => {
-    await updateProspectCompany(prospect.linkedin_id, null)
-    refetchProspectDetails()
-  }
-
   const dropdownItems = [
     { label: "Edit company", onSelect: handleEditCompany },
     "separator",
-    { label: "Remove company from prospect", onSelect: handleRemoveCompany, variant: "destructive", disabled: isUpdatingProspect },
+    { label: "Remove company from prospect", onSelect: () => openRemoveDialog(), variant: "destructive", disabled: isUpdatingProspect },
     "separator",
     { label: "Change company", onSelect: handleAddCompany }
   ]
@@ -114,6 +119,15 @@ export default function CompanyCard({ company, prospect, onAddCompany, onEditCom
           )}
         </div>
       </CardContent>
+
+      {company && (
+        <DeleteDialog
+          {...DeleteDialogProps}
+          title="Remove company from prospect"
+          itemName={company.name}
+          confirmLabel="Remove"
+        />
+      )}
     </Card>
   )
 }

@@ -6,14 +6,20 @@ import { DataTable } from '@/components/shared/table/DataTable'
 import { TablePopoverCell } from '@/components/shared/table/TablePopoverCell'
 import { PlusIcon, PencilIcon, TrashIcon, Code2, ListIcon } from 'lucide-react'
 import { useVariables } from '@/contexts/VariableContext'
+import DeleteDialog from '@/components/dialogs/DeleteDialog'
+import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
 
 export default function VariablesTable({ variables = [], prospect, onAddVariable, onVariablesChanged }) {
   const { deleteVariables, isDeletingVariable } = useVariables()
 
-  const handleDeleteVariable = async (variableId) => {
-    await deleteVariables([variableId])
-    onVariablesChanged?.()
-  }
+  const {
+    openDialog: openDeleteDialog,
+    currentItem: variableToDelete,
+    DeleteDialogProps
+  } = useDeleteDialog(
+    async (variable) => await deleteVariables([variable.id]),
+    onVariablesChanged
+  )
 
   const handleAddVariable = () => {
     if (onAddVariable) {
@@ -32,7 +38,7 @@ export default function VariablesTable({ variables = [], prospect, onAddVariable
       icon: TrashIcon,
       variant: "destructive",
       disabled: isDeletingVariable,
-      onSelect: () => handleDeleteVariable(variable.id),
+      onSelect: () => openDeleteDialog(variable),
     },
   ]
 
@@ -151,6 +157,14 @@ export default function VariablesTable({ variables = [], prospect, onAddVariable
           pageSizes={[5, 10, 20]}
         />
       </CardContent>
+
+      {variableToDelete && (
+        <DeleteDialog
+          {...DeleteDialogProps}
+          title="Delete variable"
+          itemName={variableToDelete.name}
+        />
+      )}
     </Card>
   )
 }
