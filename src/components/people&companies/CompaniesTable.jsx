@@ -223,7 +223,7 @@ export default function CompaniesTable({
     {
       label: "Update",
       onSelect: () => onUpdate
-        ? onUpdate(ctx.linkedin_id)
+        ? onUpdate(ctx)
         : alert(`Update company ${ctx.name}`)
     },
     "separator",
@@ -231,7 +231,7 @@ export default function CompaniesTable({
       label: "Delete",
       variant: "destructive",
       onSelect: () => onDelete
-        ? onDelete(ctx.linkedin_id)
+        ? onDelete(ctx)
         : alert(`Delete company ${ctx.name}`)
     }
   ], [onUpdate, onDelete])

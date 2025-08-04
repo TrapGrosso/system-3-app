@@ -14,6 +14,9 @@ import ProspectTasksDialog from '@/components/dialogs/ProspectTasksDialog'
 import DeepSearchQueueDialog from '@/components/dialogs/DeepSearchQueueDialog'
 import ProspectEnrichmentsDialog from '@/components/dialogs/enrichments/ProspectEnrichmentsDialog'
 import RemoveFromGroupDialog from '@/components/dialogs/RemoveFromGroupDialog'
+import UpdateCompanyDialog from '@/components/dialogs/UpdateCompanyDialog'
+import DeleteDialog from '@/components/dialogs/DeleteDialog'
+import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
 
 function PeopleCompanies() {
     const { user } = useAuth()
@@ -54,6 +57,24 @@ function PeopleCompanies() {
     // State for RemoveFromGroupDialog
     const [removeFromGroupDialogOpen, setRemoveFromGroupDialogOpen] = useState(false)
     const [selectedProspectForRemoval, setSelectedProspectForRemoval] = useState(null)
+
+    // State for UpdateCompanyDialog
+    const [updateCompanyDialogOpen, setUpdateCompanyDialogOpen] = useState(false)
+    const [companyToUpdate, setCompanyToUpdate] = useState(null)
+
+    // State for bulk delete companies
+    const [bulkDeleteCompaniesOpen, setBulkDeleteCompaniesOpen] = useState(false)
+    const [bulkDeleteCompanyIds, setBulkDeleteCompanyIds] = useState([])
+
+    // Single company delete dialog using useDeleteDialog
+    const {
+        openDialog: openDeleteCompanyDialog,
+        DeleteDialogProps: singleDeleteCompanyProps,
+        currentItem: companyToDelete
+    } = useDeleteDialog(
+        (company) => deleteCompany([company.linkedin_id]),
+        () => refetchCompanies()
+    )
 
     // Filter and query handlers for child components
     const handleApplyFilters = (newQuery) => {
@@ -145,21 +166,28 @@ function PeopleCompanies() {
 
     // Company action handlers
     const handleBulkDeleteCompanies = (ids) => {
-        // TODO: Implement actual API call when deleteCompany is ready
-        console.log('Bulk delete companies:', ids)
-        alert(`Delete ${ids.length} companies`)
+        if (!ids.length) return
+        setBulkDeleteCompanyIds(ids)
+        setBulkDeleteCompaniesOpen(true)
     }
 
-    const handleDeleteCompany = (id) => {
-        // TODO: Implement actual API call when deleteCompany is ready
-        console.log('Delete company:', id)
-        alert(`Delete company ${id}`)
+    const handleDeleteCompany = (company) => {
+        openDeleteCompanyDialog(company)
     }
 
-    const handleUpdateCompany = (id) => {
-        // TODO: Implement actual API call when updateCompany is ready
-        console.log('Update company:', id)
-        alert(`Update company ${id}`)
+    const handleUpdateCompany = (company) => {
+        setCompanyToUpdate(company)
+        setUpdateCompanyDialogOpen(true)
+    }
+
+    const handleBulkDeleteConfirm = async () => {
+        try {
+            await deleteCompany(bulkDeleteCompanyIds)
+            refetchCompanies()
+        } finally {
+            setBulkDeleteCompaniesOpen(false)
+            setBulkDeleteCompanyIds([])
+        }
     }
 
   return (
@@ -298,6 +326,40 @@ function PeopleCompanies() {
           }}
         />
       )}
+
+      {/* UpdateCompanyDialog - controlled by Dashboard state */}
+      {companyToUpdate && (
+        <UpdateCompanyDialog
+          open={updateCompanyDialogOpen}
+          onOpenChange={setUpdateCompanyDialogOpen}
+          company={companyToUpdate}
+          onSuccess={() => {
+            refetchCompanies()
+            setCompanyToUpdate(null)
+          }}
+        />
+      )}
+
+      {/* Single Delete Company Dialog */}
+      <DeleteDialog
+        {...singleDeleteCompanyProps}
+        title="Delete Company"
+        itemName={companyToDelete?.name}
+        confirmLabel="Delete"
+        description={companyToDelete ? `Are you sure you want to delete "${companyToDelete.name}"? This action cannot be undone.` : undefined}
+      />
+
+      {/* Bulk Delete Companies Dialog */}
+      <DeleteDialog
+        open={bulkDeleteCompaniesOpen}
+        onOpenChange={setBulkDeleteCompaniesOpen}
+        onConfirm={handleBulkDeleteConfirm}
+        isLoading={companiesLoading}
+        title="Delete Companies"
+        description={`Are you sure you want to delete ${bulkDeleteCompanyIds.length} companies? This action cannot be undone.`}
+        confirmLabel={`Delete ${bulkDeleteCompanyIds.length}`}
+        size="md"
+      />
     </DashboardLayout>
   )
 }
