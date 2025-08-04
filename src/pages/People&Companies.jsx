@@ -15,13 +15,14 @@ import DeepSearchQueueDialog from '@/components/dialogs/DeepSearchQueueDialog'
 import ProspectEnrichmentsDialog from '@/components/dialogs/enrichments/ProspectEnrichmentsDialog'
 import RemoveFromGroupDialog from '@/components/dialogs/RemoveFromGroupDialog'
 import UpdateCompanyDialog from '@/components/dialogs/UpdateCompanyDialog'
+import UpdateProspectDialog from '@/components/dialogs/UpdateProspectDialog'
 import DeleteDialog from '@/components/dialogs/DeleteDialog'
 import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
 
 function PeopleCompanies() {
     const { user } = useAuth()
     const navigate = useNavigate()
-    const { data, total, query, setQuery, resetFilters, isLoading, refetch } = useProspects()
+    const { data, total, query, setQuery, resetFilters, isLoading, refetch, deleteProspect } = useProspects()
     const { 
         data: companies, 
         total: companiesTotal, 
@@ -62,9 +63,17 @@ function PeopleCompanies() {
     const [updateCompanyDialogOpen, setUpdateCompanyDialogOpen] = useState(false)
     const [companyToUpdate, setCompanyToUpdate] = useState(null)
 
+    // State for UpdateProspectDialog
+    const [updateProspectDialogOpen, setUpdateProspectDialogOpen] = useState(false)
+    const [prospectToUpdate, setProspectToUpdate] = useState(null)
+
     // State for bulk delete companies
     const [bulkDeleteCompaniesOpen, setBulkDeleteCompaniesOpen] = useState(false)
     const [bulkDeleteCompanyIds, setBulkDeleteCompanyIds] = useState([])
+
+    // State for bulk delete prospects
+    const [bulkDeleteProspectsOpen, setBulkDeleteProspectsOpen] = useState(false)
+    const [bulkDeleteProspectIds, setBulkDeleteProspectIds] = useState([])
 
     // Single company delete dialog using useDeleteDialog
     const {
@@ -74,6 +83,16 @@ function PeopleCompanies() {
     } = useDeleteDialog(
         (company) => deleteCompany([company.linkedin_id]),
         () => refetchCompanies()
+    )
+
+    // Single prospect delete dialog using useDeleteDialog
+    const {
+        openDialog: openDeleteProspectDialog,
+        DeleteDialogProps: singleDeleteProspectProps,
+        currentItem: prospectToDelete
+    } = useDeleteDialog(
+        (prospect) => deleteProspect([prospect.linkedin_id]),
+        () => refetch()
     )
 
     // Filter and query handlers for child components
@@ -190,6 +209,28 @@ function PeopleCompanies() {
         }
     }
 
+    // Prospect action handlers
+    const handleUpdateProspect = (prospect) => {
+        setProspectToUpdate(prospect)
+        setUpdateProspectDialogOpen(true)
+    }
+
+    const handleBulkDeleteProspects = (ids) => {
+        if (!ids.length) return
+        setBulkDeleteProspectIds(ids)
+        setBulkDeleteProspectsOpen(true)
+    }
+
+    const handleBulkDeleteProspectsConfirm = async () => {
+        try {
+            await deleteProspect(bulkDeleteProspectIds)
+            refetch()
+        } finally {
+            setBulkDeleteProspectsOpen(false)
+            setBulkDeleteProspectIds([])
+        }
+    }
+
   return (
     <DashboardLayout headerText="Dashboard">
       <div className="px-4 lg:px-6">
@@ -222,6 +263,9 @@ function PeopleCompanies() {
           onCreateVariables={handleCreateVariables}
           onBulkCreateVariables={handleBulkCreateVariables}
           onRemoveFromGroup={handleRemoveFromGroup}
+          onUpdate={handleUpdateProspect}
+          onDelete={openDeleteProspectDialog}
+          onBulkDelete={handleBulkDeleteProspects}
         />
 
         {/* Companies Section */}
@@ -358,6 +402,40 @@ function PeopleCompanies() {
         title="Delete Companies"
         description={`Are you sure you want to delete ${bulkDeleteCompanyIds.length} companies? This action cannot be undone.`}
         confirmLabel={`Delete ${bulkDeleteCompanyIds.length}`}
+        size="md"
+      />
+
+      {/* UpdateProspectDialog */}
+      {prospectToUpdate && (
+        <UpdateProspectDialog
+          open={updateProspectDialogOpen}
+          onOpenChange={setUpdateProspectDialogOpen}
+          prospect={prospectToUpdate}
+          onSuccess={() => {
+            refetch()
+            setProspectToUpdate(null)
+          }}
+        />
+      )}
+
+      {/* Single Delete Prospect Dialog */}
+      <DeleteDialog
+        {...singleDeleteProspectProps}
+        title="Delete Prospect"
+        itemName={prospectToDelete ? `${prospectToDelete.first_name} ${prospectToDelete.last_name}`.trim() : undefined}
+        confirmLabel="Delete"
+        description={prospectToDelete ? `Are you sure you want to delete "${prospectToDelete.first_name} ${prospectToDelete.last_name}"? This action cannot be undone.` : undefined}
+      />
+
+      {/* Bulk Delete Prospects Dialog */}
+      <DeleteDialog
+        open={bulkDeleteProspectsOpen}
+        onOpenChange={setBulkDeleteProspectsOpen}
+        onConfirm={handleBulkDeleteProspectsConfirm}
+        isLoading={isLoading}
+        title="Delete Prospects"
+        description={`Are you sure you want to delete ${bulkDeleteProspectIds.length} prospects? This action cannot be undone.`}
+        confirmLabel={`Delete ${bulkDeleteProspectIds.length}`}
         size="md"
       />
     </DashboardLayout>

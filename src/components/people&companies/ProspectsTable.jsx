@@ -42,7 +42,10 @@ export default function ProspectsTable({
   onBulkAddToDeepSearch,
   onCreateVariables,
   onBulkCreateVariables,
-  onRemoveFromGroup
+  onRemoveFromGroup,
+  onUpdate,
+  onDelete,
+  onBulkDelete
 }) {
 
   // Column definitions (without select and actions - DataTable handles these)
@@ -367,13 +370,24 @@ export default function ProspectsTable({
       value: "delete",
       variant: "destructive",
       onSelect: (selectedIds) => {
-        alert(`Delete ${selectedIds.length} prospects`)
+        if (onBulkDelete) {
+          onBulkDelete(selectedIds)
+        } else {
+          alert(`Delete ${selectedIds.length} prospects`)
+        }
       }
     }
-  ], [onBulkAddToGroup, onBulkAddToCampaign, onBulkAddToDeepSearch, onBulkCreateVariables])
+  ], [onBulkAddToGroup, onBulkAddToCampaign, onBulkAddToDeepSearch, onBulkCreateVariables, onBulkDelete])
 
   // Row actions function
   const rowActions = React.useCallback((ctx) => [
+    {
+      label: "Update",
+      onSelect: () => onUpdate
+        ? onUpdate(ctx)
+        : alert(`Update prospect ${ctx.first_name} ${ctx.last_name}`)
+    },
+    "separator",
     {
       label: "Add Note",
       onSelect: () => onAddNote
@@ -420,9 +434,11 @@ export default function ProspectsTable({
     {
       label: "Delete",
       variant: "destructive",
-      onSelect: () => alert(`Delete ${ctx.first_name} ${ctx.last_name}`)
+      onSelect: () => onDelete
+        ? onDelete(ctx)
+        : alert(`Delete ${ctx.first_name} ${ctx.last_name}`)
     }
-  ], [onAddNote, onCreateTask, onAddToGroup, onAddToCampaign, onAddToDeepSearch, onCreateVariables, onRemoveFromGroup])
+  ], [onUpdate, onDelete, onAddNote, onCreateTask, onAddToGroup, onAddToCampaign, onAddToDeepSearch, onCreateVariables, onRemoveFromGroup])
 
   // Row click handler
   const handleRowClick = React.useCallback((prospect) => {
