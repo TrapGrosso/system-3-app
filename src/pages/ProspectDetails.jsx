@@ -23,6 +23,7 @@ import UpdateCompanyDialog from '@/components/dialogs/UpdateCompanyDialog'
 import UpdateProspectDialog from '@/components/dialogs/UpdateProspectDialog'
 import { PromptSelectDialog } from '@/components/dialogs/PromptSelectDialog'
 import ResolveDeepSearchItem from '@/components/dialogs/ResolveDeepSearchItem'
+import ProspectEnrichmentsDialog from '@/components/dialogs/enrichments/ProspectEnrichmentsDialog'
 import {
   ProspectHeader,
   CompanyCard,
@@ -45,6 +46,7 @@ export default function ProspectDetails() {
   const [updateProspectDialogOpen, setUpdateProspectDialogOpen] = useState(false)
   const [promptSelectDialogOpen, setPromptSelectDialogOpen] = useState(false)
   const [resolveDialogOpen, setResolveDialogOpen] = useState(false)
+  const [enrichmentsDialogOpen, setEnrichmentsDialogOpen] = useState(false)
 
   const { data, isLoading, isError, refetch } = usegetProspectDetails(user?.id, linkedinId)
 
@@ -152,6 +154,16 @@ export default function ProspectDetails() {
     setResolveDialogOpen(false)
   }
 
+  // Enrichments dialog handlers
+  const handleOpenEnrichmentsDialog = () => {
+    setEnrichmentsDialogOpen(true)
+  }
+
+  const handleEnrichmentsDialogSuccess = () => {
+    refetch() // Refresh prospect details to update data
+    setEnrichmentsDialogOpen(false)
+  }
+
   if (isLoading) {
     return (
       <DashboardLayout headerText="Prospect Details">
@@ -215,6 +227,7 @@ export default function ProspectDetails() {
               onCreateTask={handleOpenTasksDialog}
               onAddToDeepResearch={handleOpenDeepSearchDialog}
               onAddToGroup={handleOpenGroupsDialog}
+              onCreateVariables={handleOpenEnrichmentsDialog}
               onRefetch={refetch}
             />
           
@@ -357,6 +370,17 @@ export default function ProspectDetails() {
               open={resolveDialogOpen}
               onOpenChange={setResolveDialogOpen}
               onSuccess={handleResolveDialogSuccess}
+            />
+          )}
+
+          {/* ProspectEnrichmentsDialog - controlled by ProspectDetails state */}
+          {data.prospect && (
+            <ProspectEnrichmentsDialog
+              user_id={user.id}
+              prospectIds={[data.prospect.linkedin_id]}
+              open={enrichmentsDialogOpen}
+              onOpenChange={setEnrichmentsDialogOpen}
+              onSuccess={handleEnrichmentsDialogSuccess}
             />
           )}
 

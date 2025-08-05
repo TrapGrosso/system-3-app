@@ -16,7 +16,8 @@ import {
   UsersIcon,
   EditIcon,
   XIcon,
-  Settings
+  Settings,
+  Wand2
 } from 'lucide-react'
 import { toast } from 'sonner'
 import DeleteDialog from '@/components/dialogs/DeleteDialog'
@@ -35,6 +36,7 @@ export default function ProspectHeader({
   onAddToCampaign, 
   onAddToDeepResearch, 
   onAddToGroup,
+  onCreateVariables,
   onRefetch
 }) {
   const navigate = useNavigate()
@@ -151,6 +153,12 @@ export default function ProspectHeader({
       label: 'Add to group',
       icon: UsersIcon,
       onSelect: onAddToGroup
+    },
+    {
+      id: 'create-variables',
+      label: 'Create variables With AI',
+      icon: Wand2,
+      onSelect: onCreateVariables
     }
   ]
 

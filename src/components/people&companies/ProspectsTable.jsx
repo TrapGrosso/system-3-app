@@ -339,7 +339,7 @@ export default function ProspectsTable({
       }
     },
     {
-      label: "Create Variables",
+      label: "Create Variables With AI",
       value: "createVariables",
       onSelect: (selectedIds) => {
         if (onBulkCreateVariables) {
@@ -418,7 +418,7 @@ export default function ProspectsTable({
       onSelect: () => onAddToDeepSearch?.(ctx.linkedin_id)
     },
     {
-      label: "Create Variables",
+      label: "Create Variables With AI",
       onSelect: () => onCreateVariables
         ? onCreateVariables(ctx.linkedin_id)
         : alert(`Create variables for ${ctx.first_name} ${ctx.last_name}`)
