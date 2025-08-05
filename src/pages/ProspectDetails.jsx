@@ -27,6 +27,7 @@ import {
   ProspectHeader,
   CompanyCard,
   TabsPanel,
+  ProspectStatsGrid,
 } from '@/components/prospect-details'
 
 export default function ProspectDetails() {
@@ -226,37 +227,15 @@ export default function ProspectDetails() {
               refetchProspectDetails={refetch}
             />
             
-            {/* Optional stats cards can go here in the future */}
-            <Card className="lg:col-span-1">
-              <CardContent className="pt-6">
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">
-                      {data.notes?.length || 0}
-                    </div>
-                    <p className="text-sm text-muted-foreground">Notes</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">
-                      {data.tasks?.length || 0}
-                    </div>
-                    <p className="text-sm text-muted-foreground">Tasks</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">
-                      {data.campaigns?.length || 0}
-                    </div>
-                    <p className="text-sm text-muted-foreground">Campaigns</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">
-                      {data.groups?.length || 0}
-                    </div>
-                    <p className="text-sm text-muted-foreground">Groups</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <ProspectStatsGrid
+              notes={data.notes}
+              tasks={data.tasks}
+              campaigns={data.campaigns}
+              groups={data.groups}
+              variables={data.variables}
+              enrichment={data.enrichment}
+              deepSearch={data.deep_search}
+            />
           </div>
 
           <TabsPanel
