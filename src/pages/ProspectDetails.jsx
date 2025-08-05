@@ -4,9 +4,9 @@ import { DashboardLayout } from '@/components/layouts/DashboardLayout'
 import { Spinner } from '@/components/ui/spinner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { AlertTriangle, Search } from 'lucide-react'
+import { LoadingScreen } from '@/components/shared/ui/LoadingScreen'
 import { useAuth } from '@/contexts/AuthContext'
-import { useProspects } from '@/contexts/ProspectsContext'
-import { useDeepSearchQueue } from '@/contexts/DeepSearchQueueContext'
 import { GroupsProvider } from '@/contexts/GroupsContext'
 import { NotesProvider } from '@/contexts/NotesContext'
 import { TaskProvider } from '@/contexts/TaskContext'
@@ -154,12 +154,7 @@ export default function ProspectDetails() {
   if (isLoading) {
     return (
       <DashboardLayout headerText="Prospect Details">
-        <div className="flex justify-center items-center py-20">
-          <div className="text-center">
-            <Spinner size="lg" className="mb-4" />
-            <p className="text-muted-foreground">Loading prospect details...</p>
-          </div>
-        </div>
+        <LoadingScreen message="Loading prospect details..." />
       </DashboardLayout>
     )
   }
@@ -167,10 +162,11 @@ export default function ProspectDetails() {
   if (isError || Array.isArray(data) && !data.length) {
     return (
       <DashboardLayout headerText="Prospect Details">
-        <div className="flex justify-center items-center py-20">
+        <div className="flex justify-center items-center py-24">
           <Card className="max-w-md">
-            <CardContent className="pt-6 text-center">
-              <p className="text-muted-foreground mb-4">
+            <CardContent className="pt-6 flex flex-col items-center gap-4 text-center">
+              <AlertTriangle className="h-8 w-8 text-destructive" />
+              <p className="text-muted-foreground">
                 Failed to load prospect details. Please try again.
               </p>
               <Button variant="outline" onClick={() => refetch()}>
@@ -186,11 +182,15 @@ export default function ProspectDetails() {
   if (!data) {
     return (
       <DashboardLayout headerText="Prospect Details">
-        <div className="flex justify-center items-center py-20">
+        <div className="flex justify-center items-center py-24">
           <Card className="max-w-md">
-            <CardContent className="pt-6 text-center">
+            <CardContent className="pt-6 flex flex-col items-center gap-4 text-center">
+              <Search className="h-8 w-8 text-muted-foreground" />
               <p className="text-muted-foreground">
-                No prospect found with LinkedIn ID: <strong>{linkedinId}</strong>
+                No prospect found with LinkedIn ID:{' '}
+                <span className="px-2 py-0.5 rounded-md bg-muted text-foreground/80 font-mono text-sm">
+                  {linkedinId}
+                </span>
               </p>
             </CardContent>
           </Card>

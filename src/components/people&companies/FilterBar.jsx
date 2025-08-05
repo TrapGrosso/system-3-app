@@ -52,7 +52,7 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
   const { user } = useAuth()
   const { groups = [] } = useGroups()
   const { data: campaigns = [] } = useFetchCampaigns(user?.id)
-  const { data: prompts = [] } = useAllPrompts()
+  const { data: prompts = [] } = useAllPrompts('deep_research')
 
   // Local state for search input and selected fields
   const [searchInput, setSearchInput] = React.useState(query.q || '')
