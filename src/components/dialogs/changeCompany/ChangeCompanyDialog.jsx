@@ -1,6 +1,6 @@
 import * as React from "react"
 import { useState } from "react"
-import { Building2, Plus, X, Check, Database, ExternalLink } from "lucide-react"
+import { Building2, Plus, X, Check, Database, ExternalLink, Wand2 } from "lucide-react"
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
@@ -16,7 +16,9 @@ import { useProspects } from "@/contexts/ProspectsContext"
 import { useCompanies } from "@/contexts/CompaniesContext"
 import ChangeCompanyTable from "./ChangeCompanyTable"
 import ChangeCompanySubmitSection from "./ChangeCompanySubmitSection"
+import ChangeCompanyAiSearchSection from "./ChangeCompanyAiSearchSection"
 import { useAddLeads } from "@/api/add-leads/addLeads"
+import { useAiCompanySearch } from "@/api/change-company-dialog/aiCompanySearch"
 
 function ChangeCompanyDialog({ 
   open,
@@ -27,10 +29,12 @@ function ChangeCompanyDialog({
   onSuccess
 }) {
   // Local state
-  const [step, setStep] = useState(null) // null | 'choose' | 'manual'
+  const [step, setStep] = useState(null) // null | 'choose' | 'manual' | 'ai'
   const [selectedId, setSelectedId] = useState('')
   const [selectedCompany, setSelectedCompany] = useState(null)
   const [manualUrl, setManualUrl] = useState('')
+  const [precision, setPrecision] = useState('default')
+  const [selectedFlags, setSelectedFlags] = useState([])
   
   // Hooks - all contexts and mutations in dialog
   const { user } = useAuth()
@@ -61,8 +65,23 @@ function ChangeCompanyDialog({
     },
   })
 
+  // AI Company Search mutation
+  const aiSearchMutation = useAiCompanySearch({
+    onSuccess: (data) => {
+      console.log('AI search started successfully:', data)
+      toast.success(data.message || 'AI search started successfully')
+      handleReset()
+      onOpenChange(false)
+      if (onSuccess) onSuccess()
+    },
+    onError: (error) => {
+      console.error('Error starting AI search:', error)
+      toast.error(error.message || 'Failed to start AI search')
+    },
+  })
+
   // Derived loading state
-  const isSubmitting = addLeadsMutation.isPending || isUpdatingProspect
+  const isSubmitting = addLeadsMutation.isPending || isUpdatingProspect || aiSearchMutation.isPending
 
   // Query change handler
   const handleQueryChange = React.useCallback((partial) => {
@@ -81,6 +100,8 @@ function ChangeCompanyDialog({
     setSelectedId('')
     setSelectedCompany(null)
     setManualUrl('')
+    setPrecision('default')
+    setSelectedFlags([])
     resetFilters()
   }
 
@@ -110,11 +131,21 @@ function ChangeCompanyDialog({
           flags: []
         }
       })
+    } else if (step === 'ai') {
+      // Start AI company search
+      aiSearchMutation.mutate({
+        user_id: user?.id,
+        prospect_ids: [prospectId],
+        options: {
+          agent_precision: precision,
+          flags: selectedFlags
+        }
+      })
     }
   }
 
   // Check if submit is valid
-  const isSubmitValid = (step === 'choose' && selectedId) || (step === 'manual' && manualUrl.trim() && manualUrl.includes('linkedin.com'))
+  const isSubmitValid = (step === 'choose' && selectedId) || (step === 'manual' && manualUrl.trim() && manualUrl.includes('linkedin.com')) || (step === 'ai')
 
   // Handle clear selection
   const handleClearSelection = () => {
@@ -145,7 +176,7 @@ function ChangeCompanyDialog({
               </p>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+            <div className="flex flex-col sm:flex-row gap-4 w-full max-w-lg">
               <Button
                 onClick={() => setStep('choose')}
                 className="flex-1 h-16 flex-col gap-2"
@@ -162,6 +193,15 @@ function ChangeCompanyDialog({
               >
                 <Plus className="h-5 w-5" />
                 <span>Add new LinkedIn URL</span>
+              </Button>
+
+              <Button
+                onClick={() => setStep('ai')}
+                className="flex-1 h-16 flex-col gap-2"
+                variant="outline"
+              >
+                <Wand2 className="h-5 w-5" />
+                <span>Search with AI</span>
               </Button>
             </div>
           </div>
@@ -221,6 +261,17 @@ function ChangeCompanyDialog({
             onChange={setManualUrl}
           />
         )}
+
+        {/* Step 2c: AI Search */}
+        {step === 'ai' && (
+          <ChangeCompanyAiSearchSection
+            precision={precision}
+            setPrecision={setPrecision}
+            flags={selectedFlags}
+            setFlags={setSelectedFlags}
+            disabled={aiSearchMutation.isPending}
+          />
+        )}
       </DialogWrapper.Body>
 
       <DialogWrapper.Footer className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -248,15 +299,16 @@ function ChangeCompanyDialog({
         
         {/* Submit button (only show when in choose/manual step) */}
         {step && (
-          <SpinnerButton
-            onClick={handleSubmit}
-            disabled={!isSubmitValid || isSubmitting}
-            loading={isSubmitting}
-          >
-            {step === 'choose' && <Check className="h-4 w-4 mr-2" />}
-            {step === 'manual' && <Plus className="h-4 w-4 mr-2" />}
-            {step === 'choose' ? 'Set Company' : 'Add Company'}
-          </SpinnerButton>
+        <SpinnerButton
+          onClick={handleSubmit}
+          disabled={!isSubmitValid || isSubmitting}
+          loading={isSubmitting}
+        >
+          {step === 'choose' && <Check className="h-4 w-4 mr-2" />}
+          {step === 'manual' && <Plus className="h-4 w-4 mr-2" />}
+          {step === 'ai' && <Wand2 className="h-4 w-4 mr-2" />}
+          {step === 'choose' ? 'Set Company' : step === 'manual' ? 'Add Company' : 'Search with AI'}
+        </SpinnerButton>
         )}
       </DialogWrapper.Footer>
     </DialogWrapper>

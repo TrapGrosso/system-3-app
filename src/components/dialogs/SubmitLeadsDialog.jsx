@@ -23,6 +23,7 @@ const MULTI_OPTIONS = [
   { value: "add_to_ds_queue", label: "Add prospects to deep search queue" },
   { value: "ignore_other_companies", label: "Ignore provided companies" },
   { value: "output_prospect_with_companies", label: "Output only propsects with companies" },
+  { value: "search_companies_with_ai", label: "Search prospects's companies with AI" },
 ]
 
 function SubmitLeadsDialog({ 
