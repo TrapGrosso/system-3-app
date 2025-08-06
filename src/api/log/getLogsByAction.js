@@ -175,7 +175,7 @@ export const useLogsQueryController = ({ userId, action }) => {
  * - action (optional): The action to filter logs by. If not provided, all actions will be fetched.
  * - page (optional): Page number, default 1
  * - page_size (optional): Results per page, default 10, max 100
- * - sort_by (optional): Column to sort by ('duration_ms', 'created_at'), default 'created_at'
+ * - sort_by (optional): Column to sort by ('duration_ms', 'created_at', 'prospect_count'), default 'created_at'
  * - sort_dir (optional): Sort direction, 'asc' or 'desc', default 'desc'
  * - status (optional): Filter by log status ('in_progress', 'success', 'failed')
  * - date_from (optional): Start date for filtering (YYYY-MM-DD format)
@@ -222,7 +222,8 @@ export const useLogsQueryController = ({ userId, action }) => {
  *       "message": "Added 25 leads successfully",
  *       "created_at": "2025-07-14T10:00:21.123Z",
  *       "updated_at": "2025-07-14T10:00:22.456Z",
- *       "retry_eligible": false
+ *       "retry_eligible": false,
+ *       "prospect_count": 25
  *     },
  *     {
  *       "id": "82cf-...",
@@ -233,7 +234,8 @@ export const useLogsQueryController = ({ userId, action }) => {
  *       "message": "Failed to add leads: validation error",
  *       "created_at": "2025-07-14T09:30:15.789Z",
  *       "updated_at": "2025-07-14T09:30:20.123Z",
- *       "retry_eligible": true
+ *       "retry_eligible": true,
+ *       "prospect_count": 0
  *     }
  *   ],
  *   "total": 2,

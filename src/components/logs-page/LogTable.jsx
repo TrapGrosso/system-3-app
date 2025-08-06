@@ -56,6 +56,7 @@ export const LogTable = ({
   onRetry,
   isRetryPending = false
 }) => {
+  console.log(data)
   // Column definitions for DataTable
   const columns = React.useMemo(() => [
     {
@@ -63,6 +64,16 @@ export const LogTable = ({
       header: "Status",
       enableSorting: false,
       cell: ({ row }) => getStatusBadge(row.original.status),
+    },
+    {
+      accessorKey: "action",
+      header: "Action",
+      enableSorting: false,
+      cell: ({ row }) => (
+        <div className="text-sm truncate">
+          {row.original.action || '-'}
+        </div>
+      ),
     },
     {
       accessorKey: "start_time",
@@ -90,6 +101,16 @@ export const LogTable = ({
       cell: ({ row }) => (
         <div className="font-mono text-xs">
           {formatDuration(row.original.duration_ms)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "prospect_count",
+      header: "Prospects",
+      enableSorting: true,
+      cell: ({ row }) => (
+        <div className="text-right font-mono text-xs">
+          {row.original.prospect_count !== undefined ? row.original.prospect_count : '-'}
         </div>
       ),
     },
