@@ -42,7 +42,7 @@ function LogSidebar({ log, onClear, formatDate }) {
           {prospect_success !== undefined && (
             <div className="flex items-center gap-2">
               <CheckIcon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Prospect Status</span>
+              <span className="text-sm font-medium">Status</span>
               <Badge variant={prospect_success ? 'default' : 'destructive'}>
                 {prospect_success ? 'Success' : 'Failed'}
               </Badge>
@@ -62,7 +62,7 @@ function LogSidebar({ log, onClear, formatDate }) {
               <Separator />
               <div>
                 <h4 className="text-sm font-medium mb-2">Result</h4>
-                <pre className="font-mono text-xs overflow-x-auto bg-muted p-3 rounded">
+                <pre className="w-full max-w-full overflow-x-auto font-mono text-xs bg-muted p-3 rounded">
                   {JSON.stringify(prospect_result, null, 2)}
                 </pre>
               </div>
@@ -205,7 +205,7 @@ export default function LogsTable({ logs = [] }) {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col xl:flex-row gap-6">
-          <div className="flex-1">
+          <div className="w-full xl:flex-none xl:w-3/4 2xl:w-2/3">
             <DataTable
               columns={columns}
               data={logs}
@@ -221,7 +221,7 @@ export default function LogsTable({ logs = [] }) {
             />
           </div>
           
-          <div className="w-full xl:max-w-xs">
+          <div className="w-full flex-1 min-w-0">
             <LogSidebar 
               log={selectedLog} 
               onClear={() => setSelectedLog(null)}

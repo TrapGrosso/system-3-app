@@ -5,12 +5,14 @@ import {
   ListIcon,
   TagsIcon,
   UsersIcon,
-  FlagIcon
+  FlagIcon,
+  ClockIcon
 } from "lucide-react"
 
 import { Badge } from '@/components/ui/badge'
 import { TablePopoverCell } from '@/components/shared/table/TablePopoverCell'
 import { DataTable } from '@/components/shared/table/DataTable'
+import AdvancedFiltersCollapsible from '@/components/shared/ui/AdvancedFiltersCollapsible'
 
 const getStatusVariant = (status) => {
   switch (status?.toLowerCase()) {
@@ -85,6 +87,65 @@ export default function ProspectsTable({
           {row.original.status || 'Unknown'}
         </Badge>
       ),
+    },
+    {
+      accessorKey: "last_log",
+      header: "Last Log",
+      enableSorting: false,
+      cell: ({ row }) => {
+        const lastLog = row.original.last_log;
+        if (!lastLog) {
+          return <div className="text-center text-muted-foreground">—</div>;
+        }
+
+        // Importing AdvancedFiltersCollapsible here would cause issues, so we'll define the collapsible content inline
+        const formatTimestamp = (timestamp) => {
+          if (!timestamp) return '—';
+          return new Date(timestamp).toLocaleString();
+        };
+
+        return (
+          <TablePopoverCell
+            items={[lastLog]}
+            icon={<ClockIcon />}
+            triggerVariant="accent"
+            title="Last Log"
+            renderItem={(log) => (
+              <div className="p-2 border rounded-md text-sm space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary">{log.action}</Badge>
+                  <Badge variant={log.prospect_success ? "default" : "destructive"}>
+                    {log.prospect_success ? "SUCCESS" : "ERROR"}
+                  </Badge>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {formatTimestamp(log.end_time || log.start_time)}
+                </div>
+                
+                <div className="border-t pt-2 mt-2">
+                  <AdvancedFiltersCollapsible 
+                    label="See more details" 
+                    className="text-xs space-y-1"
+                  >
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Status:</span>
+                      <span>{log.status || '—'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Duration:</span>
+                      <span>{log.duration_ms ? `${log.duration_ms}ms` : '—'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Created:</span>
+                      <span>{formatTimestamp(log.prospect_created_at)}</span>
+                    </div>
+                  </AdvancedFiltersCollapsible>
+                </div>
+              </div>
+            )}
+          />
+        );
+      },
     },
     {
       accessorKey: "email",

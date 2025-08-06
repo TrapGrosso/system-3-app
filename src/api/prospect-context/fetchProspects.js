@@ -43,6 +43,7 @@ export const useProspectsQuery = ({ userId, ...query }) => {
     retryDelay: (attemptIndex) => Math.min(1000* 2** attemptIndex, 30000),
   })
 }
+
 /**
 * Fetches prospects for a user with server-side filtering, sorting, and pagination.
 * 
@@ -161,7 +162,18 @@ export const useProspectsQuery = ({ userId, ...query }) => {
 *           "entity_kind": "company",
 *           "prompt_name": null
 *         }
-*       ]
+*       ],
+*       "last_log": {
+*         "prospect_log_id": "some-log-id-1",
+*         "prospect_success": true,
+*         "prospect_created_at": "2025-07-30T10:00:00Z",
+*         "id": "some-log-entry-id-1",
+*         "action": "email_sent",
+*         "status": "completed",
+*         "start_time": "2025-07-30T09:59:00Z",
+*         "end_time": "2025-07-30T10:00:00Z",
+*         "duration_ms": 60000
+*       }
 *     }
 *   ],
 *   "total": 1,

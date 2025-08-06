@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { ChevronDown, ChevronRight } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -12,6 +12,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
  * @param {boolean} open - Controlled open state (optional)
  * @param {boolean} defaultOpen - Initial open state for uncontrolled mode
  * @param {Function} onOpenChange - Callback for open state changes (optional)
+ * @param {Function} onClick - Click handler for the collapsible trigger (optional)
  * @param {React.ReactNode} children - Content to be collapsed/expanded
  * @param {string} className - Additional CSS classes for the content wrapper
  */
@@ -22,6 +23,7 @@ function AdvancedFiltersCollapsible({
   onOpenChange,
   children,
   className = "",
+  onClick,
   ...props
 }) {
   // Internal state for uncontrolled mode
@@ -39,6 +41,16 @@ function AdvancedFiltersCollapsible({
     }
   }
 
+  // Handler to stop event propagation while still allowing the onClick callback
+  const handleClick = useCallback((e) => {
+    // Stop propagation to prevent triggering parent click handlers (e.g., table row click)
+    e.stopPropagation();
+    e.nativeEvent?.stopImmediatePropagation?.();
+    
+    // Call the onClick prop if provided
+    onClick?.(e);
+  }, [onClick]);
+
   return (
     <Collapsible 
       open={isOpen} 
@@ -50,6 +62,7 @@ function AdvancedFiltersCollapsible({
           variant="ghost"
           className="flex items-center justify-between w-full p-0 h-auto font-medium text-left"
           type="button"
+          onClick={handleClick}
         >
           <span>{label}</span>
           {isOpen ? (
