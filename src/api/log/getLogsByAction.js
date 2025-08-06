@@ -258,3 +258,4 @@ export const useLogsQueryController = ({ userId, action }) => {
  * Database error (500):
  * {"error": "Database error: [specific error message]"}
  */
+ 

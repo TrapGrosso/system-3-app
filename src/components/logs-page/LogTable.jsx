@@ -5,6 +5,14 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 import { RotateCcw, AlertCircle, Loader2 } from 'lucide-react'
 import { DataTable } from '../shared/table/DataTable'
 
+// Helper function to format action labels
+const formatActionLabel = (action) => {
+  if (!action) return '-'
+  return action
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
 const getStatusBadge = (status) => {
   switch (status) {
     case 'success':
@@ -56,7 +64,6 @@ export const LogTable = ({
   onRetry,
   isRetryPending = false
 }) => {
-  console.log(data)
   // Column definitions for DataTable
   const columns = React.useMemo(() => [
     {
@@ -70,9 +77,9 @@ export const LogTable = ({
       header: "Action",
       enableSorting: false,
       cell: ({ row }) => (
-        <div className="text-sm truncate">
-          {row.original.action || '-'}
-        </div>
+        <Badge variant="secondary" className="text-xs font-medium">
+          {formatActionLabel(row.original.action)}
+        </Badge>
       ),
     },
     {
@@ -107,9 +114,9 @@ export const LogTable = ({
     {
       accessorKey: "prospect_count",
       header: "Prospects",
-      enableSorting: true,
+      enableSorting: false,
       cell: ({ row }) => (
-        <div className="text-right font-mono text-xs">
+        <div className="text-center font-mono text-sm">
           {row.original.prospect_count !== undefined ? row.original.prospect_count : '-'}
         </div>
       ),
