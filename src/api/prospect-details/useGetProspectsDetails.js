@@ -156,17 +156,15 @@ export const usegetProspectDetails = (userId, prospect_id) => {
  *   },
  *   "logs": [
  *     {
- *       "log_id": "f1e2d3c4-b5a6-9876-5432-10fedcba9876",
+ *       "id": "f1e2d3c4-b5a6-9876-5432-10fedcba9876",
  *       "action": "add_leads",
  *       "status": "success",
  *       "start_time": "2025-08-01T10:00:00",
  *       "end_time": "2025-08-01T10:00:03",
  *       "duration_ms": 3450,
- *       "prospect_result": {
- *         "success": true,
- *         "result": { "added_variables": 4 },
- *         "created_at": "2025-08-01T10:00:00"
- *       }
+ *       "prospect_success": true,
+ *       "prospect_result": { "added_variables": 4 },
+ *       "prospect_created_at": "2025-08-01T10:00:00" 
  *     }
  *   ]
  * }
