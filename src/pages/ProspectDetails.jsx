@@ -258,6 +258,7 @@ export default function ProspectDetails() {
             campaigns={data.campaigns}
             groups={data.groups}
             variables={data.variables}
+            logs={data.logs}
             prospect={data.prospect}
             onAddNote={handleOpenNotesDialog}
             onNotesChanged={handleNotesDialogSuccess}

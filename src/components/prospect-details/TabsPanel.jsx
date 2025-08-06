@@ -6,6 +6,7 @@ import EnrichmentAccordion from './EnrichmentAccordion'
 import CampaignsTable from './CampaignsTable'
 import GroupsTable from './GroupsTable'
 import VariablesTable from './VariablesTable'
+import LogsTable from './LogsTable'
 
 export default function TabsPanel(
   { 
@@ -15,6 +16,7 @@ export default function TabsPanel(
     campaigns, 
     groups, 
     variables, 
+    logs,
     prospect, 
     onAddNote, 
     onNotesChanged, 
@@ -29,7 +31,7 @@ export default function TabsPanel(
   return (
     <div className="px-4 lg:px-6 pb-6">
       <Tabs defaultValue="notes" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="notes">
             Notes {notes?.length ? `(${notes.length})` : ''}
           </TabsTrigger>
@@ -47,6 +49,9 @@ export default function TabsPanel(
           </TabsTrigger>
           <TabsTrigger value="variables">
             Variables {variables?.length ? `(${variables.length})` : ''}
+          </TabsTrigger>
+          <TabsTrigger value="logs">
+            Logs {logs?.length ? `(${logs.length})` : ''}
           </TabsTrigger>
         </TabsList>
         
@@ -88,6 +93,10 @@ export default function TabsPanel(
             onAddVariable={onAddVariable}
             onVariablesChanged={onVariablesChanged}
           />
+        </TabsContent>
+        
+        <TabsContent value="logs" className="mt-6">
+          <LogsTable logs={logs} />
         </TabsContent>
       </Tabs>
     </div>

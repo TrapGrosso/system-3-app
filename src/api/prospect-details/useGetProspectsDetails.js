@@ -71,6 +71,7 @@ export const usegetProspectDetails = (userId, prospect_id) => {
  *         "id": "d4508141-7727-418a-87a3-a10339bcbfa7",
  *         "name": "company_focus",
  *         "value": "Leadership consulting and business transformation",
+ *         "tags": ["leadership", "consulting"],
  *         "created_at": "2025-06-29T15:16:48.706565",
  *         "updated_at": "2025-06-29T15:16:48.706565",
  *         "enrichment_ids": ["44daa173-1bf5-48a2-b739-c210393e054a"]
@@ -152,7 +153,23 @@ export const usegetProspectDetails = (userId, prospect_id) => {
  *         }
  *       ]
  *     }
- *   }
+ *   },
+ *   "logs": [
+ *     {
+ *       "log_id": "f1e2d3c4-b5a6-9876-5432-10fedcba9876",
+ *       "action": "add_leads",
+ *       "status": "success",
+ *       "start_time": "2025-08-01T10:00:00",
+ *       "end_time": "2025-08-01T10:00:03",
+ *       "duration_ms": 3450,
+ *       "prospect_result": {
+ *         "success": true,
+ *         "result": { "added_variables": 4 },
+ *         "created_at": "2025-08-01T10:00:00"
+ *       }
+ *     }
+ *   ]
+ * }
  * 
  * Example Error Response (400):
  * {"error": "`user_id` (string) and `prospect_id` (string) are required as query parameters"}
