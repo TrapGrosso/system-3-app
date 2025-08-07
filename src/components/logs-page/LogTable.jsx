@@ -62,7 +62,8 @@ export const LogTable = ({
   isError = false,
   error = null,
   onRetry,
-  isRetryPending = false
+  isRetryPending = false,
+  onRowClick = () => {}
 }) => {
   // Column definitions for DataTable
   const columns = React.useMemo(() => [
@@ -259,6 +260,7 @@ export const LogTable = ({
         onSortingChange={handleSortingChange}
         manualSorting={true}
         enableSelection={false}
+        onRowClick={onRowClick}
       />
     </div>
   )

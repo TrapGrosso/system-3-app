@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRetryAddLeads } from '@/api/add-leads/retryAddLeads'
 import { useLogsQueryController } from '@/api/log/getLogsByAction'
@@ -8,6 +9,7 @@ import LogTableFilterBar from '@/components/logs-page/LogTableFilterBar'
 import { toast } from 'sonner'
 
 export default function Logs() {
+    const navigate = useNavigate()
     const { user } = useAuth()
 
     // Retry leads hook
@@ -49,6 +51,10 @@ export default function Logs() {
         retryAddLeads({ log_id: logId, user_id: user.id })
     }
 
+    const handleRowClick = (log) => {
+        navigate(`/logs/${log.id}`)
+    }
+
     return (
         <DashboardLayout headerText="Logs">
             <div className="px-4 lg:px-6 space-y-6">
@@ -68,6 +74,7 @@ export default function Logs() {
                     error={logsError}
                     onRetry={handleRetry}
                     isRetryPending={isRetryPending}
+                    onRowClick={handleRowClick}
                 />
             </div>
         </DashboardLayout>
