@@ -1,5 +1,4 @@
 import React from 'react'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { DataTable } from '@/components/shared/table/DataTable'
 import { UserIcon, CalendarIcon, BuildingIcon, TableIcon } from 'lucide-react'
@@ -75,43 +74,25 @@ export default function ResultsTable({ results = [], onRowClick = () => {} }) {
 
   if (results.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TableIcon className="h-5 w-5" />
-            Results ({results.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="py-12">
-          <div className="text-center text-muted-foreground">
-            <TableIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No results available</p>
-            <p className="text-sm mt-1">Results from this log will appear here.</p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="py-12">
+        <div className="text-center text-muted-foreground">
+          <TableIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+          <p>No results available</p>
+          <p className="text-sm mt-1">Results from this log will appear here.</p>
+        </div>
+      </div>
     )
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <TableIcon className="h-5 w-5" />
-          Results ({results.length})
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <DataTable
-          columns={columns}
-          data={results}
-          rowId={(row) => row.prospect_id}
-          enableSelection={false}
-          emptyMessage="No results found"
-          pageSizes={[10, 20, 30]}
-          onRowClick={onRowClick}
-        />
-      </CardContent>
-    </Card>
+    <DataTable
+      columns={columns}
+      data={results}
+      rowId={(row) => row.prospect_id}
+      enableSelection={false}
+      emptyMessage="No results found"
+      pageSizes={[10, 20, 30]}
+      onRowClick={onRowClick}
+    />
   )
 }

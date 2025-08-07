@@ -33,6 +33,14 @@ export default function LogMainCard({ log }) {
     return parts.join(' ')
   }
 
+  // Helper function to format action labels
+const formatActionLabel = (action) => {
+  if (!action) return '-'
+  return action
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
   const getStatusVariant = (status) => {
     switch (status?.toLowerCase()) {
       case 'success':
@@ -65,7 +73,6 @@ export default function LogMainCard({ log }) {
     <Card className="mb-6">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <ZapIcon className="h-5 w-5 text-blue-500" />
           Log Details
         </CardTitle>
       </CardHeader>
@@ -76,7 +83,7 @@ export default function LogMainCard({ log }) {
             <p className="text-sm font-medium text-muted-foreground">Action</p>
             <div className="flex items-center gap-2">
               <ZapIcon className="h-4 w-4 text-blue-500" />
-              <span className="font-medium">{log.action}</span>
+              <span className="font-medium">{formatActionLabel(log.action)}</span>
             </div>
           </div>
 

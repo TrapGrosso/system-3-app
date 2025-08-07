@@ -3,8 +3,8 @@ import { useParams } from 'react-router-dom'
 import { DashboardLayout } from '@/components/layouts/DashboardLayout'
 import { LoadingScreen } from '@/components/shared/ui/LoadingScreen'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { AlertTriangle, Search } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { AlertTriangle, Search, TableIcon } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useGetLogsDetails } from '@/api/log-details/getLogsDetails'
 import { LogMainCard, ResultCodeCard, ResultsTable, ResultsFilterBar } from '@/components/log-details'
@@ -16,7 +16,32 @@ export default function LogDetails() {
   const [selectedResult, setSelectedResult] = useState(null)
   const [resultFilters, setResultFilters] = useState({})
   
-  const { data, isLoading, isError, refetch } = useGetLogsDetails(user?.id, logId)
+  const { data = {}, isLoading, isError, refetch } = useGetLogsDetails(user?.id, logId)
+  const { log, results = [] } = data
+  // Filter results based on active filters
+  const filteredResults = React.useMemo(() => {
+    if (!results.length) return results
+    
+    return results.filter(result => {
+      const { field, value, status } = resultFilters
+      
+      // Filter by field and value
+      if (field && value && value.trim()) {
+        const fieldValue = result[field]?.toLowerCase() || ''
+        if (!fieldValue.includes(value.toLowerCase())) {
+          return false
+        }
+      }
+      
+      // Filter by status
+      if (status) {
+        if (status === 'success' && !result.success) return false
+        if (status === 'failed' && result.success) return false
+      }
+      
+      return true
+    })
+  }, [results, resultFilters])
 
   if (isLoading) {
     return (
@@ -66,32 +91,6 @@ export default function LogDetails() {
     )
   }
 
-  const { log, results = [] } = data
-  // Filter results based on active filters
-  const filteredResults = React.useMemo(() => {
-    if (!results.length) return results
-    
-    return results.filter(result => {
-      const { field, value, status } = resultFilters
-      
-      // Filter by field and value
-      if (field && value && value.trim()) {
-        const fieldValue = result[field]?.toLowerCase() || ''
-        if (!fieldValue.includes(value.toLowerCase())) {
-          return false
-        }
-      }
-      
-      // Filter by status
-      if (status) {
-        if (status === 'success' && !result.success) return false
-        if (status === 'failed' && result.success) return false
-      }
-      
-      return true
-    })
-  }, [results, resultFilters])
-
   return (
     <DashboardLayout headerText="Log Details">
       <div className="px-4 lg:px-6">
@@ -99,16 +98,26 @@ export default function LogDetails() {
         
         <div className="grid gap-6 lg:grid-cols-2 mb-6">
           <ResultCodeCard result={selectedResult?.result} />
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TableIcon className="h-5 w-5" />
+                Results ({filteredResults.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-8">
+              <ResultsFilterBar
+                filters={resultFilters}
+                onApply={setResultFilters}
+                onClear={() => setResultFilters({})}
+                loading={isLoading}
+              />
+              
+              <ResultsTable results={filteredResults} onRowClick={setSelectedResult} />
+            </CardContent>
+          </Card>
         </div>
-        
-        <ResultsFilterBar
-          filters={resultFilters}
-          onApply={setResultFilters}
-          onClear={() => setResultFilters({})}
-          loading={isLoading}
-        />
-        
-        <ResultsTable results={filteredResults} onRowClick={setSelectedResult} />
       </div>
     </DashboardLayout>
   )
