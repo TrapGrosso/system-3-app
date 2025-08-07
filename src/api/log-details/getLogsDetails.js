@@ -60,13 +60,10 @@ export const useGetLogsDetails = (userId, log_id) => {
  *       "success": true,
  *       "result": { "added_variables": 4 },
  *       "created_at": "2025-08-01T10:00:00",
- *       "prospect": {
- *         "linkedin_id": "annvanino",
- *         "first_name": "Ann",
- *         "last_name": "Vanino",
- *         "company_id": "linkedcompany123",
- *         "company": { "name": "The Overnight Success Co." }
- *       }
+ *       "first_name": "Ann",
+ *       "last_name": "Vanino",
+ *       "company_id": "linkedcompany123",
+ *       "company_name": "The Overnight Success Co."
  *     }
  *   ]
  * }

@@ -29,33 +29,33 @@ export default function ResultsTable({ results = [], onRowClick = () => {} }) {
     },
     {
       header: 'First Name',
-      accessorKey: 'prospect.first_name',
+      accessorKey: 'first_name',
       enableSorting: false,
       cell: ({ row }) => (
         <span className="font-medium">
-          {row.original.prospect?.first_name || '—'}
+          {row.original.first_name || '—'}
         </span>
       ),
     },
     {
       header: 'Last Name',
-      accessorKey: 'prospect.last_name',
+      accessorKey: 'last_name',
       enableSorting: false,
       cell: ({ row }) => (
         <span className="font-medium">
-          {row.original.prospect?.last_name || '—'}
+          {row.original.last_name || '—'}
         </span>
       ),
     },
     {
       header: 'Company',
-      accessorKey: 'prospect.company.name',
+      accessorKey: 'company_name',
       enableSorting: false,
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <BuildingIcon className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm">
-            {row.original.prospect?.company?.name || '—'}
+            {row.original.company_name || '—'}
           </span>
         </div>
       ),
