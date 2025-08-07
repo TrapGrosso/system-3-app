@@ -59,12 +59,6 @@ export default function Marketing() {
         <DashboardLayout headerText="Marketing">
             <div className="px-4 lg:px-6 space-y-6">
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Deep Search Management</CardTitle>
-                        <CardDescription>
-                            Manage and process your deep search queue items and view processing logs
-                        </CardDescription>
-                    </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">
