@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { DashboardLayout } from '@/components/layouts/DashboardLayout'
 import { LoadingScreen } from '@/components/shared/ui/LoadingScreen'
@@ -12,6 +12,8 @@ import { LogMainCard, ResultCodeCard, ResultsTable } from '@/components/log-deta
 export default function LogDetails() {
   const { user } = useAuth()
   const { logId } = useParams()
+  
+  const [selectedResult, setSelectedResult] = useState(null)
   
   const { data, isLoading, isError, refetch } = useGetLogsDetails(user?.id, logId)
 
@@ -72,8 +74,8 @@ export default function LogDetails() {
         <LogMainCard log={log} />
         
         <div className="grid gap-6 lg:grid-cols-2 mb-6">
-          <ResultCodeCard result={firstResult?.result} />
-          <ResultsTable results={results} />
+          <ResultCodeCard result={selectedResult?.result} />
+          <ResultsTable results={results} onRowClick={setSelectedResult} />
         </div>
       </div>
     </DashboardLayout>

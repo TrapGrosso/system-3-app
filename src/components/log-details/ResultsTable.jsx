@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { DataTable } from '@/components/shared/table/DataTable'
 import { UserIcon, CalendarIcon, BuildingIcon, TableIcon } from 'lucide-react'
 
-export default function ResultsTable({ results = [] }) {
+export default function ResultsTable({ results = [], onRowClick = () => {} }) {
   const formatDate = (dateString) => {
     if (!dateString) return '—'
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -18,20 +18,9 @@ export default function ResultsTable({ results = [] }) {
 
   const columns = [
     {
-      header: 'Prospect ID',
-      accessorKey: 'prospect_id',
-      enableSorting: true,
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2 font-mono text-sm">
-          <UserIcon className="h-4 w-4 text-muted-foreground" />
-          {row.original.prospect_id}
-        </div>
-      ),
-    },
-    {
       header: 'Success',
       accessorKey: 'success',
-      enableSorting: true,
+      enableSorting: false,
       cell: ({ row }) => (
         <Badge variant={row.original.success ? 'default' : 'destructive'}>
           {row.original.success ? 'Success' : 'Failed'}
@@ -39,20 +28,9 @@ export default function ResultsTable({ results = [] }) {
       ),
     },
     {
-      header: 'Created At',
-      accessorKey: 'created_at',
-      enableSorting: true,
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <CalendarIcon className="h-4 w-4" />
-          {formatDate(row.original.created_at)}
-        </div>
-      ),
-    },
-    {
       header: 'First Name',
       accessorKey: 'prospect.first_name',
-      enableSorting: true,
+      enableSorting: false,
       cell: ({ row }) => (
         <span className="font-medium">
           {row.original.prospect?.first_name || '—'}
@@ -62,7 +40,7 @@ export default function ResultsTable({ results = [] }) {
     {
       header: 'Last Name',
       accessorKey: 'prospect.last_name',
-      enableSorting: true,
+      enableSorting: false,
       cell: ({ row }) => (
         <span className="font-medium">
           {row.original.prospect?.last_name || '—'}
@@ -72,13 +50,24 @@ export default function ResultsTable({ results = [] }) {
     {
       header: 'Company',
       accessorKey: 'prospect.company.name',
-      enableSorting: true,
+      enableSorting: false,
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <BuildingIcon className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm">
             {row.original.prospect?.company?.name || '—'}
           </span>
+        </div>
+      ),
+    },
+    {
+      header: 'Created At',
+      accessorKey: 'created_at',
+      enableSorting: false,
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <CalendarIcon className="h-4 w-4" />
+          {formatDate(row.original.created_at)}
         </div>
       ),
     },
@@ -120,9 +109,7 @@ export default function ResultsTable({ results = [] }) {
           enableSelection={false}
           emptyMessage="No results found"
           pageSizes={[10, 20, 30]}
-          initialState={{
-            sorting: [{ id: 'created_at', desc: true }]
-          }}
+          onRowClick={onRowClick}
         />
       </CardContent>
     </Card>

@@ -2,6 +2,7 @@ import React from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ZapIcon, CalendarIcon, ClockIcon } from 'lucide-react'
+import AdvancedFiltersCollapsible from '@/components/shared/ui/AdvancedFiltersCollapsible'
 
 export default function LogMainCard({ log }) {
   const formatDate = (dateString) => {
@@ -117,11 +118,42 @@ export default function LogMainCard({ log }) {
           </div>
         </div>
 
-        {/* Message (if exists) */}
-        {log.message && (
-          <div className="mt-6 p-4 bg-muted rounded-lg">
-            <p className="text-sm font-medium text-muted-foreground mb-2">Message</p>
-            <p className="text-sm">{log.message}</p>
+        {/* Message & Metadata Collapsible */}
+        {(log.message || (log.metadata && Object.keys(log.metadata).length > 0)) && (
+          <div className="mt-6">
+            <AdvancedFiltersCollapsible
+              label="Message & Metadata"
+              defaultOpen={false}
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Message */}
+                {log.message && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">Message</p>
+                    <div className="p-4 bg-muted rounded-lg">
+                      <p className="text-sm">{log.message}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Metadata */}
+                {log.metadata && Object.keys(log.metadata).length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">Metadata</p>
+                    <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-xs">
+                      {JSON.stringify(log.metadata, null, 2)}
+                    </pre>
+                  </div>
+                )}
+              </div>
+
+              {/* Show placeholder if both are empty */}
+              {!log.message && (!log.metadata || Object.keys(log.metadata).length === 0) && (
+                <p className="text-sm text-muted-foreground">
+                  No additional details available.
+                </p>
+              )}
+            </AdvancedFiltersCollapsible>
           </div>
         )}
       </CardContent>
