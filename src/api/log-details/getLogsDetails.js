@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
-const getLogDetails = async (user_id, log_id) => {
-  const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getLogDetails?user_id=${user_id}&log_id=${log_id}`, {
+const getLogsDetails = async (user_id, log_id) => {
+  const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getLogsDetails?user_id=${user_id}&log_id=${log_id}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -19,10 +19,10 @@ const getLogDetails = async (user_id, log_id) => {
   return result || []
 }
 
-export const useGetLogDetails = (userId, log_id) => {
+export const useGetLogsDetails = (userId, log_id) => {
   return useQuery({
-    queryKey: ['getLogDetails', userId, log_id],
-    queryFn: () => getLogDetails(userId, log_id),
+    queryKey: ['getLogsDetails', userId, log_id],
+    queryFn: () => getLogsDetails(userId, log_id),
     staleTime: 30000, // 30 seconds - logs are relatively fresh data
     cacheTime: 300000, // 5 minutes cache
     refetchInterval: 60000, // Refetch every minute to get latest logs
