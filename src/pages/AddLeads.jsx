@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useAddLeads } from '@/api/add-leads/addLeads'
-import { useRetryAddLeads } from '@/api/add-leads/retryAddLeads'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -31,16 +30,6 @@ export default function AddLeads() {
         },
         onError: (error) => {
             toast.error(error?.message || 'Failed to submit leads')
-        }
-    })
-
-    // Retry leads hook
-    const { mutate: retryAddLeads, isPending: isRetryPending } = useRetryAddLeads({
-        onSuccess: (data) => {
-            toast.success(data.message || 'Retry submitted successfully')
-        },
-        onError: (error) => {
-            toast.error(error?.message || 'Failed to submit retry')
         }
     })
 
@@ -96,7 +85,7 @@ export default function AddLeads() {
                         <SubmitSection 
                             urls={allUrls}
                             onSubmit={() => setSubmitDialogOpen(true)}
-                            isPending={isPending || isRetryPending}
+                            isPending={isPending}
                         />
                         
                         <SubmitLeadsDialog
@@ -104,7 +93,7 @@ export default function AddLeads() {
                             onOpenChange={setSubmitDialogOpen}
                             urls={allUrls}
                             onConfirm={handleSubmitDialogConfirm}
-                            isPending={isPending || isRetryPending}
+                            isPending={isPending}
                         />
                     </CardContent>
                 </Card>

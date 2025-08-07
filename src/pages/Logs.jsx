@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { useRetryAddLeads } from '@/api/add-leads/retryAddLeads'
 import { useLogsQueryController } from '@/api/log/getLogsByAction'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { LogTable } from '@/components/logs-page/LogTable'
@@ -11,17 +10,6 @@ import { toast } from 'sonner'
 export default function Logs() {
     const navigate = useNavigate()
     const { user } = useAuth()
-
-    // Retry leads hook
-    const { mutate: retryAddLeads, isPending: isRetryPending } = useRetryAddLeads({
-        onSuccess: (data) => {
-            toast.success(data.message || 'Retry submitted successfully')
-            refetchLogs()
-        },
-        onError: (error) => {
-            toast.error(error?.message || 'Failed to submit retry')
-        }
-    })
 
     // Fetch logs using the controller
     const {
@@ -48,7 +36,7 @@ export default function Logs() {
     }
 
     const handleRetry = (logId) => {
-        retryAddLeads({ log_id: logId, user_id: user.id })
+        toast.info('Retry functionality not yet implemented')
     }
 
     const handleRowClick = (log) => {
@@ -73,7 +61,7 @@ export default function Logs() {
                     isError={isErrorLogs}
                     error={logsError}
                     onRetry={handleRetry}
-                    isRetryPending={isRetryPending}
+                    isRetryPending={false}
                     onRowClick={handleRowClick}
                 />
             </div>
