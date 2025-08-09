@@ -1,114 +1,118 @@
-import { useAuth } from '@/contexts/AuthContext'
+import * as React from "react"
+import { Plus } from "lucide-react"
+import { toast } from "sonner"
+
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
+import { Button } from "@/components/ui/button"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import SpinnerButton from "@/components/shared/ui/SpinnerButton"
+import CampaignsGrid from "@/components/campaign/CampaignsGrid"
+import { CampaignsProvider, useCampaigns } from "@/contexts/CampaignsContext"
+
+function CampaignsContent() {
+  const {
+    campaigns = [],
+    isLoadingCampaigns,
+    isErrorCampaigns,
+    refetchCampaigns,
+  } = useCampaigns()
+
+  const [isRetrying, setIsRetrying] = React.useState(false)
+
+  const handleCreateCampaign = React.useCallback(() => {
+    // Placeholder until createCampaign mutation is implemented
+    toast.info("Create campaign: not implemented yet")
+  }, [])
+
+  const handleRetry = React.useCallback(async () => {
+    setIsRetrying(true)
+    try {
+      await refetchCampaigns()
+    } finally {
+      setIsRetrying(false)
+    }
+  }, [refetchCampaigns])
+
+  return (
+    <DashboardLayout headerText="Campaigns">
+      <div className="px-4 lg:px-6 space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold">Campaign Management</h2>
+            <p className="text-muted-foreground">
+              Create and manage your outreach campaigns
+            </p>
+          </div>
+
+          <Button onClick={handleCreateCampaign}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Campaign
+          </Button>
+        </div>
+
+        {/* Loading */}
+        {isLoadingCampaigns && (
+          <CampaignsGrid isLoading skeletonCount={12} />
+        )}
+
+        {/* Error state */}
+        {!isLoadingCampaigns && isErrorCampaigns && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Failed to load campaigns</CardTitle>
+            </CardHeader>
+            <CardContent className="flex items-center justify-between gap-4">
+              <p className="text-sm text-muted-foreground">
+                There was an error while fetching your campaigns. Please try again.
+              </p>
+              <SpinnerButton
+                loading={isRetrying}
+                onClick={handleRetry}
+                variant="outline"
+              >
+                Retry
+              </SpinnerButton>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Empty state */}
+        {!isLoadingCampaigns && !isErrorCampaigns && campaigns.length === 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">No campaigns found</CardTitle>
+            </CardHeader>
+            <CardContent className="flex items-center justify-between gap-4">
+              <p className="text-sm text-muted-foreground">
+                Get started by creating your first campaign.
+              </p>
+              <Button onClick={handleCreateCampaign} variant="outline">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Campaign
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Campaigns grid */}
+        {!isLoadingCampaigns && !isErrorCampaigns && campaigns.length > 0 && (
+          <>
+            <div className="text-sm text-muted-foreground">
+              Showing {campaigns.length} campaign{campaigns.length === 1 ? "" : "s"}
+            </div>
+            <CampaignsGrid campaigns={campaigns} />
+          </>
+        )}
+      </div>
+    </DashboardLayout>
+  )
+}
 
 export default function Campaigns() {
-    const { user } = useAuth()
-
-    return (
-        <DashboardLayout headerText="Campaigns">
-            <div className="px-4 lg:px-6">
-                <div className="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 className="text-2xl font-bold">Campaign Management</h2>
-                        <p className="text-muted-foreground">Create and manage your marketing campaigns</p>
-                    </div>
-                    <button className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90">
-                        Create Campaign
-                    </button>
-                </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 className="text-lg font-semibold">Summer Sale 2024</h3>
-                                <p className="text-sm text-muted-foreground">Email Campaign</p>
-                            </div>
-                            <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Active</span>
-                        </div>
-                        
-                        <div className="space-y-2 mb-4">
-                            <div className="flex justify-between">
-                                <span className="text-sm">Opens:</span>
-                                <span className="text-sm font-medium">2,340</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-sm">Clicks:</span>
-                                <span className="text-sm font-medium">456</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-sm">Conversions:</span>
-                                <span className="text-sm font-medium">89</span>
-                            </div>
-                        </div>
-                        
-                        <div className="flex gap-2">
-                            <button className="text-sm px-3 py-1 border rounded hover:bg-accent">Edit</button>
-                            <button className="text-sm px-3 py-1 border rounded hover:bg-accent">View Report</button>
-                        </div>
-                    </div>
-                    
-                    <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 className="text-lg font-semibold">Product Launch</h3>
-                                <p className="text-sm text-muted-foreground">Social Media Campaign</p>
-                            </div>
-                            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Scheduled</span>
-                        </div>
-                        
-                        <div className="space-y-2 mb-4">
-                            <div className="flex justify-between">
-                                <span className="text-sm">Start Date:</span>
-                                <span className="text-sm font-medium">Dec 15, 2024</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-sm">Budget:</span>
-                                <span className="text-sm font-medium">$5,000</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-sm">Target Audience:</span>
-                                <span className="text-sm font-medium">Tech Enthusiasts</span>
-                            </div>
-                        </div>
-                        
-                        <div className="flex gap-2">
-                            <button className="text-sm px-3 py-1 border rounded hover:bg-accent">Edit</button>
-                            <button className="text-sm px-3 py-1 border rounded hover:bg-accent">Preview</button>
-                        </div>
-                    </div>
-                    
-                    <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 className="text-lg font-semibold">Holiday Promotion</h3>
-                                <p className="text-sm text-muted-foreground">Multi-channel Campaign</p>
-                            </div>
-                            <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-full">Completed</span>
-                        </div>
-                        
-                        <div className="space-y-2 mb-4">
-                            <div className="flex justify-between">
-                                <span className="text-sm">Total Reach:</span>
-                                <span className="text-sm font-medium">15,670</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-sm">Engagement:</span>
-                                <span className="text-sm font-medium">8.4%</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-sm">ROI:</span>
-                                <span className="text-sm font-medium">245%</span>
-                            </div>
-                        </div>
-                        
-                        <div className="flex gap-2">
-                            <button className="text-sm px-3 py-1 border rounded hover:bg-accent">View Report</button>
-                            <button className="text-sm px-3 py-1 border rounded hover:bg-accent">Duplicate</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </DashboardLayout>
-    )
+  return (
+    <CampaignsProvider>
+      <CampaignsContent />
+    </CampaignsProvider>
+  )
 }

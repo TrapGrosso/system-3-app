@@ -38,26 +38,58 @@ export const useFetchCampaigns = (userId) => {
  * 
  * Example Success Response (200):
  * [
- *   {
- *     "id": "5d3e2f36-8db3-49c2-93e6-96bf9f632d66",
- *     "name": "Q3 Outreach Campaign",
- *     "start_at": "2025-07-01",
- *     "end_at": "2025-09-30",
- *     "status": "active",
- *     "campaign_schedule": {"frequency": "daily", "time": "09:00"},
- *     "created_at": "2025-07-04T18:35:22.123456",
- *     "prospect_count": 150
- *   },
- *   {
- *     "id": "0c52c1f7-1b77-4d6f-9e0e-3e75baff7461",
- *     "name": "Holiday Campaign",
- *     "start_at": "2025-12-01",
- *     "end_at": "2025-12-31",
- *     "status": "pending",
- *     "campaign_schedule": null,
- *     "created_at": "2025-07-03T10:02:11.987654",
- *     "prospect_count": 0
- *   }
+ *    {
+ *        "id": "6c872a06-15bb-4ef8-ac13-bd5a79bbf4c9",
+ *        "name": "Demo Campaign",
+ *        "start_at": null,
+ *        "end_at": null,
+ *        "status": "Draft",
+ *        "campaign_schedule": {
+ *          "end_date": "",
+ *          "schedules": [
+ *            {
+ *              "days": {
+ *                "1": true,
+ *                "2": true,
+ *                "3": true,
+ *                "4": true,
+ *                "5": true
+ *              },
+ *              "name": "New schedule",
+ *              "timing": {
+ *                "to": "18:00",
+ *                "from": "09:00"
+ *              },
+ *              "timezone": "America/Detroit"
+ *            }
+ *          ],
+ *          "start_date": ""
+ *        },
+ *        "campaign_sequence": [
+ *          {
+ *            "type": "email",
+ *            "delay": 1,
+ *            "variants": [
+ *              {
+ *                "body": "some email",
+ *                "subject": "some subject"
+ *              }
+ *            ]
+ *          },
+ *          {
+ *            "type": "email",
+ *            "delay": 1,
+ *            "variants": [
+ *              {
+ *                "body": "some other email",
+ *                "subject": ""
+ *              }
+ *            ]
+ *          }
+ *        ],
+ *        "created_at": "2025-08-08T11:37:52.798",
+ *        "prospect_count": 2
+ *      }
  * ]
  * 
  * Example Error Response (400):
