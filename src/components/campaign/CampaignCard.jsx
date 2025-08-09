@@ -34,13 +34,24 @@ function statusToBadgeVariant(status) {
   switch (value) {
     case "active":
       return "default"
-    case "scheduled":
-      return "outline"
+    case "running subsequences":
+      return "default"
     case "paused":
+      return "outline"
+    case "bounce protect":
+      return "outline"
+    case "scheduled":
       return "outline"
     case "completed":
       return "secondary"
     case "draft":
+      return "secondary"
+    case "account suspended":
+      return "destructive"
+    case "accounts unhealthy":
+      return "destructive"
+    case "deleted":
+      return "destructive"
     default:
       return "secondary"
   }
@@ -157,7 +168,7 @@ export default function CampaignCard({ campaign }) {
   ]
 
   return (
-    <Card className="group">
+    <Card className="group self-start">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0 space-y-1">

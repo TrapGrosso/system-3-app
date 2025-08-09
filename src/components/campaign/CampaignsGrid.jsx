@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 function CampaignCardSkeleton() {
   return (
-    <Card>
+    <Card className="self-start">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0 space-y-2">
@@ -44,7 +44,7 @@ export default function CampaignsGrid({
   skeletonCount = 6,
 }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+    <div className="grid items-start grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {isLoading
         ? Array.from({ length: skeletonCount }).map((_, idx) => (
             <CampaignCardSkeleton key={`skeleton-${idx}`} />
