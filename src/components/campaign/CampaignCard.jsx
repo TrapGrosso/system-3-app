@@ -168,12 +168,12 @@ export default function CampaignCard({ campaign }) {
   ]
 
   return (
-    <Card className="group self-start">
+    <Card className="group self-start overflow-hidden">
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-wrap items-start gap-3 sm:justify-between">
           <div className="flex-1 min-w-0 space-y-1">
-            <div className="flex items-center gap-2">
-              <CardTitle className="text-lg font-semibold truncate">
+            <div className="flex flex-wrap items-center gap-2 min-w-0">
+              <CardTitle className="text-base sm:text-lg font-semibold leading-snug line-clamp-2 sm:line-clamp-1 break-words max-w-full">
                 {name || "Untitled campaign"}
               </CardTitle>
               {status && (
@@ -182,13 +182,15 @@ export default function CampaignCard({ campaign }) {
                 </Badge>
               )}
             </div>
-            <CardDescription className="flex items-center gap-2 text-xs">
+            <CardDescription className="flex flex-wrap items-center gap-1 text-[11px] sm:text-xs">
               <CalendarDays className="h-3.5 w-3.5" />
               <span>Created {formatDate(created_at) || "N/A"}</span>
             </CardDescription>
           </div>
 
-          <ActionDropdown items={dropdownItems} align="end" side="bottom" />
+          <div className="order-1 w-full flex justify-end sm:w-auto sm:order-none shrink-0">
+            <ActionDropdown items={dropdownItems} align="end" side="bottom" />
+          </div>
         </div>
       </CardHeader>
 
