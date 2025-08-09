@@ -61,7 +61,7 @@ export function MultiSelectChipPicker({
               <CommandGroup>
                 {options.map((option) => (
                   <CommandItem
-                    key={option.value}
+                    key={option.id || option.value}
                     value={option.value}
                     onSelect={() => handleSelect(option.value)}
                   >

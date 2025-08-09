@@ -334,7 +334,7 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
                       Campaign Names (select multiple)
                     </Label>
                     <MultiSelectChipPicker
-                      options={campaigns.map(campaign => ({ value: campaign.name, label: campaign.name }))}
+                      options={campaigns.map(campaign => ({ id: campaign.id,value: campaign.name, label: campaign.name }))}
                       value={selectedCampaignNames}
                       onValueChange={setSelectedCampaignNames}
                       placeholder={campaigns.length ? "Choose campaigns..." : "No campaigns available"}
