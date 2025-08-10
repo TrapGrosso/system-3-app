@@ -6,8 +6,6 @@ import { useFetchCampaigns } from '@/api/campaign-context/fetchCampaigns'
 import { useAddProspectToCampaign } from '@/api/campaign-context/addProspectsToCampaign'
 // TODO: Uncomment and wire up when implemented
 // import { useRemoveProspectsFromCampaign } from '@/api/campaign-context/removeProspectsFromCampaign'
-// import { useUpdateCampaign } from '@/api/campaign-context/updateCampaign'
-// import { useDeleteCampaign } from '@/api/campaign-context/deleteCampaign'
 // import { useCreateCampaign } from '@/api/campaign-context/createCampaign'
 
 const CampaignsContext = React.createContext(null)
@@ -52,53 +50,10 @@ export const CampaignsProvider = ({ children }) => {
     },
   })
 
-  const updateCampaignMutation = useMutation({
-    mutationFn: async () => {
-      throw new Error('useUpdateCampaign not implemented')
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['campaigns', user_id])
-    },
-    onError: (error) => {
-      toast.error(error?.message || 'Update campaign not implemented')
-    },
-  })
 
-  const deleteCampaignMutation = useMutation({
-    mutationFn: async () => {
-      throw new Error('useDeleteCampaign not implemented')
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['campaigns', user_id])
-    },
-    onError: (error) => {
-      toast.error(error?.message || 'Delete campaign not implemented')
-    },
-  })
 
-  const createCampaignMutation = useMutation({
-    mutationFn: async () => {
-      throw new Error('useCreateCampaign not implemented')
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['campaigns', user_id])
-    },
-    onError: (error) => {
-      toast.error(error?.message || 'Create campaign not implemented')
-    },
-  })
 
   // Wrapper helper functions — always use mutateAsync
-  const addProspectsToCampaign = React.useCallback(
-    (campaign_id, prospect_ids) => {
-      return addProspectsToCampaignMutation.mutateAsync({
-        user_id,
-        campaign_id,
-        prospect_ids: Array.isArray(prospect_ids) ? prospect_ids : [prospect_ids],
-      })
-    },
-    [addProspectsToCampaignMutation, user_id]
-  )
 
   const removeProspectsFromCampaign = React.useCallback(
     (campaign_id, prospect_ids) => {
@@ -111,36 +66,8 @@ export const CampaignsProvider = ({ children }) => {
     [removeProspectsFromCampaignMutation, user_id]
   )
 
-  const updateCampaign = React.useCallback(
-    (campaign_id, updates) => {
-      return updateCampaignMutation.mutateAsync({
-        user_id,
-        campaign_id,
-        ...updates,
-      })
-    },
-    [updateCampaignMutation, user_id]
-  )
 
-  const deleteCampaign = React.useCallback(
-    (campaign_id) => {
-      return deleteCampaignMutation.mutateAsync({
-        user_id,
-        campaign_id,
-      })
-    },
-    [deleteCampaignMutation, user_id]
-  )
 
-  const createCampaign = React.useCallback(
-    (payload) => {
-      return createCampaignMutation.mutateAsync({
-        user_id,
-        ...payload,
-      })
-    },
-    [createCampaignMutation, user_id]
-  )
 
   // Utilities
   const getCampaignById = React.useCallback(
@@ -164,16 +91,9 @@ export const CampaignsProvider = ({ children }) => {
       // Raw mutations (objects)
       addProspectsToCampaignMutation,
       removeProspectsFromCampaignMutation,
-      updateCampaignMutation,
-      deleteCampaignMutation,
-      createCampaignMutation,
 
       // Wrapper functions (all use mutateAsync)
-      addProspectsToCampaign,
       removeProspectsFromCampaign,
-      updateCampaign,
-      deleteCampaign,
-      createCampaign,
 
       // Helpers
       refetchCampaigns,
@@ -183,9 +103,6 @@ export const CampaignsProvider = ({ children }) => {
       // Loading states
       isAddingToCampaign: addProspectsToCampaignMutation.isPending,
       isRemovingFromCampaign: removeProspectsFromCampaignMutation.isPending,
-      isUpdatingCampaign: updateCampaignMutation.isPending,
-      isDeletingCampaign: deleteCampaignMutation.isPending,
-      isCreatingCampaign: createCampaignMutation.isPending,
     }),
     [
       campaigns,
@@ -194,14 +111,7 @@ export const CampaignsProvider = ({ children }) => {
       user_id,
       addProspectsToCampaignMutation,
       removeProspectsFromCampaignMutation,
-      updateCampaignMutation,
-      deleteCampaignMutation,
-      createCampaignMutation,
-      addProspectsToCampaign,
       removeProspectsFromCampaign,
-      updateCampaign,
-      deleteCampaign,
-      createCampaign,
       refetchCampaigns,
       invalidateCampaigns,
       getCampaignById,
