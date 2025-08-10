@@ -1,11 +1,11 @@
 import * as React from 'react'
-import { useQueryClient, useMutation } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useAuth } from './AuthContext'
 import { useFetchCampaigns } from '@/api/campaign-context/fetchCampaigns'
 import { useAddProspectToCampaign } from '@/api/campaign-context/addProspectsToCampaign'
-// TODO: Uncomment and wire up when implemented
-// import { useRemoveProspectsFromCampaign } from '@/api/campaign-context/removeProspectsFromCampaign'
+import { useRemoveProspectFromCampaign } from '@/api/campaign-context/removeProspectsFromCampaign'
+import { useSyncIstantlyCampaigns, useSyncIstantlyProspectCampaigns } from '@/api/campaign-context/syncIstantlyWithDb'
 // import { useCreateCampaign } from '@/api/campaign-context/createCampaign'
 
 const CampaignsContext = React.createContext(null)
@@ -37,16 +37,43 @@ export const CampaignsProvider = ({ children }) => {
     },
   })
 
-  // Placeholders — replace with real hooks when available. All expose mutateAsync.
-  const removeProspectsFromCampaignMutation = useMutation({
-    mutationFn: async () => {
-      throw new Error('useRemoveProspectsFromCampaign not implemented')
+  // Remove prospects from campaign
+  const removeProspectsFromCampaignMutation = useRemoveProspectFromCampaign({
+    onSuccess: (data) => {
+      const message = data?.message || 'Prospect(s) removed from campaign'
+      toast.success(message)
+      // Invalidate campaigns and all prospects queries for this user
+      queryClient.invalidateQueries(['campaigns', user_id])
+      queryClient.invalidateQueries(['prospects', user_id])
     },
-    onSuccess: () => {
+    onError: (error) => {
+      toast.error(error?.message || 'Failed to remove prospect(s) from campaign')
+    },
+  })
+
+  // Sync Instantly campaigns -> DB
+  const syncInstantlyCampaignsMutation = useSyncIstantlyCampaigns({
+    onSuccess: (data) => {
+      const message = data?.message || 'Campaigns synced successfully'
+      toast.success(message)
       queryClient.invalidateQueries(['campaigns', user_id])
     },
     onError: (error) => {
-      toast.error(error?.message || 'Remove prospects from campaign not implemented')
+      toast.error(error?.message || 'Failed to sync campaigns')
+    },
+  })
+
+  // Sync Instantly leads per campaign -> campaign_prospect
+  const syncInstantlyProspectCampaignsMutation = useSyncIstantlyProspectCampaigns({
+    onSuccess: (data) => {
+      const message = data?.message || 'Campaign prospects synced successfully'
+      toast.success(message)
+      queryClient.invalidateQueries(['campaigns', user_id])
+      // Invalidate all prospects queries (partial match to include filters/pagination)
+      queryClient.invalidateQueries(['prospects', user_id])
+    },
+    onError: (error) => {
+      toast.error(error?.message || 'Failed to sync campaign prospects')
     },
   })
 
@@ -64,6 +91,29 @@ export const CampaignsProvider = ({ children }) => {
       })
     },
     [removeProspectsFromCampaignMutation, user_id]
+  )
+
+  const syncCampaigns = React.useCallback(
+    () => {
+      return syncInstantlyCampaignsMutation.mutateAsync({ userId: user_id })
+    },
+    [syncInstantlyCampaignsMutation, user_id]
+  )
+
+  const syncProspects = React.useCallback(
+    () => {
+      return syncInstantlyProspectCampaignsMutation.mutateAsync({ userId: user_id })
+    },
+    [syncInstantlyProspectCampaignsMutation, user_id]
+  )
+
+  const syncAll = React.useCallback(
+    async () => {
+      // Sequential to ensure campaigns are up-to-date before syncing leads
+      await syncCampaigns()
+      await syncProspects()
+    },
+    [syncCampaigns, syncProspects]
   )
 
 
@@ -91,9 +141,14 @@ export const CampaignsProvider = ({ children }) => {
       // Raw mutations (objects)
       addProspectsToCampaignMutation,
       removeProspectsFromCampaignMutation,
+      syncInstantlyCampaignsMutation,
+      syncInstantlyProspectCampaignsMutation,
 
       // Wrapper functions (all use mutateAsync)
       removeProspectsFromCampaign,
+      syncCampaigns,
+      syncProspects,
+      syncAll,
 
       // Helpers
       refetchCampaigns,
@@ -103,6 +158,9 @@ export const CampaignsProvider = ({ children }) => {
       // Loading states
       isAddingToCampaign: addProspectsToCampaignMutation.isPending,
       isRemovingFromCampaign: removeProspectsFromCampaignMutation.isPending,
+      isSyncingCampaigns: syncInstantlyCampaignsMutation.isPending,
+      isSyncingProspects: syncInstantlyProspectCampaignsMutation.isPending,
+      isSyncingAll: syncInstantlyCampaignsMutation.isPending || syncInstantlyProspectCampaignsMutation.isPending,
     }),
     [
       campaigns,
@@ -111,7 +169,12 @@ export const CampaignsProvider = ({ children }) => {
       user_id,
       addProspectsToCampaignMutation,
       removeProspectsFromCampaignMutation,
+      syncInstantlyCampaignsMutation,
+      syncInstantlyProspectCampaignsMutation,
       removeProspectsFromCampaign,
+      syncCampaigns,
+      syncProspects,
+      syncAll,
       refetchCampaigns,
       invalidateCampaigns,
       getCampaignById,
