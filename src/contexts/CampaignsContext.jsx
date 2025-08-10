@@ -6,6 +6,7 @@ import { useFetchCampaigns } from '@/api/campaign-context/fetchCampaigns'
 import { useAddProspectToCampaign } from '@/api/campaign-context/addProspectsToCampaign'
 import { useRemoveProspectFromCampaign } from '@/api/campaign-context/removeProspectsFromCampaign'
 import { useSyncIstantlyCampaigns, useSyncIstantlyProspectCampaigns } from '@/api/campaign-context/syncIstantlyWithDb'
+import { useGetProspectCampaigns } from '@/api/campaign-context/getProspectCampaigns'
 // import { useCreateCampaign } from '@/api/campaign-context/createCampaign'
 
 const CampaignsContext = React.createContext(null)
@@ -213,6 +214,12 @@ export const useCampaigns = () => {
 export const useAllCampaigns = () => {
   const { user_id } = useCampaigns()
   return useFetchCampaigns(user_id)
+}
+
+// Optional convenience hook to fetch campaigns for a specific prospect using the API hook directly
+export const useProspectCampaigns = (prospect_id) => {
+  const { user_id } = useCampaigns()
+  return useGetProspectCampaigns(user_id, prospect_id)
 }
 
 export default CampaignsContext

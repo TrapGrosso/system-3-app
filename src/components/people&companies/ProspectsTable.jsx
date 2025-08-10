@@ -45,6 +45,7 @@ export default function ProspectsTable({
   onCreateVariables,
   onBulkCreateVariables,
   onRemoveFromGroup,
+  onRemoveFromCampaign,
   onUpdate,
   onDelete,
   onBulkDelete
@@ -493,13 +494,20 @@ export default function ProspectsTable({
         : alert(`Remove ${ctx.first_name} ${ctx.last_name} from group`)
     },
     {
+      label: "Remove from Campaign",
+      variant: "destructive",
+      onSelect: () => onRemoveFromCampaign
+        ? onRemoveFromCampaign(ctx.linkedin_id, ctx)
+        : alert(`Remove ${ctx.first_name} ${ctx.last_name} from campaign`)
+    },
+    {
       label: "Delete",
       variant: "destructive",
       onSelect: () => onDelete
         ? onDelete(ctx)
         : alert(`Delete ${ctx.first_name} ${ctx.last_name}`)
     }
-  ], [onUpdate, onDelete, onAddNote, onCreateTask, onAddToGroup, onAddToCampaign, onAddToDeepSearch, onCreateVariables, onRemoveFromGroup])
+  ], [onUpdate, onDelete, onAddNote, onCreateTask, onAddToGroup, onAddToCampaign, onAddToDeepSearch, onCreateVariables, onRemoveFromGroup, onRemoveFromCampaign])
 
   // Row click handler
   const handleRowClick = React.useCallback((prospect) => {

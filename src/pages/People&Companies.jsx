@@ -17,6 +17,7 @@ import RemoveFromGroupDialog from '@/components/dialogs/RemoveFromGroupDialog'
 import UpdateCompanyDialog from '@/components/dialogs/UpdateCompanyDialog'
 import UpdateProspectDialog from '@/components/dialogs/UpdateProspectDialog'
 import AddToCampaignDialog from '@/components/dialogs/AddToCampaignDialog'
+import RemoveFromCampaignDialog from '@/components/dialogs/RemoveFromCampaignDialog'
 import DeleteDialog from '@/components/dialogs/DeleteDialog'
 import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
 
@@ -43,6 +44,9 @@ function PeopleCompanies() {
     // State for AddToCampaignDialog
     const [addToCampaignDialogOpen, setAddToCampaignDialogOpen] = useState(false)
     const [prospectIdsForCampaign, setProspectIdsForCampaign] = useState([])
+    // State for RemoveFromCampaignDialog
+    const [removeFromCampaignDialogOpen, setRemoveFromCampaignDialogOpen] = useState(false)
+    const [selectedProspectForCampaignRemoval, setSelectedProspectForCampaignRemoval] = useState(null)
 
     // State for ProspectNotesDialog
     const [notesDialogOpen, setNotesDialogOpen] = useState(false)
@@ -182,6 +186,12 @@ function PeopleCompanies() {
         setRemoveFromGroupDialogOpen(true)
     }
 
+    // Remove from campaign handler (single only)
+    const handleRemoveFromCampaign = (linkedinId, prospect) => {
+        setSelectedProspectForCampaignRemoval(prospect)
+        setRemoveFromCampaignDialogOpen(true)
+    }
+
     // Companies query handlers
     const handleCompaniesQueryChange = (queryUpdate) => {
         setCompaniesQuery(queryUpdate)
@@ -267,6 +277,7 @@ function PeopleCompanies() {
           onCreateVariables={handleCreateVariables}
           onBulkCreateVariables={handleBulkCreateVariables}
           onRemoveFromGroup={handleRemoveFromGroup}
+          onRemoveFromCampaign={handleRemoveFromCampaign}
           onUpdate={handleUpdateProspect}
           onDelete={openDeleteProspectDialog}
           onBulkDelete={handleBulkDeleteProspects}
@@ -383,6 +394,21 @@ function PeopleCompanies() {
             refetch() // Refresh prospects list after successful group removal
             setRemoveFromGroupDialogOpen(false)
             setSelectedProspectForRemoval(null)
+          }}
+        />
+      )}
+
+      {/* RemoveFromCampaignDialog - controlled by Dashboard state */}
+      {selectedProspectForCampaignRemoval && (
+        <RemoveFromCampaignDialog
+          prospect_id={selectedProspectForCampaignRemoval.linkedin_id}
+          prospect_name={`${selectedProspectForCampaignRemoval.first_name} ${selectedProspectForCampaignRemoval.last_name}`.trim()}
+          open={removeFromCampaignDialogOpen}
+          onOpenChange={setRemoveFromCampaignDialogOpen}
+          onSuccess={() => {
+            refetch()
+            setRemoveFromCampaignDialogOpen(false)
+            setSelectedProspectForCampaignRemoval(null)
           }}
         />
       )}
