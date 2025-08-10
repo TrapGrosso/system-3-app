@@ -6,10 +6,17 @@ import {
   TagsIcon,
   UsersIcon,
   FlagIcon,
-  ClockIcon
+  ClockIcon,
+  MailIcon,
+  ExternalLinkIcon,
+  CopyIcon,
+  Building2Icon
 } from "lucide-react"
 
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { TablePopoverCell } from '@/components/shared/table/TablePopoverCell'
 import { DataTable } from '@/components/shared/table/DataTable'
 import AdvancedFiltersCollapsible from '@/components/shared/ui/AdvancedFiltersCollapsible'
@@ -56,29 +63,72 @@ export default function ProspectsTable({
     {
       accessorKey: "first_name",
       header: "First Name",
-      cell: ({ row }) => (
-        <div className="font-medium">
-          {row.original.first_name || '—'}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const fn = row.original.first_name || "";
+        const ln = row.original.last_name || "";
+        const fullName = [fn, ln].filter(Boolean).join(" ");
+        const initials = (fn?.[0] || "") + (ln?.[0] || "");
+        return (
+          <div className="flex items-center gap-2 max-w-[200px]">
+            <Avatar className="size-6">
+              {row.original.avatar_url ? (
+                <AvatarImage src={row.original.avatar_url} alt={fullName} />
+              ) : null}
+              <AvatarFallback className="text-[10px]">
+                {initials || "?"}
+              </AvatarFallback>
+            </Avatar>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="font-medium truncate" title={fullName || "—"}>
+                  {fn || "—"}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top">{fullName || "—"}</TooltipContent>
+            </Tooltip>
+          </div>
+        );
+      },
     },
     {
       accessorKey: "last_name",
       header: "Last Name",
-      cell: ({ row }) => (
-        <div>{row.original.last_name || '—'}</div>
-      ),
+      cell: ({ row }) => {
+        const value = row.original.last_name || "";
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="truncate max-w-[160px]" title={value || "—"}>
+                {value || "—"}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top">{value || "—"}</TooltipContent>
+          </Tooltip>
+        );
+      },
     },
     {
       accessorKey: "title",
       header: "Title",
-      cell: ({ row }) => (
-        <div className="max-w-xs">
-          <div className="truncate" title={row.original.title || row.original.headline}>
-            {row.original.title || row.original.headline || '—'}
+      cell: ({ row }) => {
+        const value = row.original.title || row.original.headline || "";
+        return (
+          <div className="max-w-[220px]">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge
+                  variant="outline"
+                  className="truncate max-w-[220px] font-normal text-xs"
+                  title={value || "—"}
+                >
+                  {value || "—"}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top">{value || "—"}</TooltipContent>
+            </Tooltip>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       accessorKey: "status",
@@ -151,32 +201,97 @@ export default function ProspectsTable({
     {
       accessorKey: "email",
       header: "Email",
-      cell: ({ row }) => (
-        <div>
-          {row.original.email ? (
-            <a 
-              href={`mailto:${row.original.email}`}
-              className="text-blue-600 hover:underline"
+      cell: ({ row }) => {
+        const email = row.original.email;
+        if (!email) return <div>—</div>;
+
+        const handleCopy = (e) => {
+          e.stopPropagation();
+          if (navigator?.clipboard?.writeText) {
+            navigator.clipboard.writeText(email);
+          }
+        };
+
+        return (
+          <div className="flex items-center gap-1 max-w-[260px]">
+            <Button
+              variant="link"
+              asChild
+              className="h-auto p-0 text-left justify-start min-w-0"
               onClick={(e) => e.stopPropagation()}
             >
-              {row.original.email}
-            </a>
-          ) : (
-            '—'
-          )}
-        </div>
-      ),
+              <a
+                href={`mailto:${email}`}
+                className="flex items-center gap-1 min-w-0"
+                rel="noopener noreferrer"
+              >
+                <MailIcon className="h-3.5 w-3.5 shrink-0 opacity-70" />
+                <span className="truncate max-w-[200px]">{email}</span>
+                <ExternalLinkIcon className="h-3.5 w-3.5 shrink-0" />
+              </a>
+            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={handleCopy}
+                  aria-label="Copy email"
+                >
+                  <CopyIcon className="h-3.5 w-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">Copy</TooltipContent>
+            </Tooltip>
+          </div>
+        );
+      },
     },
     {
       accessorKey: "company_name",
       header: "Company",
-      cell: ({ row }) => (
-        <div className="max-w-xs">
-          <div className="truncate" title={row.original.company_name}>
-            {row.original.company_name || '—'}
+      cell: ({ row }) => {
+        const name = row.original.company_name || "";
+        const domain = row.original.company_domain || row.original.company_website || "";
+        const href = domain ? (domain.startsWith("http") ? domain : `https://${domain}`) : null;
+
+        if (!name) return <div>—</div>;
+
+        const content = (
+          <>
+            <Building2Icon className="h-3.5 w-3.5 shrink-0 opacity-70" />
+            <span className="truncate max-w-[200px]">{name}</span>
+            {href ? <ExternalLinkIcon className="h-3.5 w-3.5 shrink-0" /> : null}
+          </>
+        );
+
+        return (
+          <div className="max-w-[240px]">
+            {href ? (
+              <Button
+                variant="link"
+                asChild
+                className="h-auto p-0 text-left justify-start min-w-0"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <a href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 min-w-0">
+                  {content}
+                </a>
+              </Button>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1">
+                    <span className="truncate max-w-[220px]" title={name}>{name}</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="top">{name}</TooltipContent>
+              </Tooltip>
+            )}
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       accessorKey: "notes",

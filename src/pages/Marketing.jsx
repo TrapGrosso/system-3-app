@@ -2,7 +2,9 @@ import * as React from "react"
 import { useNavigate } from 'react-router-dom'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from "@/components/ui/badge"
+import { Spinner } from "@/components/ui/spinner"
+import { ListChecks } from "lucide-react"
 import { Separator } from '@/components/ui/separator'
 import { useDeepSearchQueue } from '@/contexts/DeepSearchQueueContext'
 import DeepSearchQueueTable from '@/components/marketing/DeepSearchQueueTable'
@@ -58,38 +60,51 @@ export default function Marketing() {
     return (
         <DashboardLayout headerText="Marketing">
             <div className="px-4 lg:px-6 space-y-6">
-                <Card>
-                    <CardContent className="space-y-6">
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center">
-                                <div>
-                                    <h3 className="text-lg font-medium">Deep Search Queue</h3>
-                                    <p className="text-muted-foreground text-sm">
-                                        Manage and process your deep search queue items
-                                    </p>
-                                </div>
-                                <Button 
-                                    onClick={handleResolveEntireQueue}
-                                    disabled={queueItems.length === 0 || isResolvingQueue}
-                                >
-                                    {isResolvingQueue ? "Resolving..." : "Resolve Entire Queue"}
-                                </Button>
+                <div className="space-y-4">
+                    <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-xl font-semibold tracking-tight">Deep Search Queue</h3>
+                                <Badge variant={queueItems.length ? "secondary" : "outline"}>
+                                    {queueItems.length} item{queueItems.length === 1 ? "" : "s"}
+                                </Badge>
                             </div>
-                            
-                            <DeepSearchQueueTable 
-                                queueItems={queueItems}
-                                isLoading={isLoadingQueue}
-                                isResolving={isResolvingQueue}
-                                onChangePrompt={handleChangePrompt}
-                                onRemove={handleRemove}
-                                onResolve={handleResolve}
-                                onRowClick={handleRowClick}
-                            />
+                            <p className="text-muted-foreground text-sm">
+                                Manage and process your deep search queue items
+                            </p>
                         </div>
-                        
-                        <Separator />
-                    </CardContent>
-                </Card>
+                        <div className="flex items-center gap-2">
+                            <Button 
+                                onClick={handleResolveEntireQueue}
+                                disabled={queueItems.length === 0 || isResolvingQueue}
+                                className="min-w-[12rem]"
+                            >
+                                {isResolvingQueue ? (
+                                    <span className="inline-flex items-center gap-2">
+                                        <Spinner size="sm" color="white" />
+                                        Resolving...
+                                    </span>
+                                ) : (
+                                    <span className="inline-flex items-center gap-2">
+                                        <ListChecks className="size-4" />
+                                        Resolve Entire Queue
+                                    </span>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                    <Separator />
+                    
+                    <DeepSearchQueueTable 
+                        queueItems={queueItems}
+                        isLoading={isLoadingQueue}
+                        isResolving={isResolvingQueue}
+                        onChangePrompt={handleChangePrompt}
+                        onRemove={handleRemove}
+                        onResolve={handleResolve}
+                        onRowClick={handleRowClick}
+                    />
+                </div>
 
                 <PromptSelectDialog
                     open={promptDialogOpen}
