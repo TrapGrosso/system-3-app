@@ -134,12 +134,7 @@ function HandleGroupsDialog({
               value={selectedGroupId}
               onChange={setSelectedGroupId}
               onCreateFirstGroupClick={() => setActiveTab("manage")}
-            />
-            {selectedGroup && (
-              <p className="text-xs text-muted-foreground mt-2">
-                {selectedGroup.description}
-              </p>
-            )}
+            />  
           </TabsContent>
           
           <TabsContent value="manage" className="mt-4">

@@ -13,6 +13,34 @@ import { Label } from "@/components/ui/label"
 import { useCampaigns } from "@/contexts/CampaignsContext"
 import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 
+function statusToBadgeVariant(status) {
+  const value = (status || "").toLowerCase()
+  switch (value) {
+    case "active":
+      return "default"
+    case "running subsequences":
+      return "default"
+    case "paused":
+      return "outline"
+    case "bounce protect":
+      return "outline"
+    case "scheduled":
+      return "outline"
+    case "completed":
+      return "secondary"
+    case "draft":
+      return "secondary"
+    case "account suspended":
+      return "destructive"
+    case "accounts unhealthy":
+      return "destructive"
+    case "deleted":
+      return "destructive"
+    default:
+      return "secondary"
+  }
+}
+
 function CampaignSingleSelect({ value, onChange }) {
   const {
     campaigns = [],
@@ -20,6 +48,8 @@ function CampaignSingleSelect({ value, onChange }) {
     isErrorCampaigns,
     refetchCampaigns,
   } = useCampaigns()
+
+  const selectedCampaign = campaigns.find((c) => c.id === value)
 
   if (isLoadingCampaigns) {
     return (
@@ -78,6 +108,25 @@ function CampaignSingleSelect({ value, onChange }) {
           </SelectContent>
         </Select>
       </div>
+
+      {selectedCampaign && (
+        <div className="space-y-3 mt-5">
+          <Label className="text-sm font-medium">Selected campaign preview:</Label>
+          <div className="text-xs text-muted-foreground space-y-2 p-3 rounded-md border">
+            <div className="flex items-center gap-2">
+              <span className="font-medium">{selectedCampaign.name}</span>
+              <Badge variant="secondary" className="ml-2">
+                {selectedCampaign.prospect_count ?? 0}
+              </Badge>
+              {selectedCampaign.status && (
+                <Badge variant={statusToBadgeVariant(selectedCampaign.status)} className="ml-1 capitalize">
+                  {selectedCampaign.status}
+                </Badge>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

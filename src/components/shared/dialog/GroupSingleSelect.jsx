@@ -6,7 +6,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Label } from "@/components/ui/label"
@@ -56,6 +55,8 @@ function GroupSingleSelect({ value, onChange, onCreateFirstGroupClick }) {
     )
   }
 
+  const selectedGroup = groups.find((g) => g.id === value)
+
   return (
     <div className="space-y-3">
       <div className="space-y-2">
@@ -80,6 +81,23 @@ function GroupSingleSelect({ value, onChange, onCreateFirstGroupClick }) {
           </SelectContent>
         </Select>
       </div>
+
+      {selectedGroup && (
+        <div className="space-y-3 mt-5">
+          <Label className="text-sm font-medium">Selected group preview:</Label>
+          <div className="text-xs text-muted-foreground space-y-2 p-3 rounded-md border">
+            <div className="flex items-center gap-2">
+              <span className="font-medium">{selectedGroup.name}</span>
+              <Badge variant="secondary" className="ml-2">
+                {selectedGroup.prospect_count ?? 0}
+              </Badge>
+            </div>
+            {selectedGroup.description && (
+              <p>{selectedGroup.description}</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
