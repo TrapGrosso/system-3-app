@@ -11,6 +11,7 @@ import { PromptProvider } from './contexts/PromptContext'
 import { TaskProvider } from './contexts/TaskContext'
 import { VariableProvider } from './contexts/VariableContext'
 import { CompaniesProvider } from './contexts/CompaniesContext'
+import { CampaignsProvider } from './contexts/CampaignsContext'
 
 const queryClient = new QueryClient()
 
@@ -25,7 +26,9 @@ createRoot(document.getElementById('root')).render(
                 <GroupsProvider>
                   <CompaniesProvider>
                     <ProspectsProvider>
-                      <App />
+                      <CampaignsProvider>
+                        <App />
+                      </CampaignsProvider>
                     </ProspectsProvider>
                   </CompaniesProvider>
                 </GroupsProvider>

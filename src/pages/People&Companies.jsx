@@ -16,6 +16,7 @@ import ProspectEnrichmentsDialog from '@/components/dialogs/enrichments/Prospect
 import RemoveFromGroupDialog from '@/components/dialogs/RemoveFromGroupDialog'
 import UpdateCompanyDialog from '@/components/dialogs/UpdateCompanyDialog'
 import UpdateProspectDialog from '@/components/dialogs/UpdateProspectDialog'
+import AddToCampaignDialog from '@/components/dialogs/AddToCampaignDialog'
 import DeleteDialog from '@/components/dialogs/DeleteDialog'
 import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
 
@@ -38,6 +39,10 @@ function PeopleCompanies() {
     // State for HandleGroupsDialog
     const [addGroupOpen, setAddGroupOpen] = useState(false)
     const [prospectIdsForGroup, setProspectIdsForGroup] = useState([])
+
+    // State for AddToCampaignDialog
+    const [addToCampaignDialogOpen, setAddToCampaignDialogOpen] = useState(false)
+    const [prospectIdsForCampaign, setProspectIdsForCampaign] = useState([])
 
     // State for ProspectNotesDialog
     const [notesDialogOpen, setNotesDialogOpen] = useState(false)
@@ -119,9 +124,8 @@ function PeopleCompanies() {
     }
 
     const handleAddToCampaign = (linkedinId) => {
-        // TODO: Implement actual API call
-        console.log('Add to campaign:', linkedinId)
-        alert(`Adding prospect ${linkedinId} to campaign`)
+        setProspectIdsForCampaign([linkedinId])
+        setAddToCampaignDialogOpen(true)
     }
 
     const handleAddToDeepSearch = (linkedinId) => {
@@ -149,9 +153,9 @@ function PeopleCompanies() {
     }
 
     const handleBulkAddToCampaign = (linkedinIds) => {
-        // TODO: Implement actual API call
-        console.log('Bulk add to campaign:', linkedinIds)
-        alert(`Adding ${linkedinIds.length} prospects to campaign`)
+        if (!linkedinIds.length) return
+        setProspectIdsForCampaign(linkedinIds)
+        setAddToCampaignDialogOpen(true)
     }
 
     const handleBulkAddToDeepSearch = (linkedinIds) => {
@@ -302,6 +306,18 @@ function PeopleCompanies() {
           refetch() // Refresh prospects list after successful group addition
           setAddGroupOpen(false)
           setProspectIdsForGroup([])
+        }}
+      />}
+
+      {/* AddToCampaignDialog - controlled by Dashboard state */}
+      {!!prospectIdsForCampaign.length && <AddToCampaignDialog
+        prospect_ids={prospectIdsForCampaign}
+        open={addToCampaignDialogOpen}
+        onOpenChange={setAddToCampaignDialogOpen}
+        onSuccess={() => {
+          refetch() // Refresh prospects list after successful campaign addition
+          setAddToCampaignDialogOpen(false)
+          setProspectIdsForCampaign([])
         }}
       />}
       
