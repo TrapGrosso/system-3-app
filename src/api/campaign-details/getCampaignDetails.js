@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { payload } from './campaign-details-mock'
 
 const getCampaignDetails = async (user_id, campaign_id) => {
   const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getCampaignDetails?user_id=${user_id}&campaign_id=${campaign_id}`, {
@@ -16,7 +17,7 @@ const getCampaignDetails = async (user_id, campaign_id) => {
 
   const result = await response.json()
   
-  return result || []
+  return payload || {}
 }
 
 export const usegetCampaignDetails = (userId, campaign_id) => {

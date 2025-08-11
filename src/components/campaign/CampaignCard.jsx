@@ -124,7 +124,7 @@ function timeRange(timing) {
 }
 
 function getSchedules(campaign) {
-  return campaign?.campaign_schedule?.schedules || []
+  return campaign?.campaign_schedule || []
 }
 
 function getSequences(campaign) {
