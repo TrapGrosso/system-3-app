@@ -1,5 +1,4 @@
 import React from "react"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import { CalendarDays, Clock, Globe } from "lucide-react"
@@ -166,50 +165,45 @@ export default function CampaignHeader({ campaign }) {
   } = campaign
 
   return (
-    <Card>
-      <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between border-b">
-        <div>
-          <CardTitle className="text-xl sm:text-2xl">{name || "Untitled Campaign"}</CardTitle>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant={statusToBadgeVariant(status)} aria-label={`Status: ${status || "unknown"}`}>
-            {status || "unknown"}
-          </Badge>
-        </div>
-      </CardHeader>
+    <section className="w-full max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 md:items-center">
+        {/* Column 1: 2/3 - Name, Status, Info */}
+        <div className="md:col-span-2">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
+            <h2
+              className="text-2xl sm:text-3xl font-semibold leading-tight truncate"
+              title={name || "Untitled Campaign"}
+            >
+              {name || "Untitled Campaign"}
+            </h2>
+            <Badge variant={statusToBadgeVariant(status)} aria-label={`Status: ${status || "unknown"}`}>
+              {status || "unknown"}
+            </Badge>
+          </div>
 
-      <CardContent className="pt-4">
-        {/* Responsive 2-col grid on desktop, 1-col on mobile.
-            Desktop: left = schedule, right = info
-            Mobile:  top = info,     bottom = schedule */}
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Schedule column */}
-          <section className="order-2 md:order-1 space-y-3">
-            <div className="text-sm font-medium">Schedule</div>
-            {campaign_schedule.length === 0 ? (
-              <div className="text-sm text-muted-foreground rounded-md border p-3">
-                No schedule configured
-              </div>
-            ) : (
-              <ul className="space-y-2">
-                {campaign_schedule.map((item, idx) => (
-                  <ScheduleItem key={idx} item={item} />
-                ))}
-              </ul>
-            )}
-          </section>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <DateBadge icon={CalendarDays} label="Start" value={start_at} />
+            <DateBadge icon={CalendarDays} label="End" value={end_at} />
+            <DateBadge icon={Clock} label="Created" value={created_at} />
+          </div>
+        </div>
 
-          {/* Info column */}
-          <section className="order-1 md:order-2 space-y-3">
-            <div className="text-sm font-medium">Info</div>
-            <div className="flex flex-wrap items-center gap-2">
-              <DateBadge icon={CalendarDays} label="Start" value={start_at} />
-              <DateBadge icon={CalendarDays} label="End" value={end_at} />
-              <DateBadge icon={Clock} label="Created" value={created_at} />
+        {/* Column 2: 1/3 - Schedule */}
+        <div className="md:col-span-1">
+          <div className="text-sm font-medium mb-2">Schedule</div>
+          {campaign_schedule.length === 0 ? (
+            <div className="text-sm text-muted-foreground rounded-md border p-3">
+              No schedule configured
             </div>
-          </section>
+          ) : (
+            <ul className="space-y-2">
+              {campaign_schedule.map((item, idx) => (
+                <ScheduleItem key={idx} item={item} />
+              ))}
+            </ul>
+          )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   )
 }
