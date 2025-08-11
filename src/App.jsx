@@ -14,6 +14,7 @@ import Groups from './pages/Groups'
 import Logs from './pages/Logs'
 import PeopleCompanies from './pages/People&Companies'
 import LogDetails from './pages/LogDetails'
+import CampaignDetails from './pages/CampaignDetails'
 import { useAuth } from './contexts/AuthContext'
 import { RoundSpinner } from './components/ui/spinner'
 import { Toaster } from './components/ui/sonner'
@@ -122,6 +123,14 @@ function App() {
           element={
             <ProtectedRoute>
               <LogDetails />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/campaigns/:campaignId" 
+          element={
+            <ProtectedRoute>
+              <CampaignDetails />
             </ProtectedRoute>
           } 
         />

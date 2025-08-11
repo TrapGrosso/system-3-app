@@ -143,10 +143,11 @@ function getEmailPreview(variants) {
   return { subject: subj, body }
 }
 
-export default function CampaignCard({ campaign }) {
+export default function CampaignCard({ campaign, handleCampaignSelection }) {
   const [open, setOpen] = React.useState(false)
 
   const {
+    id,
     name,
     status,
     created_at,
@@ -157,7 +158,7 @@ export default function CampaignCard({ campaign }) {
   const sequence = getSequences(campaign)
 
   const dropdownItems = [
-    { label: "View campaign", onSelect: () => toast.info("Navigate to campaign details: not wired yet") },
+    { label: "View Campaign", onSelect: () => handleCampaignSelection ? handleCampaignSelection(id) : toast.info("Navigate to campaign details: not wired yet") },
     "separator",
     { label: "Add prospects", onSelect: () => toast.info("Add prospects: coming soon") },
     "separator",

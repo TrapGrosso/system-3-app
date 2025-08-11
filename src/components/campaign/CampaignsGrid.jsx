@@ -42,6 +42,7 @@ export default function CampaignsGrid({
   campaigns = [],
   isLoading = false,
   skeletonCount = 6,
+  handleCampaignSelection,
 }) {
   return (
     <div className="grid items-start grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -49,7 +50,13 @@ export default function CampaignsGrid({
         ? Array.from({ length: skeletonCount }).map((_, idx) => (
             <CampaignCardSkeleton key={`skeleton-${idx}`} />
           ))
-        : campaigns.map((c) => <CampaignCard key={c.id} campaign={c} />)}
+        : campaigns.map((c) => (
+            <CampaignCard
+              key={c.id}
+              campaign={c}
+              handleCampaignSelection={handleCampaignSelection}
+            />
+          ))}
     </div>
   )
 }

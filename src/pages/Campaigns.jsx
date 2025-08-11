@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 import CampaignsGrid from "@/components/campaign/CampaignsGrid"
 import { CampaignsProvider, useCampaigns } from "@/contexts/CampaignsContext"
+import { useNavigate } from "react-router-dom"
 
 function CampaignsContent() {
   const {
@@ -23,6 +24,13 @@ function CampaignsContent() {
     // Placeholder until createCampaign mutation is implemented
     toast.info("Create campaign: not implemented yet")
   }, [])
+
+  const navigate = useNavigate()
+
+  const handleCampaignSelection = React.useCallback((campaignId) => {
+    if (!campaignId) return
+    navigate(`/campaigns/${campaignId}`)
+  }, [navigate])
 
   const handleRetry = React.useCallback(async () => {
     setIsRetrying(true)
@@ -101,7 +109,7 @@ function CampaignsContent() {
             <div className="text-sm text-muted-foreground">
               Showing {campaigns.length} campaign{campaigns.length === 1 ? "" : "s"}
             </div>
-            <CampaignsGrid campaigns={campaigns} />
+            <CampaignsGrid campaigns={campaigns} handleCampaignSelection={handleCampaignSelection} />
           </>
         )}
       </div>
