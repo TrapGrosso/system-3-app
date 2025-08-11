@@ -156,7 +156,7 @@ export default function CampaignSequenceSection({ sequence = [] }) {
 
   return (
     <div className="flex justify-center">
-      <Card className="w-full mx-auto lg:max-w-[50vw] xl:max-w-[50vw]">
+      <Card className="w-full">
         <CardHeader className="gap-3">
           <CardTitle className="text-base flex items-center justify-between gap-4">
             <span className="flex flex-col">

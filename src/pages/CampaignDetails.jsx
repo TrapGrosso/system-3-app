@@ -80,14 +80,15 @@ export default function CampaignDetails() {
       <div className="px-4 lg:px-6 space-y-8">
         <CampaignHeader campaign={data.campaign} />
 
-        <CampaignSequenceSection sequence={data?.campaign?.campaign_sequence || []} />
-
         <CampaignAnalyticsSection analytics={data?.analytics} />
 
-        <CampaignProspectsTable
-          prospects={data?.prospects || []}
-          onRowClick={handleRowClick}
-        />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <CampaignSequenceSection sequence={data?.campaign?.campaign_sequence || []} />
+          <CampaignProspectsTable
+            prospects={data?.prospects || []}
+            onRowClick={handleRowClick}
+          />
+        </div>
       </div>
     </DashboardLayout>
   )
