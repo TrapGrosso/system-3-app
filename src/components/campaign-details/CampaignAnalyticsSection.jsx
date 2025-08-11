@@ -2,7 +2,6 @@ import React, { useMemo } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   ChartContainer,
   ChartTooltip,
@@ -11,22 +10,11 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart"
 import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell,
-  FunnelChart,
-  Funnel,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  CartesianGrid,
   LabelList,
-  Area,
-  AreaChart
+  Label
 } from "recharts"
 import { 
   Users, 
@@ -35,7 +23,6 @@ import {
   MessageCircle, 
   MousePointer, 
   AlertTriangle, 
-  UserMinus,
   CheckCircle,
   DollarSign,
   TrendingUp,
@@ -61,7 +48,7 @@ const MetricCard = ({ label, value, icon: Icon, change, status = "default", clas
   }
 
   return (
-    <div className={`relative overflow-hidden rounded-xl border bg-gradient-to-br ${getStatusColors(status)} p-4 transition-all hover:shadow-lg hover:scale-105 ${className}`}>
+    <div className={`relative overflow-hidden rounded-xl border bg-gradient-to-br ${getStatusColors(status)} p-4 transition-all hover:shadow-lg hover:scale-102 ${className}`}>
       <div className="flex items-start justify-between">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
@@ -84,26 +71,12 @@ const MetricCard = ({ label, value, icon: Icon, change, status = "default", clas
 
 // Chart configurations
 const chartConfig = {
-  funnel: {
-    leads: { label: "Leads", color: "hsl(var(--chart-1))" },
-    contacted: { label: "Contacted", color: "hsl(var(--chart-2))" },
-    opened: { label: "Opened", color: "hsl(var(--chart-3))" },
-    replied: { label: "Replied", color: "hsl(var(--chart-4))" },
-  },
-  sequence: {
-    sent: { label: "Sent", color: "hsl(221, 83%, 53%)" },
-    opened: { label: "Opened", color: "hsl(142, 71%, 45%)" },
-    replied: { label: "Replied", color: "hsl(47, 96%, 53%)" },
-    clicked: { label: "Clicked", color: "hsl(271, 91%, 65%)" },
-  },
-  distribution: {
-    opened: { label: "Opens", color: "hsl(142, 71%, 45%)" },
-    replied: { label: "Replies", color: "hsl(47, 96%, 53%)" },
-    clicked: { label: "Clicks", color: "hsl(271, 91%, 65%)" },
-    bounced: { label: "Bounced", color: "hsl(0, 84%, 60%)" },
-    unsubscribed: { label: "Unsubscribed", color: "hsl(25, 95%, 53%)" },
-    pending: { label: "Pending", color: "hsl(210, 40%, 70%)" },
-  }
+  opened: { label: "Opens", color: "hsl(142, 71%, 45%)" },
+  replied: { label: "Replies", color: "hsl(47, 96%, 53%)" },
+  clicked: { label: "Clicks", color: "hsl(271, 91%, 65%)" },
+  bounced: { label: "Bounced", color: "hsl(0, 84%, 60%)" },
+  unsubscribed: { label: "Unsubscribed", color: "hsl(25, 95%, 53%)" },
+  pending: { label: "Pending", color: "hsl(210, 40%, 70%)" },
 }
 
 export default function CampaignAnalyticsSection({ analytics, sequence = [] }) {
@@ -141,30 +114,6 @@ export default function CampaignAnalyticsSection({ analytics, sequence = [] }) {
   const clickRate = open_count > 0 ? ((link_click_count / open_count) * 100).toFixed(1) : 0
   const completionRate = leads_count > 0 ? ((completed_count / leads_count) * 100).toFixed(1) : 0
 
-  // Prepare funnel data
-  const funnelData = useMemo(() => [
-    { name: "Leads", value: leads_count, color: "hsl(221, 83%, 53%)", percentage: 100 },
-    { name: "Contacted", value: contacted_count, color: "hsl(142, 71%, 45%)", percentage: leads_count > 0 ? ((contacted_count / leads_count) * 100).toFixed(1) : 0 },
-    { name: "Opened", value: open_count, color: "hsl(47, 96%, 53%)", percentage: contacted_count > 0 ? ((open_count / contacted_count) * 100).toFixed(1) : 0 },
-    { name: "Replied", value: reply_count, color: "hsl(271, 91%, 65%)", percentage: open_count > 0 ? ((reply_count / open_count) * 100).toFixed(1) : 0 },
-  ], [leads_count, contacted_count, open_count, reply_count])
-
-  // Prepare sequence performance data
-  const sequenceData = useMemo(() => {
-    if (!sequence || !Array.isArray(sequence)) return []
-    
-    return sequence.map((step, index) => ({
-      step: `Step ${index + 1}`,
-      delay: step.delay,
-      sent: step.step_totals?.sent || 0,
-      opened: step.step_totals?.opened || 0,
-      replied: step.step_totals?.replies || 0,
-      clicked: step.step_totals?.clicks || 0,
-      openRate: step.step_totals?.sent > 0 ? ((step.step_totals.opened / step.step_totals.sent) * 100).toFixed(1) : 0,
-      replyRate: step.step_totals?.sent > 0 ? ((step.step_totals.replies / step.step_totals.sent) * 100).toFixed(1) : 0,
-    }))
-  }, [sequence])
-
   // Prepare response distribution data
   const distributionData = useMemo(() => {
     const total = contacted_count
@@ -179,6 +128,11 @@ export default function CampaignAnalyticsSection({ analytics, sequence = [] }) {
       { name: "Pending", value: Math.max(0, pending), color: "hsl(210, 40%, 70%)" },
     ].filter(item => item.value > 0)
   }, [open_count, reply_count, link_click_count, bounced_count, unsubscribed_count, contacted_count])
+
+  const distributionTotal = useMemo(
+    () => distributionData.reduce((sum, d) => sum + d.value, 0),
+    [distributionData]
+  )
 
   return (
     <div className="space-y-6">
@@ -238,35 +192,75 @@ export default function CampaignAnalyticsSection({ analytics, sequence = [] }) {
                 <CardTitle className="text-lg">Response Distribution</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <ChartContainer
-                  config={chartConfig.distribution}
-                  className="h-[300px]"
-                >
-                  <PieChart>
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent hideLabel />}
-                    />
-                    <Pie
-                      data={distributionData}
-                      dataKey="value"
-                      nameKey="name"
-                      innerRadius={60}
-                      strokeWidth={2}
-                    >
-                      {distributionData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                      <LabelList
-                        dataKey="name"
-                        className="fill-background"
-                        stroke="none"
-                        fontSize={12}
-                        position="outside"
-                      />
-                    </Pie>
-                  </PieChart>
-                </ChartContainer>
+                {distributionData.length === 0 ? (
+                  <div className="h-[300px] grid place-items-center text-sm text-muted-foreground">
+                    No data
+                  </div>
+                ) : (
+                  <ChartContainer
+                    config={chartConfig}
+                    className="h-[300px] flex items-center justify-center w-full"
+                  >
+                    <PieChart width={300} height={300}>
+                      <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                      <Pie
+                        data={distributionData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={80}
+                        outerRadius={120}
+                        strokeWidth={2}
+                        minAngle={3}
+                        labelLine={false}
+                        isAnimationActive
+                      >
+                        {distributionData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                        <Label
+                          position="center"
+                          content={({ viewBox }) => {
+                            if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                              const cx = viewBox.cx
+                              const cy = viewBox.cy
+                              return (
+                                <>
+                                  <text x={cx} y={cy - 8} textAnchor="middle" className="fill-muted-foreground text-[12px]">
+                                    Total
+                                  </text>
+                                  <text x={cx} y={cy + 10} textAnchor="middle" className="fill-foreground font-semibold text-[16px]">
+                                    {(distributionTotal || 0).toLocaleString()}
+                                  </text>
+                                </>
+                              )
+                            }
+                            return null
+                          }}
+                        />
+                        <LabelList
+                          position="outside"
+                          className="fill-foreground"
+                          content={(props) => {
+                            const { x, y, textAnchor, value, index, payload } = props ?? {}
+                            if (x == null || y == null) return null
+                            const val = typeof value === "number" ? value : (payload?.value ?? 0)
+                            const name = payload?.name ?? distributionData[index]?.name ?? ""
+                            const pct = distributionTotal > 0 ? (val / distributionTotal) * 100 : 0
+                            if (!name || pct < 6) return null
+                            return (
+                              <text x={x} y={y} textAnchor={textAnchor || "start"} className="fill-foreground text-[12px]">
+                                {`${name} ${pct.toFixed(0)}%`}
+                              </text>
+                            )
+                          }}
+                        />
+                      </Pie>
+                      <ChartLegend content={<ChartLegendContent nameKey="name" />} className="mt-2 justify-center" />
+                    </PieChart>
+                  </ChartContainer>
+                )}
               </CardContent>
             </Card>
 

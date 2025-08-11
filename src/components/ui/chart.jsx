@@ -254,7 +254,7 @@ function ChartLegendContent({
                   backgroundColor: item.color,
                 }} />
             )}
-            {itemConfig?.label}
+            {itemConfig?.label ?? (item.value ?? item.payload?.name)}
           </div>
         );
       })}
