@@ -1,6 +1,5 @@
 import React from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -33,29 +32,25 @@ const metricItems = [
   { key: "unique_clicks", label: "Unique Clicks" },
 ]
 
-function StatsGrid({ data }) {
+function StatsGrid({ data, tone = "neutral" }) {
+  const chipBase = "rounded-lg px-3 py-2"
+  const chipTone = tone === "accent" ? "bg-primary/5" : "bg-muted/30 dark:bg-muted/10"
   return (
     <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2">
       {metricItems.map((it) => (
-        <div key={it.key} className="rounded-md border p-2">
+        <div key={it.key} className={`${chipBase} ${chipTone}`}>
           <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{it.label}</div>
-          <div className="text-sm font-semibold">{formatNumber(data?.[it.key])}</div>
+          <div className="text-base font-semibold">{formatNumber(data?.[it.key])}</div>
         </div>
       ))}
     </div>
   )
 }
 
-function StatsPanel({ title, tone = "neutral", children }) {
-  // tone: neutral | accent
-  const toneClass =
-    tone === "accent"
-      ? "rounded-md border p-2 bg-muted/30 dark:bg-muted/10"
-      : "space-y-2"
+function SectionLabel({ children }) {
   return (
-    <div className="space-y-2">
-      <Badge variant={tone === "accent" ? "outline" : "secondary"}>{title}</Badge>
-      <div className={toneClass}>{children}</div>
+    <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+      {children}
     </div>
   )
 }
@@ -174,7 +169,7 @@ export default function CampaignSequenceSection({ sequence = [] }) {
             </span>
 
             {Array.isArray(sequence) && sequence.length > 0 ? (
-              <div className="flex items-end gap-3">
+              <div className="flex items-end gap-3 flex-wrap">
                 <StepSelect sequence={sequence} value={stepIndex} onChange={handleStepChange} />
                 <VariantSelect
                   variants={variants}
@@ -192,8 +187,8 @@ export default function CampaignSequenceSection({ sequence = [] }) {
               No sequence configured for this campaign.
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Left: content */}
+            <div className="flex flex-col gap-6">
+              {/* Content preview */}
               <div>
                 {variants.length === 0 ? (
                   <div className="rounded-md border p-3 text-sm text-muted-foreground">
@@ -204,24 +199,25 @@ export default function CampaignSequenceSection({ sequence = [] }) {
                 )}
               </div>
 
-              {/* Right: analytics */}
-              <div className="space-y-4">
-                <StatsPanel title="Step totals" tone="neutral">
-                  <StatsGrid data={currentStep?.step_totals} />
-                </StatsPanel>
+              {/* Divider */}
+              <div className="h-px bg-border" />
 
-                {/* Only render variant analytics when there are more than 1 variant (spec) */}
-                {showVariantSelect ? (
-                  <StatsPanel title="Variant analytics" tone="accent">
-                    <div className="space-y-2">
-                      <div className="text-xs text-muted-foreground">
-                        Variant {variantIndex + 1} of {variants.length}
-                      </div>
-                      <StatsGrid data={currentVariant?.analytics} />
-                    </div>
-                  </StatsPanel>
-                ) : null}
+              {/* Step totals */}
+              <div className="space-y-2">
+                <SectionLabel>Step totals</SectionLabel>
+                <StatsGrid data={currentStep?.step_totals} tone="neutral" />
               </div>
+
+              {/* Variant analytics */}
+              {showVariantSelect ? (
+                <div className="space-y-2">
+                  <SectionLabel>Variant analytics</SectionLabel>
+                  <div className="text-xs text-muted-foreground">
+                    Variant {variantIndex + 1} of {variants.length}
+                  </div>
+                  <StatsGrid data={currentVariant?.analytics} tone="accent" />
+                </div>
+              ) : null}
             </div>
           )}
         </CardContent>
