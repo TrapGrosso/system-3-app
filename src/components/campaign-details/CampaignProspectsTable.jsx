@@ -1,5 +1,6 @@
 import React from "react"
 import { DataTable } from "@/components/shared/table/DataTable"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -10,6 +11,7 @@ import {
   ExternalLink as ExternalLinkIcon,
   Copy as CopyIcon,
   Building2 as Building2Icon,
+  Users,
 } from "lucide-react"
 
 export default function CampaignProspectsTable({ prospects = [], onRowClick }) {
@@ -167,20 +169,45 @@ export default function CampaignProspectsTable({ prospects = [], onRowClick }) {
     }
   ], [])
 
+  const formatNumber = (v) => (typeof v === "number" ? v.toLocaleString() : v ?? 0)
+
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold px-1">Prospects in Campaign</h2>
-      <DataTable
-        columns={columns}
-        data={prospects}
-        rowId={(row) => row.linkedin_id}
-        emptyMessage="No prospects in this campaign"
-        onRowClick={onRowClick}
-        className="bg-background"
-        // Enable selection by providing bulkActions, and add row action menu
-        bulkActions={bulkActions}
-        rowActions={rowActions}
-      />
-    </div>
+    <Card className="w-full">
+      <CardHeader className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              <CardTitle className="text-xl font-bold">Campaign Prospects</CardTitle>
+            </div>
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <Badge variant="outline" className="text-xs">
+                {formatNumber(prospects?.length)} Total
+              </Badge>
+              {prospects?.length > 0 && (
+                <>
+                  <span>•</span>
+                  <span>Manage and track prospect engagement</span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        <DataTable
+          columns={columns}
+          data={prospects}
+          rowId={(row) => row.linkedin_id}
+          emptyMessage="No prospects in this campaign"
+          onRowClick={onRowClick}
+          className="bg-background"
+          // Enable selection by providing bulkActions, and add row action menu
+          bulkActions={bulkActions}
+          rowActions={rowActions}
+        />
+      </CardContent>
+    </Card>
   )
 }
