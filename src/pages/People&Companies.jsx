@@ -19,6 +19,7 @@ import UpdateProspectDialog from '@/components/dialogs/UpdateProspectDialog'
 import AddToCampaignDialog from '@/components/dialogs/AddToCampaignDialog'
 import RemoveFromCampaignDialog from '@/components/dialogs/RemoveFromCampaignDialog'
 import DeleteDialog from '@/components/dialogs/DeleteDialog'
+import FindProspectEmailsDialog from '@/components/dialogs/FindProspectEmailsDialog'
 import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
 
 function PeopleCompanies() {
@@ -149,6 +150,18 @@ function PeopleCompanies() {
         setTasksDialogOpen(true)
     }
 
+    // Find Prospect Emails handlers
+    const handleFindEmails = (linkedinId) => {
+        setProspectIdsForFindEmails([linkedinId])
+        setFindEmailsDialogOpen(true)
+    }
+
+    const handleBulkFindEmails = (linkedinIds) => {
+        if (!linkedinIds.length) return
+        setProspectIdsForFindEmails(linkedinIds)
+        setFindEmailsDialogOpen(true)
+    }
+
     // Bulk action handlers
     const handleBulkAddToGroup = (linkedinIds) => {
         if (!linkedinIds.length) return
@@ -191,6 +204,10 @@ function PeopleCompanies() {
         setSelectedProspectForCampaignRemoval(prospect)
         setRemoveFromCampaignDialogOpen(true)
     }
+
+    // State for FindProspectEmailsDialog
+    const [findEmailsDialogOpen, setFindEmailsDialogOpen] = useState(false)
+    const [prospectIdsForFindEmails, setProspectIdsForFindEmails] = useState([])
 
     // Companies query handlers
     const handleCompaniesQueryChange = (queryUpdate) => {
@@ -281,6 +298,8 @@ function PeopleCompanies() {
           onUpdate={handleUpdateProspect}
           onDelete={openDeleteProspectDialog}
           onBulkDelete={handleBulkDeleteProspects}
+          onFindEmails={handleFindEmails}
+          onBulkFindEmails={handleBulkFindEmails}
         />
 
         {/* Companies Section */}
@@ -383,6 +402,20 @@ function PeopleCompanies() {
         }}
       />}
       
+      {/* FindProspectEmailsDialog - controlled by Dashboard state */}
+      {!!prospectIdsForFindEmails.length && (
+        <FindProspectEmailsDialog
+          prospect_ids={prospectIdsForFindEmails}
+          open={findEmailsDialogOpen}
+          onOpenChange={setFindEmailsDialogOpen}
+          onSuccess={() => {
+            refetch()
+            setFindEmailsDialogOpen(false)
+            setProspectIdsForFindEmails([])
+          }}
+        />
+      )}
+
       {/* RemoveFromGroupDialog - controlled by Dashboard state */}
       {selectedProspectForRemoval && (
         <RemoveFromGroupDialog

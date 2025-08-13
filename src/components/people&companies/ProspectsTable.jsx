@@ -553,8 +553,19 @@ export default function ProspectsTable({
           alert(`Delete ${selectedIds.length} prospects`)
         }
       }
-    }
-  ], [onBulkAddToGroup, onBulkAddToCampaign, onBulkAddToDeepSearch, onBulkCreateVariables, onBulkDelete])
+    },
+    {
+      label: "Find Emails",
+      value: "findEmails",
+      onSelect: (selectedIds) => {
+        if (onBulkFindEmails) {
+          onBulkFindEmails(selectedIds)
+        } else {
+          alert(`Find emails for ${selectedIds.length} prospects`)
+        }
+      }
+    },
+  ], [onBulkAddToGroup, onBulkAddToCampaign, onBulkAddToDeepSearch, onBulkCreateVariables, onBulkDelete, onBulkFindEmails])
 
   // Row actions function
   const rowActions = React.useCallback((ctx) => [
@@ -614,6 +625,12 @@ export default function ProspectsTable({
       onSelect: () => onRemoveFromCampaign
         ? onRemoveFromCampaign(ctx.linkedin_id, ctx)
         : alert(`Remove ${ctx.first_name} ${ctx.last_name} from campaign`)
+    },
+    {
+      label: "Find Emails",
+      onSelect: () => onFindEmails
+        ? onFindEmails(Array.isArray(ctx.linkedin_id) ? ctx.linkedin_id : [ctx.linkedin_id])
+        : alert(`Find emails for ${ctx.first_name} ${ctx.last_name}`)
     },
     {
       label: "Delete",
