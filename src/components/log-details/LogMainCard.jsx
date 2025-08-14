@@ -147,7 +147,7 @@ const formatActionLabel = (action) => {
                 {log.metadata && Object.keys(log.metadata).length > 0 && (
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-muted-foreground">Metadata</p>
-                    <pre className="bg-muted overflow-x-auto rounded-lg p-4 text-xs">
+                    <pre className="bg-muted overflow-x-auto overflow-y-auto max-h-64 rounded-lg p-4 text-xs">
                       {JSON.stringify(log.metadata, null, 2)}
                     </pre>
                   </div>

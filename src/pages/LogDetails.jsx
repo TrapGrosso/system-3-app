@@ -97,9 +97,11 @@ export default function LogDetails() {
         <LogMainCard log={log} />
         
         <div className="grid gap-6 lg:grid-cols-2 mb-6">
-          <ResultCodeCard result={selectedResult?.result} />
+          <div className="min-w-0">
+            <ResultCodeCard result={selectedResult?.result} />
+          </div>
           
-          <Card>
+          <Card className="min-w-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TableIcon className="h-5 w-5" />
