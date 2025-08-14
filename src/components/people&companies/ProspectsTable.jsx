@@ -55,7 +55,9 @@ export default function ProspectsTable({
   onRemoveFromCampaign,
   onUpdate,
   onDelete,
-  onBulkDelete
+  onBulkDelete,
+  onBulkFindEmails,
+  onFindEmails
 }) {
 
   // Column definitions (without select and actions - DataTable handles these)
@@ -516,6 +518,17 @@ export default function ProspectsTable({
       }
     },
     {
+      label: "Find Emails",
+      value: "findEmails",
+      onSelect: (selectedIds) => {
+        if (onBulkFindEmails) {
+          onBulkFindEmails(selectedIds)
+        } else {
+          alert(`Find emails for ${selectedIds.length} prospects`)
+        }
+      }
+    },
+    {
       label: "Create Variables With AI",
       value: "createVariables",
       onSelect: (selectedIds) => {
@@ -554,17 +567,6 @@ export default function ProspectsTable({
         }
       }
     },
-    {
-      label: "Find Emails",
-      value: "findEmails",
-      onSelect: (selectedIds) => {
-        if (onBulkFindEmails) {
-          onBulkFindEmails(selectedIds)
-        } else {
-          alert(`Find emails for ${selectedIds.length} prospects`)
-        }
-      }
-    },
   ], [onBulkAddToGroup, onBulkAddToCampaign, onBulkAddToDeepSearch, onBulkCreateVariables, onBulkDelete, onBulkFindEmails])
 
   // Row actions function
@@ -581,6 +583,12 @@ export default function ProspectsTable({
       onSelect: () => onAddNote
         ? onAddNote(ctx.linkedin_id, ctx)
         : alert(`Add note for ${ctx.first_name} ${ctx.last_name}`)
+    },
+    {
+      label: "Find Email",
+      onSelect: () => onFindEmails
+        ? onFindEmails(Array.isArray(ctx.linkedin_id) ? ctx.linkedin_id : [ctx.linkedin_id])
+        : alert(`Find emails for ${ctx.first_name} ${ctx.last_name}`)
     },
     {
       label: "Create Task",
@@ -625,12 +633,6 @@ export default function ProspectsTable({
       onSelect: () => onRemoveFromCampaign
         ? onRemoveFromCampaign(ctx.linkedin_id, ctx)
         : alert(`Remove ${ctx.first_name} ${ctx.last_name} from campaign`)
-    },
-    {
-      label: "Find Emails",
-      onSelect: () => onFindEmails
-        ? onFindEmails(Array.isArray(ctx.linkedin_id) ? ctx.linkedin_id : [ctx.linkedin_id])
-        : alert(`Find emails for ${ctx.first_name} ${ctx.last_name}`)
     },
     {
       label: "Delete",
