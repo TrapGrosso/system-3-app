@@ -57,7 +57,9 @@ export default function ProspectsTable({
   onDelete,
   onBulkDelete,
   onBulkFindEmails,
-  onFindEmails
+  onFindEmails,
+  onVerifyEmails,
+  onBulkVerifyEmails
 }) {
 
   // Column definitions (without select and actions - DataTable handles these)
@@ -539,6 +541,17 @@ export default function ProspectsTable({
         }
       }
     },
+    {
+      label: "Verify Emails",
+      value: "verifyEmails",
+      onSelect: (selectedIds) => {
+        if (onBulkVerifyEmails) {
+          onBulkVerifyEmails(selectedIds)
+        } else {
+          alert(`Verify emails for ${selectedIds.length} prospects`)
+        }
+      }
+    },
     "separator",
     {
       label: "Send Email",
@@ -595,6 +608,12 @@ export default function ProspectsTable({
       onSelect: () => onCreateTask
         ? onCreateTask(ctx.linkedin_id, ctx)
         : alert(`Create task for ${ctx.first_name} ${ctx.last_name}`)
+    },
+    {
+      label: "Verify Email",
+      onSelect: () => onVerifyEmails
+        ? onVerifyEmails(ctx.linkedin_id)
+        : alert(`Verify email for ${ctx.first_name} ${ctx.last_name}`)
     },
     "separator",
     {

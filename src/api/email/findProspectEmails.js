@@ -43,14 +43,24 @@ export const usefindProspectEmails = (options = {}) => {
  * Request JSON:
  * {
  *   "user_id": "uuid",
- *   "prospect_ids": ["linkedin_id_1", "linkedin_id_2", ...]
+ *   "prospect_ids": ["linkedin_id_1", "linkedin_id_2", ...],
+ *   "options": {
+ *     "retry_not_found": false // default
+ *   }
  * }
  *
  * Behavior:
- * 1. Validates the `user_id` and `prospect_ids` inputs.
+ * 1. Validates the `user_id`, `prospect_ids`, and `options` inputs.
  * 2. Fetches prospect and their linked company data from the Supabase database.
- * 3. Filters out any prospects that do not have an associated company.
- * 4. Transforms the remaining data into an array of objects with the following shape:
+ * 3. Default behavior: Only prospects with an associated company (`company_id IS NOT NULL`) AND no email (`email_id IS NULL`) are selected.
+ * 4. If `options.retry_not_found` is `true`:
+ *    - Additionally, prospects with an associated company (`company_id IS NOT NULL`) and an email record whose `email.status` is `'not_found'` are selected.
+ *    - For these "not_found" emails, their corresponding `email` records are deleted from the `email` table.
+ *    - Due to foreign key cascading rules:
+ *      - Any related `email_verification` records are automatically deleted (`ON DELETE CASCADE`).
+ *      - The `prospect.email_id` for these prospects is automatically set to `NULL` (`ON DELETE SET NULL`), making them eligible for future email finding.
+ *    - These "reset" prospects are then included in the list sent to the webhook.
+ * 5. Transforms the selected data into an array of objects with the following shape:
  *    {
  *      prospect_id: string,
  *      company_id: string,
@@ -59,10 +69,9 @@ export const usefindProspectEmails = (options = {}) => {
  *      company_name: string | null,
  *      website: string | null
  *    }
- * 5. Chunks the transformed data into batches (default 200 items per chunk).
- * 6. Sends each chunk as a POST request to the configured webhook URL
- *    (https://n8n.coolify.fabiodevelopsthings.com/webhook/9a908ed4-bcc6-4b67-994e-80e5fe064519).
- * 7. Returns a summary of processed, found, and sent prospects.
+ * 6. Chunks the transformed data into batches (default 200 items per chunk).
+ * 7. Sends each chunk as a POST request to the configured webhook URL, including the `options` object.
+ * 8. Returns a summary of processed, found, and sent prospects, including counts for default, retried, and deleted emails.
  *
  * Uses environment variables:
  * - SUPABASE_URL (required)
@@ -75,7 +84,10 @@ export const usefindProspectEmails = (options = {}) => {
  *   --header 'Content-Type: application/json' \
  *   --data '{
  *     "user_id":"bb370a65-08df-4ddc-8a0f-aa5c65fc568f",
- *     "prospect_ids":["prospect_linkedin_id_1","prospect_linkedin_id_2"]
+ *     "prospect_ids":["prospect_linkedin_id_1","prospect_linkedin_id_2"],
+ *     "options": {
+ *       "retry_not_found": true
+ *     }
  *   }'
  * ```
  *
@@ -86,13 +98,15 @@ export const usefindProspectEmails = (options = {}) => {
  *   "data": {
  *     "requested": 2,
  *     "deduped": 2,
- *     "with_company": 1,
- *     "sent_count": 1,
- *     "not_found": 1,
+ *     "with_company_default": 1,
+ *     "retried_not_found_count": 1,
+ *     "emails_deleted_count": 1,
+ *     "sent_count": 2,
+ *     "not_found": 0,
  *     "no_company": 0
  *   },
- *   "message": "Processed 2 prospect(s). With company: 1, No company: 0, Not found: 1. Sent 1 to webhook.",
- *   "timestamp": "2025-08-13T17:47:12.345Z"
+ *   "message": "Processed 2 prospect(s). Default with company & no email: 1. Retried not_found: 1 (emails deleted: 1). Sent 2 to webhook.",
+ *   "timestamp": "2025-08-14T18:21:00.000Z"
  * }
  * ```
  *
@@ -111,6 +125,11 @@ export const usefindProspectEmails = (options = {}) => {
  * Invalid prospect_ids (400):
  * ```json
  * {"error": "`prospect_ids` must be a non-empty array of non-empty strings"}
+ * ```
+ *
+ * Invalid options (400):
+ * ```json
+ * {"error": "`options` must be an object when provided"}
  * ```
  *
  * Server configuration error (500):

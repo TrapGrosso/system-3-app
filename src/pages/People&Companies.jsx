@@ -20,6 +20,7 @@ import AddToCampaignDialog from '@/components/dialogs/AddToCampaignDialog'
 import RemoveFromCampaignDialog from '@/components/dialogs/RemoveFromCampaignDialog'
 import DeleteDialog from '@/components/dialogs/DeleteDialog'
 import FindProspectEmailsDialog from '@/components/dialogs/FindProspectEmailsDialog'
+import VerifyProspectEmailsDialog from '@/components/dialogs/VerifyProspectEmailsDialog'
 import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
 
 function PeopleCompanies() {
@@ -162,6 +163,21 @@ function PeopleCompanies() {
         setFindEmailsDialogOpen(true)
     }
 
+    // Verify Prospect Emails handlers
+    const [verifyEmailsDialogOpen, setVerifyEmailsDialogOpen] = useState(false)
+    const [prospectIdsForVerifyEmails, setProspectIdsForVerifyEmails] = useState([])
+
+    const handleVerifyEmails = (linkedinId) => {
+        setProspectIdsForVerifyEmails([linkedinId])
+        setVerifyEmailsDialogOpen(true)
+    }
+
+    const handleBulkVerifyEmails = (linkedinIds) => {
+        if (!linkedinIds.length) return
+        setProspectIdsForVerifyEmails(linkedinIds)
+        setVerifyEmailsDialogOpen(true)
+    }
+
     // Bulk action handlers
     const handleBulkAddToGroup = (linkedinIds) => {
         if (!linkedinIds.length) return
@@ -300,6 +316,8 @@ function PeopleCompanies() {
           onBulkDelete={handleBulkDeleteProspects}
           onFindEmails={handleFindEmails}
           onBulkFindEmails={handleBulkFindEmails}
+          onVerifyEmails={handleVerifyEmails}
+          onBulkVerifyEmails={handleBulkVerifyEmails}
         />
 
         {/* Companies Section */}
@@ -412,6 +430,20 @@ function PeopleCompanies() {
             refetch()
             setFindEmailsDialogOpen(false)
             setProspectIdsForFindEmails([])
+          }}
+        />
+      )}
+
+      {/* VerifyProspectEmailsDialog - controlled by Dashboard state */}
+      {!!prospectIdsForVerifyEmails.length && (
+        <VerifyProspectEmailsDialog
+          prospect_ids={prospectIdsForVerifyEmails}
+          open={verifyEmailsDialogOpen}
+          onOpenChange={setVerifyEmailsDialogOpen}
+          onSuccess={() => {
+            refetch()
+            setVerifyEmailsDialogOpen(false)
+            setProspectIdsForVerifyEmails([])
           }}
         />
       )}
