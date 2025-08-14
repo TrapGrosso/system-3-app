@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 import { useAuth } from "@/contexts/AuthContext"
 import { usefindProspectEmails } from "@/api/email/findProspectEmails"
+import CheckboxMatrix from "@/components/shared/dialog/CheckboxMatrix"
 
 function FindProspectEmailsDialog({
   open,
@@ -18,6 +19,8 @@ function FindProspectEmailsDialog({
   const { user } = useAuth()
   const user_id = user?.id
   const queryClient = useQueryClient()
+
+  const [selectedOptions, setSelectedOptions] = React.useState([])
 
   const mutation = usefindProspectEmails({
     onSuccess: (data) => {
@@ -34,26 +37,67 @@ function FindProspectEmailsDialog({
 
   const handleSubmit = () => {
     if (!user_id || !prospect_ids?.length) return
+    const options = {
+      retry_not_found: selectedOptions.includes("retry_not_found"),
+      verify_emails: selectedOptions.includes("verify_emails"),
+    }
+    if (options.verify_emails) {
+      options.include_valid = selectedOptions.includes("include_valid")
+    }
     mutation.mutate({
       user_id,
       prospect_ids,
+      options
     })
   }
+
+  const handleOpenChange = (newOpen) => {
+    onOpenChange(newOpen)
+    if (!newOpen) {
+      setSelectedOptions([])
+    }
+  }
+
+  const FIND_OPTIONS = [
+    { value: "retry_not_found", label: "Retry emails previously marked as not found" },
+    { value: "verify_emails", label: "Verify emails after finding" }
+  ]
+  const VERIFY_INCLUDE_OPTIONS = [
+    { value: "include_valid", label: "Include emails already valid" }
+  ]
 
   return (
     <DialogWrapper
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={handleOpenChange}
       icon={<Send className="h-5 w-5" />}
       title="Find Prospect Emails"
       size="sm"
     >
-      <DialogWrapper.Body>
+      <DialogWrapper.Body className="space-y-6">
         <p className="text-sm text-muted-foreground">
           Only prospects with an associated company will be included. This will
           process <span className="font-medium">{prospect_ids?.length}</span>{" "}
           prospect{prospect_ids?.length !== 1 ? "s" : ""}.
         </p>
+        
+        <CheckboxMatrix
+          label="Options"
+          options={FIND_OPTIONS}
+          value={selectedOptions}
+          onChange={setSelectedOptions}
+          disabled={mutation.isPending}
+        />
+
+        {selectedOptions.includes("verify_emails") && (
+          <CheckboxMatrix
+            label="Verify include options"
+            options={VERIFY_INCLUDE_OPTIONS}
+            value={selectedOptions}
+            onChange={setSelectedOptions}
+            disabled={mutation.isPending}
+          />
+        )}
       </DialogWrapper.Body>
 
       <DialogWrapper.Footer>
