@@ -98,51 +98,62 @@ export function TablePagination({
   }
 
   return (
-    <div className={cn("flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between", className)} {...props}>
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        {enableSelection && <span>
-          {selectedCount} of {total} row(s) selected.
-        </span>}
+    <div
+      className={cn(
+        "grid w-full gap-3 grid-cols-1 md:grid-cols-2",
+        className
+      )}
+      {...props}
+    >
+      {/* Left column */}
+      <div className="flex flex-col gap-2 w-full">
+        {/* Top: selected count label (full width) */}
+        <div className="text-sm text-muted-foreground w-full">
+          {enableSelection ? `${selectedCount} of ${total} row(s) selected.` : ""}
+        </div>
+
+        {/* Bottom: wrap-enabled row containing selector + page info */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 w-full min-w-0">
+          <div className="flex items-center gap-2 whitespace-nowrap">
+            <Label htmlFor="page-size" className="text-sm font-medium">
+              Rows per page:
+            </Label>
+            <Select
+              value={`${pageSize}`}
+              onValueChange={(value) => {
+                setPageSize(Number(value))
+              }}
+            >
+              <SelectTrigger className="w-20" id="page-size">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {pageSizes.map((size) => (
+                  <SelectItem key={size} value={`${size}`}>
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="text-sm font-medium whitespace-normal break-words">
+            Page {pageIndex + 1} of {pageCount}
+          </div>
+        </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2">
-          <Label htmlFor="page-size" className="text-sm font-medium">
-            Rows per page:
-          </Label>
-          <Select
-            value={`${pageSize}`}
-            onValueChange={(value) => {
-              setPageSize(Number(value))
-            }}
-          >
-            <SelectTrigger className="w-20" id="page-size">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {pageSizes.map((size) => (
-                <SelectItem key={size} value={`${size}`}>
-                  {size}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="text-sm font-medium">
-          Page {pageIndex + 1} of {pageCount}
-        </div>
-
+      {/* Right column */}
+      <div className="w-full flex justify-center">
         {pageCount > 1 && (
-          <Pagination>
-            <PaginationContent>
-              <PaginationPrevious 
+          <Pagination className={'justify-end'}>
+            <PaginationContent className="flex-wrap justify-start lg:justify-end">
+              <PaginationPrevious
                 onClick={() => previousPage()}
-                className={canPreviousPage ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}
+                className={canPreviousPage ? "cursor-pointer" : "cursor-not-allowed opacity-50"}
               />
-              
-              {getPageNumbers().map((page, index) => (
-                page === '...' ? (
+              {getPageNumbers().map((page, index) =>
+                page === "..." ? (
                   <PaginationItem key={`ellipsis-${index}`}>
                     <PaginationEllipsis />
                   </PaginationItem>
@@ -157,11 +168,10 @@ export function TablePagination({
                     </PaginationLink>
                   </PaginationItem>
                 )
-              ))}
-              
-              <PaginationNext 
+              )}
+              <PaginationNext
                 onClick={() => nextPage()}
-                className={canNextPage ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}
+                className={canNextPage ? "cursor-pointer" : "cursor-not-allowed opacity-50"}
               />
             </PaginationContent>
           </Pagination>
