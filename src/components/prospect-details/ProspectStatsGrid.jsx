@@ -76,7 +76,7 @@ export default function ProspectStatsGrid({
   ]
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3">
       {stats.map((stat, index) => {
         const IconComponent = stat.icon
         return (
@@ -88,11 +88,6 @@ export default function ProspectStatsGrid({
                   {stat.label}
                 </span>
               </div>
-              {stat.label === 'Enrichments' && enrichmentCount > 0 && (
-                <Badge variant="secondary" className="text-xs">
-                  {enrichmentCount}
-                </Badge>
-              )}
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -105,7 +100,7 @@ export default function ProspectStatsGrid({
       
       {/* Deep Search Status Card */}
       <Card className={isInDeepSearchQueue ? "border-yellow-500" : ""}>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between space-y-0 pb-2">
           <div className="flex items-center gap-2">
             <SearchIcon className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium text-muted-foreground">

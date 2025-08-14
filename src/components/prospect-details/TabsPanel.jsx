@@ -31,7 +31,7 @@ export default function TabsPanel(
   return (
     <div className="px-4 lg:px-6 pb-6">
       <Tabs defaultValue="notes" className="w-full">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7">
           <TabsTrigger value="notes">
             Notes {notes?.length ? `(${notes.length})` : ''}
           </TabsTrigger>

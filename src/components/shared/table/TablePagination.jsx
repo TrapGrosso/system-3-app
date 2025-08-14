@@ -146,7 +146,7 @@ export function TablePagination({
       {/* Right column */}
       <div className="w-full flex justify-center">
         {pageCount > 1 && (
-          <Pagination className={'justify-end'}>
+          <Pagination className={'md:justify-end'}>
             <PaginationContent className="flex-wrap justify-start lg:justify-end">
               <PaginationPrevious
                 onClick={() => previousPage()}

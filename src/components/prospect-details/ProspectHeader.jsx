@@ -173,7 +173,7 @@ export default function ProspectHeader({
           </Avatar>
           
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center gap-3 mb-2 flex-wrap">
               <CardTitle className="text-2xl">
                 {first_name} {last_name}
               </CardTitle>
