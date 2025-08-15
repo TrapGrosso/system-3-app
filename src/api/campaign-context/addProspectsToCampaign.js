@@ -33,9 +33,8 @@ export const useAddProspectToCampaign = (options = {}) => {
   })
 }
 
-
 /**
- * Adds one or more prospects to an Instantly campaign and updates the campaign_prospect table.
+ * Adds one or more prospects to an Instantly campaign and triggers a sync to update the campaign_prospect table.
  *
  * Endpoint: POST /addProspectToCampaign
  *
@@ -43,14 +42,31 @@ export const useAddProspectToCampaign = (options = {}) => {
  * {
  *   "user_id": "uuid",
  *   "prospect_ids": ["linkedin_id_1", "linkedin_id_2"],
- *   "campaign_id": "uuid"
+ *   "campaign_id": "uuid",
+ *   "options": {
+ *     "include_risky_emails": boolean, // default false
+ *     "include_only_verified": boolean // default true
+ *   }
  * }
  *
  * Behavior per prospect:
- * 1) Fetch required fields from DB in a single query (prospect + company + variables)
- * 2) Build Instantly payload with all fields present and set missing values to null
- * 3) POST to Instantly API /api/v2/leads with skip flags set to true
- * 4) On success, upsert into public.campaign_prospect (campaign_id, prospect_id, istantly_id)
+ * 1) Fetch required fields from DB in a single query (prospect + company + variables + email + email_verifications).
+ * 2) Determine eligible email based on `options` and email/verification statuses:
+ *    - `include_only_verified=true` (default) & `include_risky_emails=false` (default):
+ *      - Requires latest verification to be `valid` and `safe_to_send='yes'`.
+ *    - `include_only_verified=false` & `include_risky_emails=false`:
+ *      - If latest verification exists: requires `valid` and `safe_to_send='yes'`.
+ *      - If no verification: requires `email.status='valid'`.
+ *    - `include_only_verified=true` & `include_risky_emails=true`:
+ *      - Requires latest verification to be NOT `invalid` and `safe_to_send` NOT `no`.
+ *    - `include_only_verified=false` & `include_risky_emails=true`:
+ *      - If latest verification exists: requires NOT `invalid` and `safe_to_send` NOT `no`.
+ *      - If no verification: requires `email.status` NOT `not_found`.
+ *    - Latest verification is determined strictly by `created_at` (descending).
+ *    - Verification records always override `email.status` if present.
+ * 3) Build Instantly payload with the determined eligible email and other fields.
+ * 4) POST to Instantly API /api/v2/leads with skip flags set to true.
+ * 5) On Instantly success, trigger syncIstantlyProspectCampaigns to reconcile DB (no direct DB writes here).
  *
  * Uses environment variables:
  * - SUPABASE_URL

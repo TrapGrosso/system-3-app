@@ -4,6 +4,7 @@ import DialogWrapper from "@/components/shared/dialog/DialogWrapper"
 import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 import CampaignSingleSelect from "@/components/shared/dialog/CampaignSingleSelect"
 import { useCampaigns } from "@/contexts/CampaignsContext"
+import CheckboxMatrix from "../shared/dialog/CheckboxMatrix"
 
 /**
  * AddToCampaignDialog
@@ -25,6 +26,7 @@ function AddToCampaignDialog({
   onOpenChange,
 }) {
   const [selectedCampaignId, setSelectedCampaignId] = React.useState("")
+  const [selectedOptions, setSelectedOptions] = React.useState(["include_only_verified"])
 
   const {
     addProspectsToCampaign,
@@ -35,10 +37,16 @@ function AddToCampaignDialog({
   const handleSubmit = async () => {
     if (!selectedCampaignId || prospect_ids.length === 0) return
 
+    const options = {
+      include_only_verified: selectedOptions.includes("include_only_verified"),
+      include_risky_emails: selectedOptions.includes("include_risky_emails"),
+    }
+
     try {
-      const data = await addProspectsToCampaign(selectedCampaignId, prospect_ids)
+      const data = await addProspectsToCampaign(selectedCampaignId, prospect_ids, options)
       // Reset selection and close
       setSelectedCampaignId("")
+      setSelectedOptions(["include_only_verified"])
       onOpenChange?.(false)
       onSuccess?.(data)
     } catch (error) {
@@ -51,6 +59,8 @@ function AddToCampaignDialog({
     if (!newOpen) {
       // Reset internal state on close
       setSelectedCampaignId("")
+      setSelectedCampaignId("")
+      setSelectedOptions(["include_only_verified"])
     }
   }
 
@@ -84,6 +94,17 @@ function AddToCampaignDialog({
         <CampaignSingleSelect
           value={selectedCampaignId}
           onChange={setSelectedCampaignId}
+        />
+        <CheckboxMatrix
+          label="Sending options"
+          options={[
+            { value: "include_only_verified", label: "Include only verified emails (recommended)" },
+            { value: "include_risky_emails", label: "Include risky emails (not recommended)" },
+          ]}
+          value={selectedOptions}
+          onChange={setSelectedOptions}
+          disabled={isAddingToCampaign}
+          className="mt-4"
         />
       </DialogWrapper.Body>
 

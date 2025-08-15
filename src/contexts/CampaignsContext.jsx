@@ -84,11 +84,12 @@ export const CampaignsProvider = ({ children }) => {
   // Wrapper helper functions — always use mutateAsync
 
   const addProspectsToCampaign = React.useCallback(
-    (campaign_id, prospect_ids) => {
+    (campaign_id, prospect_ids, options = { include_only_verified: true, include_risky_emails: false }) => {
       return addProspectsToCampaignMutation.mutateAsync({
         user_id,
         campaign_id,
         prospect_ids: Array.isArray(prospect_ids) ? prospect_ids : [prospect_ids],
+        options
       })
     },
     [addProspectsToCampaignMutation, user_id]
