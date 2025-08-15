@@ -6,6 +6,8 @@ import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/ca
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { ActionDropdown } from '@/components/shared/ui/ActionDropdown'
 import { 
+  MailIcon,
+  CopyIcon,
   MoreHorizontalIcon, 
   PencilIcon, 
   TrashIcon, 
@@ -20,6 +22,34 @@ import {
   Wand2
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { Badge as UIBadge } from '@/components/ui/badge'
+import { Button as UIButton } from '@/components/ui/button'
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import { Tooltip as UITooltip, TooltipTrigger as UITooltipTrigger, TooltipContent as UITooltipContent } from '@/components/ui/tooltip'
+
+const formatDate = (ts) => ts ? new Date(ts).toLocaleString() : "—"
+const emailStatusVariant = (s) => ({ valid: "default", not_found: "destructive" }[s?.toLowerCase()] || "outline")
+const verificationStatusVariant = (s) => ({ valid: "default", invalid: "destructive" }[s?.toLowerCase()] || "secondary")
+const safeToSendVariant = (s) => s === "yes" ? "default" : s === "no" ? "destructive" : "outline"
+
+const normalizeEmailStatus = (s) => {
+  const val = s?.toLowerCase()
+  if (["verified", "valid"].includes(val)) return "valid"
+  if (val === "not_found") return "not_found"
+  if (val === "invalid") return "invalid"
+  return "unknown"
+}
+const normalizeVerificationStatus = (s) => {
+  const val = s?.toLowerCase()
+  if (["deliverable", "valid"].includes(val)) return "valid"
+  if (["undeliverable", "invalid", "rejected"].includes(val)) return "invalid"
+  return "unknown"
+}
+const getLatestVerification = (vs) => {
+  if (!Array.isArray(vs) || !vs.length) return null
+  return [...vs].sort((a, b) => new Date(b.verified_on || b.created_at) - new Date(a.verified_on || a.created_at))[0]
+}
 import DeleteDialog from '@/components/dialogs/DeleteDialog'
 import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
 import { useProspects } from '@/contexts/ProspectsContext'
@@ -65,7 +95,7 @@ export default function ProspectHeader({
 
   if (!prospect) return null
 
-  const { first_name, last_name, headline, status, location, linkedin_id } = prospect
+  const { first_name, last_name, headline, status, location, linkedin_id, email } = prospect
   
   const getInitials = (firstName, lastName) => {
     return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase()
@@ -201,6 +231,76 @@ export default function ProspectHeader({
               )}
             </div>
             
+            {email?.email ? (
+              <div className="flex items-center gap-2 flex-wrap text-sm mb-2">
+                <div className="flex items-center gap-1 min-w-0">
+                  <MailIcon className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <a href={`mailto:${email.email}`} className="truncate text-primary hover:underline" title={email.email}>
+                    {email.email}
+                  </a>
+                  <UIButton variant="ghost" size="icon" className="h-6 w-6" onClick={() => { navigator.clipboard.writeText(email.email); toast.success('Copied email') }}>
+                    <CopyIcon className="w-3 h-3" />
+                  </UIButton>
+                </div>
+                <UIBadge variant={emailStatusVariant(normalizeEmailStatus(email.status))}>
+                  {normalizeEmailStatus(email.status)}
+                </UIBadge>
+                {getLatestVerification(email.verifications) && (
+                  <>
+                    <UIBadge variant={safeToSendVariant(getLatestVerification(email.verifications).safe_to_send)}>
+                      Safe: {getLatestVerification(email.verifications).safe_to_send}
+                    </UIBadge>
+                    <span className="text-xs text-muted-foreground">
+                      Last verified: {formatDate(getLatestVerification(email.verifications).verified_on)}
+                    </span>
+                  </>
+                )}
+                {Array.isArray(email.verifications) && email.verifications.length > 0 && (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <UIButton variant="outline" size="sm">Verifications ({email.verifications.length})</UIButton>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="w-[min(90vw,500px)]">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Safe</TableHead>
+                            <TableHead>Verified On</TableHead>
+                            <TableHead>Flags</TableHead>
+                            <TableHead>Bounce</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {email.verifications
+                            .sort((a,b) => new Date(b.verified_on || b.created_at) - new Date(a.verified_on || a.created_at))
+                            .slice(0,5)
+                            .map(v => (
+                            <TableRow key={v.id}>
+                              <TableCell><UIBadge variant={verificationStatusVariant(normalizeVerificationStatus(v.verification_status))}>{normalizeVerificationStatus(v.verification_status)}</UIBadge></TableCell>
+                              <TableCell><UIBadge variant={safeToSendVariant(v.safe_to_send)}>{v.safe_to_send}</UIBadge></TableCell>
+                              <TableCell>{formatDate(v.verified_on)}</TableCell>
+                              <TableCell className="flex flex-wrap gap-1">
+                                {["disposable","free","role","gibberish"].map(flag => v[flag] === "yes" && (
+                                  <UIBadge key={flag} variant="secondary">{flag}</UIBadge>
+                                ))}
+                              </TableCell>
+                              <TableCell>{v.bounce_type || "—"}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                      {email.verifications.length > 5 && (
+                        <div className="mt-2 text-xs text-muted-foreground">Showing 5 of {email.verifications.length} records</div>
+                      )}
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
+            ) : (
+              <CardDescription className="text-sm text-muted-foreground mb-2">No email found</CardDescription>
+            )}
+
             {headline && (
               <CardDescription className="text-base mb-2">
                 {headline}

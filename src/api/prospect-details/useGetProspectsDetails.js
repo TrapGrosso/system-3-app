@@ -50,7 +50,26 @@ export const usegetProspectDetails = (userId, prospect_id) => {
  *       "headline": "Helping New Leaders Transition with Confidence Ranked among San Antonio's Top 15…",
  *       "location": "San Antonio",
  *       "status": "new",
- *       "email": null,
+ *       "email": {
+ *         "id": "some-uuid-for-email",
+ *         "email": "carlos@example.com",
+ *         "status": "verified",
+ *         "created_at": "2025-06-14T19:39:55.513832",
+ *         "verifications": [
+ *           {
+ *             "id": "some-uuid-for-verification",
+ *             "verification_status": "deliverable",
+ *             "safe_to_send": "yes",
+ *             "verified_on": "2025-06-14T19:39:55.513832",
+ *             "disposable": "no",
+ *             "free": "no",
+ *             "role": "no",
+ *             "gibberish": "no",
+ *             "bounce_type": null,
+ *             "created_at": "2025-06-14T19:39:55.513832"
+ *           }
+ *         ]
+ *       },
  *       "title": "",
  *       "created_at": "2025-06-14T19:39:55.513832",
  *       "updated_at": "2025-06-14T19:39:55.513832"
