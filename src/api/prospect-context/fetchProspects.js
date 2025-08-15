@@ -114,7 +114,7 @@ export const useProspectsQuery = ({ userId, ...query }) => {
 *         "email": "test@example.com",
 *         "status": "valid",
 *         "created_at": "2025-07-20T12:00:00Z",
-*         "verifications": [
+*         "last_verification": [
 *           {
 *             "id": "v1d2c3b4-f5a6-7890-1234-567890abcdef",
 *             "email_id": "e1d2c3b4-f5a6-7890-1234-567890abcdef",

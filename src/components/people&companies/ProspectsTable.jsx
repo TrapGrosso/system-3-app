@@ -230,7 +230,7 @@ export default function ProspectsTable({
                 {/* Header: email link + copy */}
                 <div className="flex items-center gap-2 min-w-0">
                   {email ? (
-                    <Button variant="link" asChild className="h-auto p-0 min-w-0" onClick={stop}>
+                    <Button variant="link" asChild className="h-auto p-0 !px-0 justify-start min-w-0 has-[&>svg]:!px-0" onClick={stop}>
                       <a href={`mailto:${email}`} rel="noopener noreferrer" className="flex items-center gap-1 min-w-0">
                         <MailIcon className="h-3.5 w-3.5 shrink-0 opacity-70" />
                         <span className="truncate max-w-[180px]">{email}</span>
