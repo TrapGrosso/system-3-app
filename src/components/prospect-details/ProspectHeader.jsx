@@ -2,8 +2,12 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { ActionDropdown } from '@/components/shared/ui/ActionDropdown'
 import { 
   MailIcon,
@@ -19,41 +23,64 @@ import {
   EditIcon,
   XIcon,
   Settings,
-  Wand2
+  Wand2,
+  MapPinIcon,
+  ShieldCheckIcon,
+  ShieldAlertIcon,
+  AlertTriangleIcon
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { Badge as UIBadge } from '@/components/ui/badge'
-import { Button as UIButton } from '@/components/ui/button'
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
-import { Tooltip as UITooltip, TooltipTrigger as UITooltipTrigger, TooltipContent as UITooltipContent } from '@/components/ui/tooltip'
-
-const formatDate = (ts) => ts ? new Date(ts).toLocaleString() : "—"
-const emailStatusVariant = (s) => ({ valid: "default", not_found: "destructive" }[s?.toLowerCase()] || "outline")
-const verificationStatusVariant = (s) => ({ valid: "default", invalid: "destructive" }[s?.toLowerCase()] || "secondary")
-const safeToSendVariant = (s) => s === "yes" ? "default" : s === "no" ? "destructive" : "outline"
-
-const normalizeEmailStatus = (s) => {
-  const val = s?.toLowerCase()
-  if (["verified", "valid"].includes(val)) return "valid"
-  if (val === "not_found") return "not_found"
-  if (val === "invalid") return "invalid"
-  return "unknown"
-}
-const normalizeVerificationStatus = (s) => {
-  const val = s?.toLowerCase()
-  if (["deliverable", "valid"].includes(val)) return "valid"
-  if (["undeliverable", "invalid", "rejected"].includes(val)) return "invalid"
-  return "unknown"
-}
-const getLatestVerification = (vs) => {
-  if (!Array.isArray(vs) || !vs.length) return null
-  return [...vs].sort((a, b) => new Date(b.verified_on || b.created_at) - new Date(a.verified_on || a.created_at))[0]
-}
 import DeleteDialog from '@/components/dialogs/DeleteDialog'
 import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
 import { useProspects } from '@/contexts/ProspectsContext'
 import { useDeepSearchQueue } from '@/contexts/DeepSearchQueueContext'
+
+// Utility functions
+const formatDate = (ts) => ts ? new Date(ts).toLocaleString() : "—"
+
+const getEmailStatusConfig = (status) => {
+  const normalized = status?.toLowerCase()
+  if (["verified", "valid"].includes(normalized)) {
+    return { variant: "default", label: "Valid", icon: ShieldCheckIcon }
+  }
+  if (normalized === "not_found") {
+    return { variant: "destructive", label: "Not Found", icon: AlertTriangleIcon }
+  }
+  if (normalized === "invalid") {
+    return { variant: "destructive", label: "Invalid", icon: ShieldAlertIcon }
+  }
+  return { variant: "outline", label: status, icon: AlertTriangleIcon }
+}
+
+const getSafeToSendConfig = (safe) => {
+  if (safe.toLowerCase() === "yes") {
+    return { variant: "default", label: "Safe to Send", icon: ShieldCheckIcon }
+  }
+  if (safe.toLowerCase() === "no") {
+    return { variant: "destructive", label: "Not Safe", icon: ShieldAlertIcon }
+  }
+  return { variant: "outline", label: safe.toLowerCase(), icon: AlertTriangleIcon }
+}
+
+const getStatusConfig = (status) => {
+  switch (status?.toLowerCase()) {
+    case 'new':
+      return { variant: 'default', label: 'New' }
+    case 'contacted':
+      return { variant: 'secondary', label: 'Contacted' }
+    case 'qualified':
+      return { variant: 'default', label: 'Qualified' }
+    default:
+      return { variant: 'outline', label: status || 'Unknown' }
+  }
+}
+
+const getLatestVerification = (verifications) => {
+  if (!Array.isArray(verifications) || !verifications.length) return null
+  return [...verifications].sort((a, b) => 
+    new Date(b.verified_on || b.created_at) - new Date(a.verified_on || a.created_at)
+  )[0]
+}
 
 export default function ProspectHeader({ 
   prospect, 
@@ -95,24 +122,16 @@ export default function ProspectHeader({
 
   if (!prospect) return null
 
-  const { first_name, last_name, headline, status, location, linkedin_id, email } = prospect
+  const { first_name, last_name, headline, status, location, email } = prospect
   
   const getInitials = (firstName, lastName) => {
     return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase()
   }
 
-  const getStatusVariant = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'new':
-        return 'default'
-      case 'contacted':
-        return 'secondary'
-      case 'qualified':
-        return 'default'
-      default:
-        return 'outline'
-    }
-  }
+  const statusConfig = getStatusConfig(status)
+  const latestVerification = getLatestVerification(email?.verifications)
+  const emailConfig = getEmailStatusConfig(email?.status)
+  const safeConfig = latestVerification ? getSafeToSendConfig(latestVerification.safe_to_send) : null
 
   const actions = [
     {
@@ -193,143 +212,245 @@ export default function ProspectHeader({
   ]
 
   return (
-    <Card className="mx-4 lg:mx-6 mb-6">
-      <CardHeader>
-        <div className="flex items-start gap-4">
-          <Avatar className="h-16 w-16">
-            <AvatarFallback className="text-lg">
-              {getInitials(first_name, last_name)}
-            </AvatarFallback>
-          </Avatar>
-          
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-2 flex-wrap">
-              <CardTitle className="text-2xl">
-                {first_name} {last_name}
-              </CardTitle>
-              <Badge variant={getStatusVariant(status)}>
-                {status}
-              </Badge>
-              {deepSearch?.is_in_queue && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Badge variant="outline" className="bg-yellow-100 text-yellow-800 cursor-help">
-                      Deep research queued
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="space-y-1">
-                      <p className="font-medium">Queued prompts:</p>
-                      {deepSearch.prompts?.map((prompt, index) => (
-                        <p key={prompt.id || index} className="text-sm">
-                          • {prompt.name}
-                        </p>
-                      ))}
+    <div className="w-full px-4 lg:px-6">
+      <Card className="border-0 shadow-none bg-transparent">
+        <CardContent className="p-0">
+          {/* Main Header Section */}
+          <div className="bg-card border rounded-xl p-6 space-y-6">
+            
+            {/* Top Row: Avatar, Name, Status, Actions */}
+            <div className="flex items-start justify-between gap-6">
+              <div className="flex items-start gap-4 min-w-0 flex-1">
+                <Avatar className="h-20 w-20 shrink-0 border-2 border-muted">
+                  <AvatarFallback className="text-xl font-semibold bg-primary/10 text-primary">
+                    {getInitials(first_name, last_name)}
+                  </AvatarFallback>
+                </Avatar>
+                
+                <div className="min-w-0 flex-1 space-y-3">
+                  {/* Name and Primary Status */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                        {first_name} {last_name}
+                      </h1>
+                      <Badge variant={statusConfig.variant} className="text-sm px-3 py-1">
+                        {statusConfig.label}
+                      </Badge>
                     </div>
-                  </TooltipContent>
-                </Tooltip>
+                    
+                    {/* Special Status Badges */}
+                    {deepSearch?.is_in_queue && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 cursor-help">
+                            <SearchIcon className="w-3 h-3 mr-1" />
+                            Deep Research Queued
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="max-w-xs">
+                          <div className="space-y-2">
+                            <p className="font-medium">Queued Research Prompts:</p>
+                            <div className="space-y-1">
+                              {deepSearch.prompts?.map((prompt, index) => (
+                                <p key={prompt.id || index} className="text-sm">
+                                  • {prompt.name}
+                                </p>
+                              ))}
+                            </div>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Actions */}
+              <ActionDropdown
+                items={actions}
+                triggerProps={{
+                  variant: "outline",
+                  size: "default",
+                  icon: MoreHorizontalIcon,
+                  className: "shrink-0"
+                }}
+                align="end"
+                side="bottom"
+              />
+            </div>
+
+            <Separator />
+
+            {/* Contact Information Section */}
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-foreground">Contact Information</h2>
+              
+              {email?.email ? (
+                <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+                  {/* Email Address */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <MailIcon className="w-5 h-5 text-muted-foreground shrink-0" />
+                        <a 
+                          href={`mailto:${email.email}`} 
+                          className="text-base font-medium text-primary hover:underline truncate"
+                          title={email.email}
+                        >
+                          {email.email}
+                        </a>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          navigator.clipboard.writeText(email.email)
+                          toast.success('Email copied to clipboard')
+                        }}
+                        className="shrink-0"
+                      >
+                        <CopyIcon className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    
+                    {/* Email Status Badges */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant={emailConfig.variant} className="flex items-center gap-1">
+                        <emailConfig.icon className="w-3 h-3" />
+                        {emailConfig.label}
+                      </Badge>
+                      
+                      {safeConfig && safeConfig.label !== emailConfig.label && (
+                        <Badge variant={safeConfig.variant} className="flex items-center gap-1">
+                          <safeConfig.icon className="w-3 h-3" />
+                          {safeConfig.label}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Email Verification Details */}
+                  {latestVerification && (
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">
+                        Last verified: {formatDate(latestVerification.verified_on)}
+                      </p>
+                      
+                      {Array.isArray(email.verifications) && email.verifications.length > 0 && (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" size="sm" className="w-fit">
+                              View All Verifications ({email.verifications.length})
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent align="start" className="w-[min(90vw,600px)]">
+                            <div className="space-y-3">
+                              <h3 className="font-medium">Email Verification History</h3>
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Safe to Send</TableHead>
+                                    <TableHead>Verified On</TableHead>
+                                    <TableHead>Flags</TableHead>
+                                    <TableHead>Bounce Type</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {email.verifications
+                                    .sort((a, b) => new Date(b.verified_on || b.created_at) - new Date(a.verified_on || a.created_at))
+                                    .slice(0, 5)
+                                    .map(verification => {
+                                      const verificationStatus = getEmailStatusConfig(verification.verification_status)
+                                      const safeStatus = getSafeToSendConfig(verification.safe_to_send)
+                                      
+                                      return (
+                                        <TableRow key={verification.id}>
+                                          <TableCell>
+                                            <Badge variant={verificationStatus.variant} className="flex items-center gap-1">
+                                              <verificationStatus.icon className="w-3 h-3" />
+                                              {verificationStatus.label}
+                                            </Badge>
+                                          </TableCell>
+                                          <TableCell>
+                                            <Badge variant={safeStatus.variant} className="flex items-center gap-1">
+                                              <safeStatus.icon className="w-3 h-3" />
+                                              {safeStatus.label}
+                                            </Badge>
+                                          </TableCell>
+                                          <TableCell className="text-sm">
+                                            {formatDate(verification.verified_on)}
+                                          </TableCell>
+                                          <TableCell>
+                                            <div className="flex flex-wrap gap-1">
+                                              {["disposable", "free", "role", "gibberish"].map(flag => 
+                                                verification[flag] === "yes" && (
+                                                  <Badge key={flag} variant="secondary" className="text-xs">
+                                                    {flag}
+                                                  </Badge>
+                                                )
+                                              )}
+                                            </div>
+                                          </TableCell>
+                                          <TableCell className="text-sm">
+                                            {verification.bounce_type || "—"}
+                                          </TableCell>
+                                        </TableRow>
+                                      )
+                                    })}
+                                </TableBody>
+                              </Table>
+                              {email.verifications.length > 5 && (
+                                <p className="text-xs text-muted-foreground">
+                                  Showing 5 of {email.verifications.length} verifications
+                                </p>
+                              )}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <MailIcon className="w-5 h-5" />
+                  <span className="text-base">No email address available</span>
+                </div>
               )}
             </div>
-            
-            {email?.email ? (
-              <div className="flex items-center gap-2 flex-wrap text-sm mb-2">
-                <div className="flex items-center gap-1 min-w-0">
-                  <MailIcon className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <a href={`mailto:${email.email}`} className="truncate text-primary hover:underline" title={email.email}>
-                    {email.email}
-                  </a>
-                  <UIButton variant="ghost" size="icon" className="h-6 w-6" onClick={() => { navigator.clipboard.writeText(email.email); toast.success('Copied email') }}>
-                    <CopyIcon className="w-3 h-3" />
-                  </UIButton>
+
+            {/* Professional Information Section */}
+            {(headline || location) && (
+              <>
+                <Separator />
+                <div className="space-y-4">
+                  <h2 className="text-lg font-semibold text-foreground">Professional Information</h2>
+                  
+                  <div className="space-y-3">
+                    {headline && (
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-muted-foreground">Headline</p>
+                        <p className="text-base text-foreground leading-relaxed">{headline}</p>
+                      </div>
+                    )}
+                    
+                    {location && (
+                      <div className="flex items-center gap-2">
+                        <MapPinIcon className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-base text-foreground">{location}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <UIBadge variant={emailStatusVariant(normalizeEmailStatus(email.status))}>
-                  {normalizeEmailStatus(email.status)}
-                </UIBadge>
-                {getLatestVerification(email.verifications) && (
-                  <>
-                    <UIBadge variant={safeToSendVariant(getLatestVerification(email.verifications).safe_to_send)}>
-                      Safe: {getLatestVerification(email.verifications).safe_to_send}
-                    </UIBadge>
-                    <span className="text-xs text-muted-foreground">
-                      Last verified: {formatDate(getLatestVerification(email.verifications).verified_on)}
-                    </span>
-                  </>
-                )}
-                {Array.isArray(email.verifications) && email.verifications.length > 0 && (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <UIButton variant="outline" size="sm">Verifications ({email.verifications.length})</UIButton>
-                    </PopoverTrigger>
-                    <PopoverContent align="start" className="w-[min(90vw,500px)]">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Safe</TableHead>
-                            <TableHead>Verified On</TableHead>
-                            <TableHead>Flags</TableHead>
-                            <TableHead>Bounce</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {email.verifications
-                            .sort((a,b) => new Date(b.verified_on || b.created_at) - new Date(a.verified_on || a.created_at))
-                            .slice(0,5)
-                            .map(v => (
-                            <TableRow key={v.id}>
-                              <TableCell><UIBadge variant={verificationStatusVariant(normalizeVerificationStatus(v.verification_status))}>{normalizeVerificationStatus(v.verification_status)}</UIBadge></TableCell>
-                              <TableCell><UIBadge variant={safeToSendVariant(v.safe_to_send)}>{v.safe_to_send}</UIBadge></TableCell>
-                              <TableCell>{formatDate(v.verified_on)}</TableCell>
-                              <TableCell className="flex flex-wrap gap-1">
-                                {["disposable","free","role","gibberish"].map(flag => v[flag] === "yes" && (
-                                  <UIBadge key={flag} variant="secondary">{flag}</UIBadge>
-                                ))}
-                              </TableCell>
-                              <TableCell>{v.bounce_type || "—"}</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                      {email.verifications.length > 5 && (
-                        <div className="mt-2 text-xs text-muted-foreground">Showing 5 of {email.verifications.length} records</div>
-                      )}
-                    </PopoverContent>
-                  </Popover>
-                )}
-              </div>
-            ) : (
-              <CardDescription className="text-sm text-muted-foreground mb-2">No email found</CardDescription>
-            )}
-
-            {headline && (
-              <CardDescription className="text-base mb-2">
-                {headline}
-              </CardDescription>
-            )}
-            
-            {location && (
-              <CardDescription className="text-sm text-muted-foreground">
-                📍 {location}
-              </CardDescription>
+              </>
             )}
           </div>
+        </CardContent>
+      </Card>
 
-          <div className="flex gap-2">
-            <ActionDropdown
-              items={actions}
-              triggerProps={{
-                variant: "outline",
-                size: "sm",
-                icon: MoreHorizontalIcon,
-                className: "justify-between"
-              }}
-              align="end"
-              side="bottom"
-            />
-          </div>
-        </div>
-      </CardHeader>
-
+      {/* Delete Dialogs */}
       <DeleteDialog
         {...deleteProspectDialogProps}
         title="Delete prospect"
@@ -344,6 +465,6 @@ export default function ProspectHeader({
           confirmLabel="Remove"
         />
       )}
-    </Card>
+    </div>
   )
 }
