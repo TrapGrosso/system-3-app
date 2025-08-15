@@ -208,7 +208,7 @@ export default function ProspectsTable({
       header: "Email",
       enableSorting: false,
       cell: ({ row }) => {
-        const rec = row.original.email_record;
+        const rec = row.original.email;
         if (!rec) return <div>—</div>;
         const email = rec.email || "";
 

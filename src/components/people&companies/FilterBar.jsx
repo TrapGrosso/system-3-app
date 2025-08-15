@@ -33,7 +33,6 @@ const SEARCH_FIELD_OPTIONS = [
   { value: 'last_name', label: 'Last Name' },
   { value: 'headline', label: 'Headline' },
   { value: 'location', label: 'Location' },
-  { value: 'email', label: 'Email' },
   { value: 'title', label: 'Title' },
   { value: 'company_name', label: 'Company Name' },
   { value: 'company_website', label: 'Company Website' },

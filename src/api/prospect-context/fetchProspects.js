@@ -56,7 +56,7 @@ export const useProspectsQuery = ({ userId, ...query }) => {
 * - q (optional): Global search term across specified fields
 * - search_fields (optional): Comma-separated list of fields to search in. 
 *   Available fields:
-*   - Prospect fields: first_name, last_name, headline, location, email, title
+*   - Prospect fields: first_name, last_name, headline, location, title
 *   - Company fields: company_name, company_website, company_industry, company_size, company_location
 *   - Related data: notes, task_titles, task_descriptions, group_names, campaign_names, variable_name
 *   Default: all fields if q is provided
@@ -108,8 +108,7 @@ export const useProspectsQuery = ({ userId, ...query }) => {
 *       "title": "IT Innovation Manager",
 *       "status": "new",
 *       "location": "Poland",
-*       "email": null,
-*       "email_record": {
+*       "email": {
 *         "id": "e1d2c3b4-f5a6-7890-1234-567890abcdef",
 *         "email": "test@example.com",
 *         "status": "valid",
