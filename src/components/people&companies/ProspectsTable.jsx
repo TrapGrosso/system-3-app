@@ -203,52 +203,80 @@ export default function ProspectsTable({
       },
     },
     {
-      accessorKey: "email",
+      id: "email",
+      accessorFn: (row) => row.email_record?.email || "",
       header: "Email",
       cell: ({ row }) => {
-        const email = row.original.email;
-        if (!email) return <div>—</div>;
+        const rec = row.original.email_record;
+        if (!rec) return <div>—</div>;
+        const email = rec.email || "";
 
-        const handleCopy = (e) => {
-          e.stopPropagation();
-          if (navigator?.clipboard?.writeText) {
-            navigator.clipboard.writeText(email);
-          }
-        };
+        const formatDate = (ts) => ts ? new Date(ts).toLocaleString() : "—";
+        const emailStatusVariant = (s) => ({ valid: "default", invalid: "destructive" }[s?.toLowerCase()] || "outline");
+        const verificationStatusVariant = (s) => ({ valid: "default", invalid: "destructive" }[s?.toLowerCase()] || "secondary");
+        const safeToSendVariant = (s) => s === "yes" ? "default" : s === "no" ? "destructive" : "outline";
+
+        const handleCopy = (e) => { e.stopPropagation(); if (email) navigator.clipboard?.writeText(email); };
+        const stop = (e) => e.stopPropagation();
 
         return (
-          <div className="flex items-center gap-1 max-w-[260px]">
-            <Button
-              variant="link"
-              asChild
-              className="h-auto p-0 text-left justify-start min-w-0"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <a
-                href={`mailto:${email}`}
-                className="flex items-center gap-1 min-w-0"
-                rel="noopener noreferrer"
-              >
-                <MailIcon className="h-3.5 w-3.5 shrink-0 opacity-70" />
-                <span className="truncate max-w-[200px]">{email}</span>
-                <ExternalLinkIcon className="h-3.5 w-3.5 shrink-0" />
-              </a>
-            </Button>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={handleCopy}
-                  aria-label="Copy email"
-                >
-                  <CopyIcon className="h-3.5 w-3.5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top">Copy</TooltipContent>
-            </Tooltip>
-          </div>
+          <TablePopoverCell
+            items={[rec]}
+            icon={<MailIcon />}
+            triggerVariant="blue"
+            title="Email"
+            renderItem={(r) => (
+              <div className="p-2 border rounded-md text-sm space-y-3">
+                {/* Header: email link + copy */}
+                <div className="flex items-center gap-2 min-w-0">
+                  {email ? (
+                    <Button variant="link" asChild className="h-auto p-0 min-w-0" onClick={stop}>
+                      <a href={`mailto:${email}`} rel="noopener noreferrer" className="flex items-center gap-1 min-w-0">
+                        <MailIcon className="h-3.5 w-3.5 shrink-0 opacity-70" />
+                        <span className="truncate max-w-[180px]">{email}</span>
+                        <ExternalLinkIcon className="h-3.5 w-3.5 shrink-0" />
+                      </a>
+                    </Button>
+                  ) : (
+                    <span className="text-muted-foreground">No email</span>
+                  )}
+                </div>
+
+                {/* Status + Created */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {r.status && <Badge variant={emailStatusVariant(r.status)}>{r.status}</Badge>}
+                  <span className="text-xs text-muted-foreground">Created: {formatDate(r.created_at)}</span>
+                </div>
+
+                {/* Collapsible for Verifications */}
+                <AdvancedFiltersCollapsible label={`Verifications (${Array.isArray(r.verifications) ? r.verifications.length : 0})`} className="text-xs space-y-2" onClick={stop}>
+                  {Array.isArray(r.verifications) && r.verifications.length > 0 ? (
+                    r.verifications.map((v) => (
+                      <div key={v.id} className="border rounded-md p-2 space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <Badge variant={verificationStatusVariant(v.verification_status)}>
+                            {v.verification_status || "unknown"}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">{formatDate(v.verified_on)}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {v.safe_to_send && (
+                            <Badge variant={safeToSendVariant(v.safe_to_send)}>safe_to_send: {v.safe_to_send}</Badge>
+                          )}
+                          {v.disposable && <Badge variant="outline">disposable: {v.disposable}</Badge>}
+                          {v.free && <Badge variant="outline">free: {v.free}</Badge>}
+                          {v.role && <Badge variant="outline">role: {v.role}</Badge>}
+                          {v.gibberish && <Badge variant="outline">gibberish: {v.gibberish}</Badge>}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <span className="text-xs text-muted-foreground">No verifications found</span>
+                  )}
+                </AdvancedFiltersCollapsible>
+              </div>
+            )}
+          />
         );
       },
     },

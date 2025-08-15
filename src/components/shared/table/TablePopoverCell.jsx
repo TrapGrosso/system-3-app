@@ -58,7 +58,7 @@ function TablePopoverCell({
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-72 max-w-[90vw]" 
+        className="min-w-72 w-full max-w-80" 
         align="start"
         {...popoverProps}
       >

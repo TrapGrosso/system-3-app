@@ -109,6 +109,27 @@ export const useProspectsQuery = ({ userId, ...query }) => {
 *       "status": "new",
 *       "location": "Poland",
 *       "email": null,
+*       "email_record": {
+*         "id": "e1d2c3b4-f5a6-7890-1234-567890abcdef",
+*         "email": "test@example.com",
+*         "status": "valid",
+*         "created_at": "2025-07-20T12:00:00Z",
+*         "verifications": [
+*           {
+*             "id": "v1d2c3b4-f5a6-7890-1234-567890abcdef",
+*             "email_id": "e1d2c3b4-f5a6-7890-1234-567890abcdef",
+*             "verification_status": "valid",
+*             "safe_to_send": "yes",
+*             "verified_on": "2025-07-21T09:00:00Z",
+*             "disposable": "no",
+*             "free": "no",
+*             "role": "no",
+*             "gibberish": "no",
+*             "bounce_type": null,
+*             "created_at": "2025-07-21T09:00:00Z"
+*           }
+*         ]
+*       },
 *       "company_name": null,
 *       "has_bd_scrape": true,
 *       "has_deep_search": false,
