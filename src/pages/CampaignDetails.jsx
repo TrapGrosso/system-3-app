@@ -2,6 +2,7 @@ import React from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { useAuth } from "@/contexts/AuthContext"
+import { useCampaigns } from "@/contexts/CampaignsContext"
 import { usegetCampaignDetails } from "@/api/campaign-details/getCampaignDetails"
 import { LoadingScreen } from "@/components/shared/ui/LoadingScreen"
 import { Card, CardContent } from "@/components/ui/card"
@@ -19,7 +20,20 @@ export default function CampaignDetails() {
   const { campaignId } = useParams()
   const navigate = useNavigate()
 
+  const { removeProspectsFromCampaign } = useCampaigns()
+
   const { data, isLoading, isError, refetch } = usegetCampaignDetails(user?.id, campaignId)
+
+  const handleRemoveFromCampaign = React.useCallback((prospectIds) => {
+      const ids = Array.isArray(prospectIds) ? prospectIds : [prospectIds]
+      removeProspectsFromCampaign(campaignId, ids)
+        .then(() => {
+          refetch()
+        })
+        .catch((err) => {
+          console.error(err)
+        })
+    }, [campaignId, removeProspectsFromCampaign, refetch])
 
   if (isLoading) {
     return (
@@ -89,6 +103,7 @@ export default function CampaignDetails() {
           <CampaignProspectsTable
             prospects={data?.prospects || []}
             onRowClick={handleRowClick}
+            onRemoveFromCampaign={handleRemoveFromCampaign}
           />
         </div>
       </div>

@@ -14,7 +14,7 @@ import {
   Users,
 } from "lucide-react"
 
-export default function CampaignProspectsTable({ prospects = [], onRowClick }) {
+export default function CampaignProspectsTable({ prospects = [], onRowClick, onRemoveFromCampaign }) {
   // Enhanced columns using shadcn/ui
   const columns = React.useMemo(() => [
     {
@@ -171,10 +171,11 @@ export default function CampaignProspectsTable({ prospects = [], onRowClick }) {
       label: "Remove from Campaign",
       variant: "destructive",
       onSelect: () => {
-        alert(`Remove from campaign: ${ctx.linkedin_id}`)
+        if (!onRemoveFromCampaign) return
+        onRemoveFromCampaign([ctx.linkedin_id])
       }
     }
-  ], [])
+  ], [onRemoveFromCampaign])
 
   // Bulk action: Remove from Campaign (alert array of ids)
   const bulkActions = React.useMemo(() => [
@@ -183,10 +184,11 @@ export default function CampaignProspectsTable({ prospects = [], onRowClick }) {
       value: "removeFromCampaign",
       variant: "destructive",
       onSelect: (selectedIds) => {
-        alert(`Remove from campaign: ${JSON.stringify(selectedIds)}`)
+        if (!onRemoveFromCampaign) return
+        onRemoveFromCampaign(selectedIds)
       }
     }
-  ], [])
+  ], [onRemoveFromCampaign])
 
   const formatNumber = (v) => (typeof v === "number" ? v.toLocaleString() : v ?? 0)
 
