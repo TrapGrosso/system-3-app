@@ -95,21 +95,30 @@ export default function CampaignProspectsTable({ prospects = [], onRowClick }) {
       },
     },
     {
-      accessorKey: "email",
-      header: "Email",
+      id: "email",
+      header: "Email / Status",
+      accessorFn: (row) => row?.email?.email || "",
       cell: ({ row }) => {
-        const email = row.original.email
-        if (!email) return <div>—</div>
+        const emailStr = row.original.email?.email || ""
+        const status = row.original.email?.status
+        if (!emailStr) return <div>—</div>
 
         const handleCopy = (e) => {
           e.stopPropagation()
           if (navigator?.clipboard?.writeText) {
-            navigator.clipboard.writeText(email)
+            navigator.clipboard.writeText(emailStr)
           }
         }
 
+        const badgeClasses =
+          status === "valid"
+            ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+            : status === "risky"
+            ? "bg-yellow-100 text-yellow-800 border-yellow-200"
+            : "bg-muted text-muted-foreground border-transparent"
+
         return (
-          <div className="flex items-center gap-1 max-w-[300px]">
+          <div className="flex items-center gap-1 max-w-[360px]">
             <Button
               variant="link"
               asChild
@@ -117,12 +126,12 @@ export default function CampaignProspectsTable({ prospects = [], onRowClick }) {
               onClick={(e) => e.stopPropagation()}
             >
               <a
-                href={`mailto:${email}`}
+                href={`mailto:${emailStr}`}
                 className="flex items-center gap-1 min-w-0"
                 rel="noopener noreferrer"
               >
                 <MailIcon className="h-3.5 w-3.5 shrink-0 opacity-70" />
-                <span className="truncate max-w-[220px]">{email}</span>
+                <span className="truncate max-w-[220px]">{emailStr}</span>
                 <ExternalLinkIcon className="h-3.5 w-3.5 shrink-0" />
               </a>
             </Button>
@@ -140,6 +149,16 @@ export default function CampaignProspectsTable({ prospects = [], onRowClick }) {
               </TooltipTrigger>
               <TooltipContent side="top">Copy</TooltipContent>
             </Tooltip>
+            {status ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="outline" className={`ml-1 text-xs ${badgeClasses}`}>
+                    {status}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="top">{status}</TooltipContent>
+              </Tooltip>
+            ) : null}
           </div>
         )
       },

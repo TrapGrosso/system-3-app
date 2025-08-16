@@ -79,7 +79,7 @@ const chartConfig = {
   pending: { label: "Pending", color: "hsl(210, 40%, 70%)" },
 }
 
-export default function CampaignAnalyticsSection({ analytics, sequence = [] }) {
+export default function CampaignAnalyticsSection({ analytics, prospects = [] }) {
   if (!analytics) {
     return (
       <Card>
@@ -150,7 +150,7 @@ export default function CampaignAnalyticsSection({ analytics, sequence = [] }) {
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
         <MetricCard
           label="Total Leads"
-          value={leads_count}
+          value={leads_count || prospects.length}
           icon={Users}
           status="info"
         />

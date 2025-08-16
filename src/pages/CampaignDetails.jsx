@@ -75,12 +75,14 @@ export default function CampaignDetails() {
     }
   }
 
+  console.log(data)
+
   return (
     <DashboardLayout headerText="Campaign Details">
       <div className="px-4 lg:px-6 space-y-8">
-        <CampaignHeader campaign={data.campaign} />
+        <CampaignHeader campaign={data.campaign}/>
 
-        <CampaignAnalyticsSection analytics={data?.analytics} />
+        <CampaignAnalyticsSection analytics={data?.analytics} prospects={data?.prospects || []}/>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <CampaignSequenceSection sequence={data?.campaign?.campaign_sequence || []} />
