@@ -37,10 +37,11 @@ const syncIstantlyCampaigns = async (userId) => {
   return response.json()
 }
 
-export const useSyncIstantlyCampaigns = () => {
+export const useSyncIstantlyCampaigns = (options = {}) => {
   return useMutation({
     mutationKey: ['syncIstantlyCampaigns'],
     mutationFn: ({ userId }) => withRetry(() => syncIstantlyCampaigns(userId)),
+    ...options,
   })
 }
 
@@ -88,10 +89,11 @@ const syncIstantlyProspectCampaigns = async (userId) => {
   return response.json()
 }
 
-export const useSyncIstantlyProspectCampaigns = () => {
+export const useSyncIstantlyProspectCampaigns = (options = {}) => {
   return useMutation({
     mutationKey: ['syncIstantlyProspectCampaigns'],
     mutationFn: ({ userId }) => withRetry(() => syncIstantlyProspectCampaigns(userId)),
+    ...options,
   })
 }
 
@@ -114,4 +116,48 @@ export const useSyncIstantlyProspectCampaigns = () => {
  * - SUPABASE_URL
  * - SUPABASE_SERVICE_ROLE_KEY
  * - ISTANTLY_API_KEY (Bearer)
+ */
+
+const updateAllProspectsInCampaigns = async (userId) => {
+  const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/updateAllProspectsInCampaigns?user_id=${userId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
+    }
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.error)
+  }
+
+  return response.json()
+}
+
+export const useUpdateAllProspectsInCampaigns = (options = {}) => {
+  return useMutation({
+    mutationKey: ['updateAllProspectsInCampaigns'],
+    mutationFn: ({ userId }) => withRetry(() => updateAllProspectsInCampaigns(userId)),
+    ...options,
+  })
+}
+
+/**
+ * Updates all Instantly leads for user-owned prospects in active-like campaigns.
+ *
+ * Endpoint: GET /updateAllProspectsInCampaigns?user_id=<uuid>
+ *
+ * Behavior:
+ * 1) Forces sync of campaigns and campaign->prospect mappings from Instantly.
+ * 2) Loads campaign_prospect rows where campaign.status ∈ {"Draft","Active","Paused"} and campaign.user_id=user_id.
+ * 3) Bulk-fetches prospect details (email, company, variables) for those links.
+ * 4) Builds Instantly PATCH payload per lead (email directly from email table; no verification gating).
+ * 5) PATCHes Instantly /api/v2/leads/{istantly_id} in small batches with timeouts.
+ *
+ * Env:
+ * - SUPABASE_URL
+ * - SUPABASE_SERVICE_ROLE_KEY
+ * - ISTANTLY_API_KEY
  */

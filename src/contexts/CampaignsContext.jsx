@@ -5,7 +5,7 @@ import { useAuth } from './AuthContext'
 import { useFetchCampaigns } from '@/api/campaign-context/fetchCampaigns'
 import { useAddProspectToCampaign } from '@/api/campaign-context/addProspectsToCampaign'
 import { useRemoveProspectFromCampaign } from '@/api/campaign-context/removeProspectsFromCampaign'
-import { useSyncIstantlyCampaigns, useSyncIstantlyProspectCampaigns } from '@/api/campaign-context/syncIstantlyWithDb'
+import { useSyncIstantlyCampaigns, useSyncIstantlyProspectCampaigns, useUpdateAllProspectsInCampaigns } from '@/api/campaign-context/syncIstantlyWithDb'
 import { useGetProspectCampaigns } from '@/api/campaign-context/getProspectCampaigns'
 // import { useCreateCampaign } from '@/api/campaign-context/createCampaign'
 
@@ -81,6 +81,21 @@ export const CampaignsProvider = ({ children }) => {
 
 
 
+  // Update all prospects in campaigns (bulk patch to Instantly)
+  const updateAllProspectsInCampaignsMutation = useUpdateAllProspectsInCampaigns({
+    onSuccess: (data) => {
+      const message = data?.message || 'All prospects updated successfully'
+      toast.success(message)
+      queryClient.invalidateQueries(['campaigns', user_id])
+      queryClient.invalidateQueries(['prospects', user_id])
+    },
+    onError: (error) => {
+      toast.error(error?.message || 'Failed to update prospects in campaigns')
+    },
+  })
+
+
+
   // Wrapper helper functions — always use mutateAsync
 
   const addProspectsToCampaign = React.useCallback(
@@ -120,13 +135,16 @@ export const CampaignsProvider = ({ children }) => {
     [syncInstantlyProspectCampaignsMutation, user_id]
   )
 
+  const updateAllProspectsInCampaigns = React.useCallback(
+    () => updateAllProspectsInCampaignsMutation.mutateAsync({ userId: user_id }),
+    [updateAllProspectsInCampaignsMutation, user_id]
+  )
+
   const syncAll = React.useCallback(
     async () => {
-      // Sequential to ensure campaigns are up-to-date before syncing leads
-      await syncCampaigns()
-      await syncProspects()
+      await updateAllProspectsInCampaigns()
     },
-    [syncCampaigns, syncProspects]
+    [updateAllProspectsInCampaigns]
   )
 
 
@@ -156,12 +174,14 @@ export const CampaignsProvider = ({ children }) => {
       removeProspectsFromCampaignMutation,
       syncInstantlyCampaignsMutation,
       syncInstantlyProspectCampaignsMutation,
+      updateAllProspectsInCampaignsMutation,
 
       // Wrapper functions (all use mutateAsync)
       addProspectsToCampaign,
       removeProspectsFromCampaign,
       syncCampaigns,
       syncProspects,
+      updateAllProspectsInCampaigns,
       syncAll,
 
       // Helpers
@@ -174,7 +194,8 @@ export const CampaignsProvider = ({ children }) => {
       isRemovingFromCampaign: removeProspectsFromCampaignMutation.isPending,
       isSyncingCampaigns: syncInstantlyCampaignsMutation.isPending,
       isSyncingProspects: syncInstantlyProspectCampaignsMutation.isPending,
-      isSyncingAll: syncInstantlyCampaignsMutation.isPending || syncInstantlyProspectCampaignsMutation.isPending,
+      isUpdatingAllProspects: updateAllProspectsInCampaignsMutation.isPending,
+      isSyncingAll: syncInstantlyCampaignsMutation.isPending || syncInstantlyProspectCampaignsMutation.isPending || updateAllProspectsInCampaignsMutation.isPending,
     }),
     [
       campaigns,
@@ -185,10 +206,12 @@ export const CampaignsProvider = ({ children }) => {
       removeProspectsFromCampaignMutation,
       syncInstantlyCampaignsMutation,
       syncInstantlyProspectCampaignsMutation,
+      updateAllProspectsInCampaignsMutation,
       addProspectsToCampaign,
       removeProspectsFromCampaign,
       syncCampaigns,
       syncProspects,
+      updateAllProspectsInCampaigns,
       syncAll,
       refetchCampaigns,
       invalidateCampaigns,

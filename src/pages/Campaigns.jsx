@@ -1,9 +1,9 @@
 import * as React from "react"
-import { Plus } from "lucide-react"
-import { toast } from "sonner"
+import { RefreshCw, Loader2, Users, Upload, Sparkles } from "lucide-react"
 
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { Button } from "@/components/ui/button"
+import { ActionDropdown } from "@/components/shared/ui/ActionDropdown"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 import CampaignsGrid from "@/components/campaign/CampaignsGrid"
@@ -16,14 +16,15 @@ function CampaignsContent() {
     isLoadingCampaigns,
     isErrorCampaigns,
     refetchCampaigns,
+    syncCampaigns,
+    syncProspects,
+    updateAllProspectsInCampaigns,
+    syncAll,
+    isSyncingAll,
   } = useCampaigns()
 
   const [isRetrying, setIsRetrying] = React.useState(false)
 
-  const handleCreateCampaign = React.useCallback(() => {
-    // Placeholder until createCampaign mutation is implemented
-    toast.info("Create campaign: not implemented yet")
-  }, [])
 
   const navigate = useNavigate()
 
@@ -41,6 +42,16 @@ function CampaignsContent() {
     }
   }, [refetchCampaigns])
 
+  const isAnySyncing = isSyncingAll
+
+  const syncItems = React.useMemo(() => [
+    { label: "Sync campaigns", icon: RefreshCw, disabled: isAnySyncing, onSelect: () => { void syncCampaigns().catch(() => {}) } },
+    { label: "Sync campaign prospects", icon: Users, disabled: isAnySyncing, onSelect: () => { void syncProspects().catch(() => {}) } },
+    { label: "Update all prospects in campaigns", icon: Upload, disabled: isAnySyncing, onSelect: () => { void updateAllProspectsInCampaigns().catch(() => {}) } },
+    "separator",
+    { label: "Sync everything", icon: Sparkles, disabled: isAnySyncing, onSelect: () => { void syncAll().catch(() => {}) } },
+  ], [isAnySyncing, syncCampaigns, syncProspects, updateAllProspectsInCampaigns, syncAll])
+
   return (
     <DashboardLayout headerText="Campaigns">
       <div className="px-4 lg:px-6 space-y-6">
@@ -53,10 +64,20 @@ function CampaignsContent() {
             </p>
           </div>
 
-          <Button onClick={handleCreateCampaign}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Campaign
-          </Button>
+          <ActionDropdown
+            items={syncItems}
+            renderTrigger={(triggerProps) => (
+              <Button {...triggerProps} disabled={isAnySyncing}>
+                {isAnySyncing
+                  ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  : <RefreshCw className="h-4 w-4 mr-2" />}
+                Sync with Instantly
+              </Button>
+            )}
+            align="end"
+            side="bottom"
+            sideOffset={6}
+          />
         </div>
 
         {/* Loading */}
@@ -95,10 +116,20 @@ function CampaignsContent() {
               <p className="text-sm text-muted-foreground">
                 Get started by creating your first campaign.
               </p>
-              <Button onClick={handleCreateCampaign} variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Campaign
-              </Button>
+              <ActionDropdown
+                items={syncItems}
+                renderTrigger={(triggerProps) => (
+                  <Button {...triggerProps} variant="outline" disabled={isAnySyncing}>
+                    {isAnySyncing
+                      ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      : <RefreshCw className="h-4 w-4 mr-2" />}
+                    Sync with Instantly
+                  </Button>
+                )}
+                align="end"
+                side="bottom"
+                sideOffset={6}
+              />
             </CardContent>
           </Card>
         )}
