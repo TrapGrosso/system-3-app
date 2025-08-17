@@ -58,7 +58,7 @@ export const useProspectsQuery = ({ userId, ...query }) => {
 *   Available fields:
 *   - Prospect fields: first_name, last_name, headline, location, title
 *   - Company fields: company_name, company_website, company_industry, company_size, company_location
-*   - Related data: notes, task_titles, task_descriptions, group_names, campaign_names, variable_name
+*   - Related data: notes, task_titles, task_descriptions, group_names, campaign_names, variable_name, enrichment_types, enrichment_prompt_names
 *   Default: all fields if q is provided
 * - status (optional): Filter by prospect status
 * - in_group (optional): 'yes' or 'no' to filter by group membership
@@ -87,6 +87,12 @@ export const useProspectsQuery = ({ userId, ...query }) => {
 * 
 * Search in notes and tasks:
 * GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&q=meeting&search_fields=notes,task_titles,task_descriptions
+* 
+* Search in enrichment types:
+* GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&q=bd&search_fields=enrichment_types
+* 
+* Search in enrichment prompt names:
+* GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&q=initial&search_fields=enrichment_prompt_names
 * 
 * Combined filters:
 * GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&q=manager&search_fields=title,headline&status=new&sort_by=created_at&sort_dir=desc
@@ -160,10 +166,6 @@ export const useProspectsQuery = ({ userId, ...query }) => {
 *         {
 *           "id": "d4508141-7727-418a-87a3-a10339bcbfa7",
 *           "name": "some name",
-*           "tags": [
-*             "tag",
-*             "some tag"
-*           ],
 *           "value": "some description"
 *         }
 *       ],
@@ -207,7 +209,7 @@ export const useProspectsQuery = ({ userId, ...query }) => {
 * {"error": "Missing required query param: user_id"}
 * 
 * Invalid search field (400):
-* {"error": "Parameter validation failed: Invalid search field \"invalid_field\". Must be one of: first_name, last_name, headline, location, email, title, company_name, company_website, company_industry, company_size, company_location, notes, task_titles, task_descriptions, group_names, campaign_names, enrichment_data, variable_name"}
+* {"error": "Parameter validation failed: Invalid search field \"invalid_field\". Must be one of: first_name, last_name, headline, location, title, company_name, company_website, company_industry, company_size, company_location, notes, task_titles, task_descriptions, group_names, campaign_names, variable_name, enrichment_types, enrichment_prompt_names"}
 * 
 * Invalid page size (400):
 * {"error": "Parameter validation failed: Value 150 exceeds maximum of 100"}
