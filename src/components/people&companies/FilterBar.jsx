@@ -45,6 +45,8 @@ const SEARCH_FIELD_OPTIONS = [
   { value: 'group_names', label: 'Group Names' },
   { value: 'campaign_names', label: 'Campaign Names' },
   { value: 'variable_name', label: 'Variable Name' },
+  { value: 'enrichment_types', label: 'Enrichment Types' },
+  { value: 'enrichment_prompt_names', label: 'Enrichment Prompt Names' },
 ]
 
 export default function FilterBar({ query, onApplyFilters, onResetFilters, loading }) {
