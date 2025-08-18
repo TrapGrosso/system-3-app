@@ -11,6 +11,7 @@ import DialogWrapper from "@/components/shared/dialog/DialogWrapper"
 import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 import FormField from "@/components/shared/ui/FormField"
 import EditableListItem from "@/components/shared/ui/EditableListItem"
+import VariableMetaBadges from "@/components/dialogs/prospect-variables/VariableMetaBadges"
 
 import { useVariables, useProspectVariables } from "@/contexts/VariableContext"
 
@@ -208,6 +209,7 @@ function ProspectVariablesDialog({
                           <span className="text-xs text-muted-foreground">
                             {formatDate(item.created_at)}
                           </span>
+                          <VariableMetaBadges variable={item} formatDate={formatDate} />
                         </div>
                       </div>
                     )}

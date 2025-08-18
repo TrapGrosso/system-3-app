@@ -59,12 +59,7 @@ export const useGetVariables = ({ userId, prospect_id = null }) => {
  *       "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
  *       "name": "Example Prompt",
  *       "description": "A description of the prompt",
- *       "prompt_text": "This is the prompt text.",
- *       "agent_type": "some_agent_type",
- *       "tags": ["tag1", "tag2"],
- *       "created_at": "2025-07-04T18:30:00.000000Z",
- *       "updated_at": "2025-07-04T18:30:00.000000Z",
- *       "additional_metadata": {}
+ *       "agent_type": "some_agent_type"
  *     },
  *     "name": "company_name",
  *     "value": "Acme Corp",
@@ -81,12 +76,7 @@ export const useGetVariables = ({ userId, prospect_id = null }) => {
  *           "id": "prompt_enrich_001",
  *           "name": "Enrichment Prompt 1",
  *           "description": null,
- *           "prompt_text": "Enrichment prompt text 1.",
- *           "agent_type": "enrichment_agent",
- *           "tags": null,
- *           "created_at": "2025-07-04T18:35:00.000000Z",
- *           "updated_at": "2025-07-04T18:35:00.000000Z",
- *           "additional_metadata": {}
+ *           "agent_type": "enrichment_agent"
  *         }
  *       }
  *     ],
