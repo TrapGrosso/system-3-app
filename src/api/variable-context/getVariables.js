@@ -55,22 +55,54 @@ export const useGetVariables = ({ userId, prospect_id = null }) => {
  *   {
  *     "id": "5d3e2f36-8db3-49c2-93e6-96bf9f632d66",
  *     "prospect_id": "john-doe-123",
- *     "prompt_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+ *     "prompt": {
+ *       "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+ *       "name": "Example Prompt",
+ *       "description": "A description of the prompt",
+ *       "prompt_text": "This is the prompt text.",
+ *       "agent_type": "some_agent_type",
+ *       "tags": ["tag1", "tag2"],
+ *       "created_at": "2025-07-04T18:30:00.000000Z",
+ *       "updated_at": "2025-07-04T18:30:00.000000Z",
+ *       "additional_metadata": {}
+ *     },
  *     "name": "company_name",
  *     "value": "Acme Corp",
  *     "enrichment_ids": ["enrich_001", "enrich_002"],
- *     "created_at": "2025-07-04T18:35:22.123456",
- *     "updated_at": "2025-07-04T18:35:22.123456"
+ *     "enrichments": [
+ *       {
+ *         "id": "enrich_001",
+ *         "entity": "john-doe-123",
+ *         "entity_kind": "prospect",
+ *         "type": "linkedin_profile",
+ *         "source": "scraper",
+ *         "created_at": "2025-07-04T18:35:22.123456Z",
+ *         "prompt": {
+ *           "id": "prompt_enrich_001",
+ *           "name": "Enrichment Prompt 1",
+ *           "description": null,
+ *           "prompt_text": "Enrichment prompt text 1.",
+ *           "agent_type": "enrichment_agent",
+ *           "tags": null,
+ *           "created_at": "2025-07-04T18:35:00.000000Z",
+ *           "updated_at": "2025-07-04T18:35:00.000000Z",
+ *           "additional_metadata": {}
+ *         }
+ *       }
+ *     ],
+ *     "created_at": "2025-07-04T18:35:22.123456Z",
+ *     "updated_at": "2025-07-04T18:35:22.123456Z"
  *   },
  *   {
  *     "id": "0c52c1f7-1b77-4d6f-9e0e-3e75baff7461",
  *     "prospect_id": null,
- *     "prompt_id": null,
+ *     "prompt": null,
  *     "name": "global_setting",
  *     "value": "true",
  *     "enrichment_ids": null,
- *     "created_at": "2025-07-03T10:02:11.987654",
- *     "updated_at": "2025-07-03T10:02:11.987654"
+ *     "enrichments": [],
+ *     "created_at": "2025-07-03T10:02:11.987654Z",
+ *     "updated_at": "2025-07-03T10:02:11.987654Z"
  *   }
  * ]
  * 

@@ -86,19 +86,79 @@ export default function VariablesTable({ variables = [], prospect, onAddVariable
         />
       ),
     },
+// New Prompt column
     {
-      accessorKey: "enrichment_ids",
+      accessorKey: "prompt",
+      header: "Prompt",
+      enableSorting: false,
+      cell: ({ row }) => {
+        const prompt = row.original?.prompt
+        const items = prompt ? [prompt] : []
+        return (
+          <TablePopoverCell
+            items={items}
+            title="Variable Prompt"
+            icon={<Code2 />}
+            triggerVariant="accent"
+            maxHeight={240}
+            renderItem={(p) => (
+              <div className="p-2 border rounded-md text-sm space-y-1">
+                <div className="font-medium">{p.name}</div>
+                {p.agent_type && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs text-muted-foreground">Agent Type:</span>
+                    <Badge variant="outline">{p.agent_type}</Badge>
+                  </div>
+                )}
+              </div>
+            )}
+          />
+        )
+      },
+    },
+    // New Enrichments column
+    {
+      accessorKey: "enrichments",
       header: "Enrichments",
       enableSorting: false,
       cell: ({ row }) => {
-        const enrichmentIds = row.getValue("enrichment_ids")
-        const count = enrichmentIds?.length || 0
-        
-        return (
-          <div className="text-sm text-muted-foreground">
-            {count} enrichment{count !== 1 ? 's' : ''}
-          </div>
-        )
+        const v = row.original
+        const items = Array.isArray(v.enrichments) ? v.enrichments : []
+
+        if (items.length > 0) {
+          return (
+            <TablePopoverCell
+              items={items}
+              title="Enrichments"
+              icon={<ListIcon />}
+              triggerVariant="accent"
+              maxHeight={320}
+              renderItem={(enrichment) => (
+                <div className="p-2 border rounded-md text-sm space-y-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="secondary">{enrichment.type}</Badge>
+                    {enrichment.source && <Badge variant="outline">{enrichment.source}</Badge>}
+                  </div>
+                  {enrichment.prompt ? (
+                    <div className="bg-muted/40 rounded-md p-2 space-y-1">
+                      <div className="text-xs text-muted-foreground">Prompt</div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-foreground text-sm">{enrichment.prompt.name}</span>
+                        {enrichment.prompt.agent_type && (
+                          <Badge variant="outline">{enrichment.prompt.agent_type}</Badge>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-xs text-muted-foreground">No enrichment prompt</div>
+                  )}
+                </div>
+              )}
+            />
+          )
+        } else {
+          return <div className="text-center text-muted-foreground">—</div>
+        }
       },
     },
   ]

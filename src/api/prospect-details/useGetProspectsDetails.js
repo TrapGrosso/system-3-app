@@ -102,18 +102,12 @@ export const usegetProspectDetails = (userId, prospect_id) => {
  *           "id": "44daa173-1bf5-48a2-b739-c210393e054a",
  *           "type": "bd_scrape",
  *           "source": "linkedin",
- *           "raw_data": "{linkedin scrape raw}",
- *           "summary": null,
- *           "created_at": "2025-06-14T19:39:55.225607",
  *           "prompt": {
  *             "id": "aaaa-bbbb-cccc-dddd-eeeeffff0001",
  *             "name": "LinkedIn Scrape",
  *             "agent_type": "scraper"
  *           }
  *         }
- *       ],
- *       "enrichment_ids": [
- *         "44daa173-1bf5-48a2-b739-c210393e054a"
  *       ]
  *     }
  *   ],
