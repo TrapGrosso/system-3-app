@@ -24,6 +24,8 @@ import UpdateProspectDialog from '@/components/dialogs/UpdateProspectDialog'
 import { PromptSelectDialog } from '@/components/dialogs/PromptSelectDialog'
 import ResolveDeepSearchItem from '@/components/dialogs/ResolveDeepSearchItem'
 import ProspectEnrichmentsDialog from '@/components/dialogs/enrichments/ProspectEnrichmentsDialog'
+import { RemoveFromCampaignDialog } from '@/components/dialogs'
+import AddToCampaignDialog from '@/components/dialogs/AddToCampaignDialog'
 import {
   ProspectHeader,
   CompanyCard,
@@ -47,6 +49,10 @@ export default function ProspectDetails() {
   const [promptSelectDialogOpen, setPromptSelectDialogOpen] = useState(false)
   const [resolveDialogOpen, setResolveDialogOpen] = useState(false)
   const [enrichmentsDialogOpen, setEnrichmentsDialogOpen] = useState(false)
+  const [removeFromCampaignDialogOpen, setRemoveFromCampaignDialogOpen] = useState(false)
+  const [removeFromCampaignTarget, setRemoveFromCampaignTarget] = useState(null)
+
+  const [addToCampaignDialogOpen, setAddToCampaignDialogOpen] = useState(false)
 
   const { data, isLoading, isError, refetch } = usegetProspectDetails(user?.id, linkedinId)
 
@@ -154,6 +160,27 @@ export default function ProspectDetails() {
     setResolveDialogOpen(false)
   }
 
+  // RemoveFromCampaign dialog handlers
+  const handleOpenRemoveFromCampaignDialog = ({ prospectId, prospectName }) => {
+    setRemoveFromCampaignTarget({ prospectId, prospectName })
+    setRemoveFromCampaignDialogOpen(true)
+  }
+
+  const handleRemoveFromCampaignDialogSuccess = () => {
+    refetch()
+    setRemoveFromCampaignDialogOpen(false)
+  }
+
+  // AddToCampaign dialog handlers
+  const handleOpenAddToCampaignDialog = () => {
+    setAddToCampaignDialogOpen(true)
+  }
+
+  const handleAddToCampaignDialogSuccess = () => {
+    refetch()
+    setAddToCampaignDialogOpen(false)
+  }
+
   // Enrichments dialog handlers
   const handleOpenEnrichmentsDialog = () => {
     setEnrichmentsDialogOpen(true)
@@ -227,6 +254,7 @@ export default function ProspectDetails() {
               onCreateTask={handleOpenTasksDialog}
               onAddToDeepResearch={handleOpenDeepSearchDialog}
               onAddToGroup={handleOpenGroupsDialog}
+              onAddToCampaign={handleOpenAddToCampaignDialog}
               onCreateVariables={handleOpenEnrichmentsDialog}
               onRefetch={refetch}
             />
@@ -268,6 +296,8 @@ export default function ProspectDetails() {
             onVariablesChanged={handleVariablesDialogSuccess}
             onAddToGroup={handleOpenGroupsDialog}
             onDeleteEnrichment={handleDeleteEnrichment}
+            onOpenRemoveFromCampaign={handleOpenRemoveFromCampaignDialog}
+            onAddToCampaign={handleOpenAddToCampaignDialog}
           />
 
           {/* ProspectNotesDialog - controlled by ProspectDetails state */}
@@ -382,6 +412,27 @@ export default function ProspectDetails() {
               open={enrichmentsDialogOpen}
               onOpenChange={setEnrichmentsDialogOpen}
               onSuccess={handleEnrichmentsDialogSuccess}
+            />
+          )}
+
+          {/* RemoveFromCampaignDialog - controlled by ProspectDetails state */}
+          {data.prospect && (
+            <RemoveFromCampaignDialog
+              prospect_id={removeFromCampaignTarget?.prospectId ?? data.prospect.linkedin_id}
+              prospect_name={removeFromCampaignTarget?.prospectName ?? `${data.prospect.first_name} ${data.prospect.last_name}`.trim()}
+              open={removeFromCampaignDialogOpen}
+              onOpenChange={setRemoveFromCampaignDialogOpen}
+              onSuccess={handleRemoveFromCampaignDialogSuccess}
+            />
+          )}
+
+          {/* AddToCampaignDialog - controlled by ProspectDetails state */}
+          {data.prospect && (
+            <AddToCampaignDialog
+              prospect_ids={[data.prospect.linkedin_id]}
+              open={addToCampaignDialogOpen}
+              onOpenChange={setAddToCampaignDialogOpen}
+              onSuccess={handleAddToCampaignDialogSuccess}
             />
           )}
 

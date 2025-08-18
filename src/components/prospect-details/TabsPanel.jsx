@@ -25,7 +25,9 @@ export default function TabsPanel(
     onAddVariable,
     onVariablesChanged,
     onAddToGroup,
-    onDeleteEnrichment
+    onDeleteEnrichment,
+    onOpenRemoveFromCampaign,
+    onAddToCampaign
   }) {
   const totalEnrichments = Object.values(enrichment || {}).flat().length
   return (
@@ -79,7 +81,12 @@ export default function TabsPanel(
         </TabsContent>
         
         <TabsContent value="campaigns" className="mt-6">
-          <CampaignsTable campaigns={campaigns} />
+          <CampaignsTable 
+            campaigns={campaigns} 
+            prospect={prospect}
+            onOpenRemoveFromCampaign={onOpenRemoveFromCampaign}
+            onAddToCampaign={onAddToCampaign}
+          />
         </TabsContent>
         
         <TabsContent value="groups" className="mt-6">
