@@ -1,7 +1,7 @@
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import OperationSection from "@/components/settings/OperationSection"
-import { OPERATION_SCHEMAS } from "@/utils/operationSettingsSchema"
+import { OPERATION_SCHEMAS } from "@/components/settings/operationSettingsSchema"
 
 export default function Settings() {
   const operations = Object.keys(OPERATION_SCHEMAS)

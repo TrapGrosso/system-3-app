@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { SingleSelect } from "@/components/shared/filter/SingleSelect"
 import CheckboxMatrix from "@/components/shared/dialog/CheckboxMatrix"
 import SpinnerButton from "@/components/shared/ui/SpinnerButton"
-import { OPERATION_SCHEMAS, getSchemaDefaults } from "@/utils/operationSettingsSchema"
+import { OPERATION_SCHEMAS, getSchemaDefaults } from "@/components/settings/operationSettingsSchema"
 import GroupSingleSelect from "@/components/shared/dialog/GroupSingleSelect"
 import PromptMultiSelect from "@/components/shared/dialog/PromptMultiSelect"
 
