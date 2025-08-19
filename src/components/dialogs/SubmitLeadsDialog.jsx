@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
 
 import { useGroups } from "@/contexts/GroupsContext"
+import { useOperationDefault } from "@/contexts/OperationDefaultsContext"
 import { Badge } from "../ui/badge"
 import PromptMultiSelect from "@/components/shared/dialog/PromptMultiSelect"
 import DialogWrapper from "@/components/shared/dialog/DialogWrapper"
@@ -38,11 +39,26 @@ function SubmitLeadsDialog({
   const [selectedGroupId, setSelectedGroupId] = useState("")
   const [selectedOptions, setSelectedOptions] = useState([])
   const [selectedPromptIds, setSelectedPromptIds] = useState([])
-  
+  const didInitRef = useRef(false)
+
   // Get groups context
-  const {
-    getGroupById,
-  } = useGroups()
+  const { getGroupById } = useGroups()
+
+  // Get operation defaults for "add_leads"
+  const { defaults, isLoading: isLoadingDefaults } = useOperationDefault("add_leads")
+
+  useEffect(() => {
+    if (open && !didInitRef.current && !isLoadingDefaults && defaults) {
+      setSelectedOptions(defaults.flags || [])
+      setSelectedPromptIds(defaults.prompt_ids || [])
+      if (defaults.add_to_group && defaults.group?.id) {
+        setSelectedGroupId(defaults.group.id)
+      } else {
+        setSelectedGroupId("")
+      }
+      didInitRef.current = true
+    }
+  }, [open, defaults, isLoadingDefaults])
 
   const handleSubmit = () => {
     const selectedGroup = getGroupById(selectedGroupId)
@@ -67,6 +83,7 @@ function SubmitLeadsDialog({
       setSelectedGroupId("")
       setSelectedOptions([])
       setSelectedPromptIds([])
+      didInitRef.current = false // Reset ref for next open
     }
   }
 

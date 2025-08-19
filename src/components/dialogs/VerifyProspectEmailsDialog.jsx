@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useverifyProspectEmails } from "@/api/email/verifyProspectEmails"
 import CheckboxMatrix from "@/components/shared/dialog/CheckboxMatrix"
 import { SingleSelect } from "@/components/shared/filter/SingleSelect"
+import { useOperationDefault } from "@/contexts/OperationDefaultsContext"
 
 function VerifyProspectEmailsDialog({
   open,
@@ -23,11 +24,31 @@ function VerifyProspectEmailsDialog({
   const user_id = user?.id
   const queryClient = useQueryClient()
 
+  const { defaults, isLoading: isLoadingDefaults } = useOperationDefault("verify_emails_clearout")
+
   const [selectedOptions, setSelectedOptions] = React.useState([])
   const [verificationStatus, setVerificationStatus] = React.useState("all")
 
+  React.useEffect(() => {
+    if (open && !isLoadingDefaults && defaults) {
+      const initialSelectedOptions = []
+      if (defaults.include_valid === true) {
+        initialSelectedOptions.push("include_valid")
+      }
+      if (defaults.include_already_verified === true) {
+        initialSelectedOptions.push("include_already_verified")
+      }
+      setSelectedOptions(initialSelectedOptions)
+      setVerificationStatus(defaults.verification_status || "all")
+    }
+  }, [open, isLoadingDefaults, defaults])
+
   const mutation = useverifyProspectEmails({
     onSuccess: (data) => {
+      if (!newOpen) {
+        setSelectedOptions([])
+        setVerificationStatus("all")
+      }
       toast.success(data.message || "Prospects processed successfully")
       queryClient.invalidateQueries()
       if (onSuccess) onSuccess(data)
@@ -54,10 +75,6 @@ function VerifyProspectEmailsDialog({
 
   const handleOpenChange = (newOpen) => {
     onOpenChange(newOpen)
-    if (!newOpen) {
-      setSelectedOptions([])
-      setVerificationStatus("all")
-    }
   }
 
   const INCLUDE_OPTIONS = [

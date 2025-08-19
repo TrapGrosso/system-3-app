@@ -21,7 +21,8 @@ export default function ChangeCompanyAiSearchSection({
   setPrecision,
   flags,
   setFlags,
-  disabled = false
+  disabled = false,
+  isLoadingDefaults = false
 }) {
   return (
     <Card>
@@ -54,7 +55,7 @@ export default function ChangeCompanyAiSearchSection({
               options={PRECISION_OPTIONS}
               placeholder="Select precision level"
               triggerClassName="h-9 min-w-[180px]"
-              selectProps={{ disabled }}
+              selectProps={{ disabled: disabled || isLoadingDefaults }}
             />
             <p className="text-xs text-muted-foreground">
               Higher precision may provide more accurate results but will take longer to process.
@@ -67,7 +68,7 @@ export default function ChangeCompanyAiSearchSection({
             options={FLAG_OPTIONS}
             value={flags}
             onChange={setFlags}
-            disabled={disabled}
+            disabled={disabled || isLoadingDefaults}
             columns="grid-cols-1"
             className="space-y-3"
           />

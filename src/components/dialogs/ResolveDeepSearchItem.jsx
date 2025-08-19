@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 
 import { useDeepSearchQueue } from "@/contexts/DeepSearchQueueContext"
+import { useOperationDefaults } from "@/contexts/OperationDefaultsContext"
 
 // Precision options
 const PRECISION_OPTIONS = [
@@ -41,6 +42,7 @@ function ResolveDeepSearchItem({
 
   // Get deep search queue context
   const { resolveProspects, isResolvingQueue } = useDeepSearchQueue()
+  const { getDefaults, isLoading: isDefaultsLoading } = useOperationDefaults()
 
   const handleSubmit = async () => {
     if (!queueIds.length) return
@@ -72,15 +74,17 @@ function ResolveDeepSearchItem({
     onOpenChange(false)
   }
 
-  // Reset state when dialog closes
+  // Reset state when dialog closes or set defaults when dialog opens
   useEffect(() => {
     if (!open) {
-      setPrecision("default")
-      setMaxSearches("3")
-      setMaxScrapes("3")
-      setSelectedFlags([])
+      // Set defaults when dialog opens
+      const d = getDefaults("resolve_deep_search_queue") || {}
+      setPrecision(d.agent_precision ?? "default")
+      setMaxSearches(String(d.max_searches ?? 3))
+      setMaxScrapes(String(d.max_scrapes ?? 3))
+      setSelectedFlags(Array.isArray(d.flags) ? d.flags : [])
     }
-  }, [open])
+  }, [open, getDefaults])
 
   // Validation
   const maxSearchesNum = Number(maxSearches) || 0
@@ -177,7 +181,7 @@ function ResolveDeepSearchItem({
         <SpinnerButton
           loading={isResolvingQueue}
           onClick={handleSubmit}
-          disabled={!isFormValid || isResolvingQueue}
+          disabled={!isFormValid || isResolvingQueue || isDefaultsLoading}
         >
           Resolve Items
         </SpinnerButton>

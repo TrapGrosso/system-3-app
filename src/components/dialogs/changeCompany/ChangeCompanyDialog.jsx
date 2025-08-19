@@ -19,6 +19,7 @@ import ChangeCompanySubmitSection from "./ChangeCompanySubmitSection"
 import ChangeCompanyAiSearchSection from "./ChangeCompanyAiSearchSection"
 import { useAddLeads } from "@/api/add-leads/addLeads"
 import { useAiCompanySearch } from "@/api/change-company-dialog/aiCompanySearch"
+import { useOperationDefault } from "@/contexts/OperationDefaultsContext"
 
 function ChangeCompanyDialog({ 
   open,
@@ -36,6 +37,9 @@ function ChangeCompanyDialog({
   const [precision, setPrecision] = useState('default')
   const [selectedFlags, setSelectedFlags] = useState([])
   
+  // Fetch AI search defaults
+  const { defaults: aiSearchDefaults, isLoading: isLoadingAiSearchDefaults } = useOperationDefault("search_company_with_ai")
+
   // Hooks - all contexts and mutations in dialog
   const { user } = useAuth()
   const { updateProspectCompany, isUpdatingProspect } = useProspects()
@@ -103,6 +107,7 @@ function ChangeCompanyDialog({
     setPrecision('default')
     setSelectedFlags([])
     resetFilters()
+    aiInitRef.current = false // Reset AI defaults initialization flag
   }
 
   // Handle dialog close
@@ -146,6 +151,18 @@ function ChangeCompanyDialog({
 
   // Check if submit is valid
   const isSubmitValid = (step === 'choose' && selectedId) || (step === 'manual' && manualUrl.trim() && manualUrl.includes('linkedin.com')) || (step === 'ai')
+
+  // Ref to prevent re-initializing AI search defaults on re-render
+  const aiInitRef = React.useRef(false)
+
+  // Initialize AI search defaults when step is 'ai' and not yet initialized
+  React.useEffect(() => {
+    if (step === 'ai' && !aiInitRef.current && aiSearchDefaults) {
+      setPrecision(aiSearchDefaults.agent_precision ?? 'default')
+      setSelectedFlags(Array.isArray(aiSearchDefaults.flags) ? aiSearchDefaults.flags : [])
+      aiInitRef.current = true
+    }
+  }, [step, aiSearchDefaults])
 
   // Handle clear selection
   const handleClearSelection = () => {
@@ -270,6 +287,7 @@ function ChangeCompanyDialog({
             flags={selectedFlags}
             setFlags={setSelectedFlags}
             disabled={aiSearchMutation.isPending}
+            isLoadingDefaults={isLoadingAiSearchDefaults}
           />
         )}
       </DialogWrapper.Body>
