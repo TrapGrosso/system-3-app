@@ -18,6 +18,7 @@ import CampaignDetails from './pages/CampaignDetails'
 import { useAuth } from './contexts/AuthContext'
 import { RoundSpinner } from './components/ui/spinner'
 import { Toaster } from './components/ui/sonner'
+import Settings from './pages/Settings'
 
 function App() {
   const { user, loading } = useAuth()
@@ -139,6 +140,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Logs />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/settings" 
+          element={
+            <ProtectedRoute>
+              <Settings/>
             </ProtectedRoute>
           } 
         />

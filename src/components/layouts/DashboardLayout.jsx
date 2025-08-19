@@ -107,7 +107,7 @@ export function DashboardLayout({ children, headerText = "Dashboard" }) {
     navSecondary: [
       {
         title: "Settings",
-        url: "#",
+        url: "/settings",
         icon: IconSettings,
       },
       {
