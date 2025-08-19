@@ -13,6 +13,7 @@ import { VariableProvider } from './contexts/VariableContext'
 import { CompaniesProvider } from './contexts/CompaniesContext'
 import { CampaignsProvider } from './contexts/CampaignsContext'
 import { NotesProvider } from './contexts/NotesContext'
+import { OperationDefaultsProvider } from './contexts/OperationDefaultsContext'
 
 const queryClient = new QueryClient()
 
@@ -20,25 +21,27 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TaskProvider>
-          <VariableProvider>
-            <DeepSearchQueueProvider>
-              <PromptProvider>
-                <GroupsProvider>
-                  <CompaniesProvider>
-                    <ProspectsProvider>
-                      <CampaignsProvider>
-                        <NotesProvider>
-                          <App />
-                        </NotesProvider>
-                      </CampaignsProvider>
-                    </ProspectsProvider>
-                  </CompaniesProvider>
-                </GroupsProvider>
-              </PromptProvider>
-            </DeepSearchQueueProvider>
-          </VariableProvider>
-        </TaskProvider>
+        <OperationDefaultsProvider>
+          <TaskProvider>
+            <VariableProvider>
+              <DeepSearchQueueProvider>
+                <PromptProvider>
+                  <GroupsProvider>
+                    <CompaniesProvider>
+                      <ProspectsProvider>
+                        <CampaignsProvider>
+                          <NotesProvider>
+                            <App />
+                          </NotesProvider>
+                        </CampaignsProvider>
+                      </ProspectsProvider>
+                    </CompaniesProvider>
+                  </GroupsProvider>
+                </PromptProvider>
+              </DeepSearchQueueProvider>
+            </VariableProvider>
+          </TaskProvider>
+        </OperationDefaultsProvider>
       </AuthProvider>
     </QueryClientProvider>
   </StrictMode>,
