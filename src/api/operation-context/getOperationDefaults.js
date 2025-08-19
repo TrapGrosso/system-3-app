@@ -2,11 +2,11 @@ import { useQuery } from '@tanstack/react-query'
 
 const getOperationDefaults = async (operation) => { 
 
-    const params = operation 
-        ? `${new URLSearchParams({ operation })}`
-        : null
+    const normalized = typeof operation === 'string' ? operation.trim() : ''
+    const isAll = !normalized || normalized.toLowerCase() === 'all'
+    const qs = isAll ? '' : `?${new URLSearchParams({ operation: normalized })}`
 
-    const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getOperationDefaults${params}`, {
+    const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getOperationDefaults${qs}`, {
         method: 'GET',
         headers: {
         'Content-Type': 'application/json',
@@ -16,7 +16,7 @@ const getOperationDefaults = async (operation) => {
     })
 
     if (!response.ok) {
-        throw new Error('Failed to fetch prompts')
+        throw new Error('Failed to fetch operation defaults')
     }
 
     const result = await response.json()
