@@ -1,6 +1,5 @@
 import React from "react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -23,93 +22,20 @@ export default function OperationSettingsForm({
   isLoadingDefaults
 }) {
   const schema = OPERATION_SCHEMAS[operation]
-  const [values, setValues] = React.useState(getSchemaDefaults(operation))
-  const hasHydratedRef = React.useRef(false)
-  const baselineRef = React.useRef(null)
 
-  // Normalize values for stable deep comparison based on schema
-  function normalizeForCompare(vals) {
-    const out = {}
-    const fields = schema?.fields || {}
-    const defaults = getSchemaDefaults(operation)
-    for (const key of Object.keys(fields)) {
-      const def = fields[key] || {}
-      const v = vals && Object.prototype.hasOwnProperty.call(vals, key) ? vals[key] : undefined
-      const d = defaults && Object.prototype.hasOwnProperty.call(defaults, key) ? defaults[key] : undefined
+  const [values, setValues] = React.useState(initialValues)
+  const [dirty, setDirty] = React.useState(false)
 
-      switch (def.type) {
-        case "flags":
-        case "prompts_multi": {
-          const arr = Array.isArray(v != null ? v : d) ? (v != null ? v : d) : []
-          out[key] = arr.map((x) => String(x)).sort()
-          break
-        }
-        case "enum": {
-          const val = v != null ? v : d
-          out[key] = val == null ? "" : String(val)
-          break
-        }
-        case "boolean": {
-          const val = v != null ? v : d
-          out[key] = !!val
-          break
-        }
-        case "int": {
-          const val = v != null ? v : d
-          let n = typeof val === "number" ? val : parseInt(val, 10)
-          out[key] = Number.isFinite(n) ? n : null
-          break
-        }
-        case "object":
-        case "group_single": {
-          const base = v != null ? v : d
-          const id = (base && typeof base === "object" && "id" in base) ? base.id : ""
-          out[key] = { id: id == null ? "" : String(id) }
-          break
-        }
-        default: {
-          out[key] = v != null ? v : d
-          break
-        }
-      }
-    }
-    return out
-  }
-
-  function deepEqual(a, b) {
-    try {
-      return JSON.stringify(a) === JSON.stringify(b)
-    } catch {
-      return false
-    }
-  }
-
-  // Reset hydration when operation changes
   React.useEffect(() => {
-    hasHydratedRef.current = false
-    setValues(getSchemaDefaults(operation))
-  }, [operation])
-
-  // One-time hydration once defaults finish loading
-  React.useEffect(() => {
-    if (!isLoadingDefaults && !hasHydratedRef.current) {
-      const normalizedVals = initialValues || getSchemaDefaults(operation)
-      setValues(normalizedVals)
-      baselineRef.current = normalizeForCompare(normalizedVals)
-      hasHydratedRef.current = true
+    if (!isLoadingDefaults || !isSaving) {
+      setValues(initialValues)
+      setDirty(false)
     }
-  }, [isLoadingDefaults, initialValues, operation])
-
-  // Refresh baseline when initialValues change after hydration (e.g., after save/refetch)
-  React.useEffect(() => {
-    if (hasHydratedRef.current && !isLoadingDefaults) {
-      const base = initialValues || getSchemaDefaults(operation)
-      baselineRef.current = normalizeForCompare(base)
-    }
-  }, [initialValues, isLoadingDefaults, operation])
+  }, [operation, initialValues, isLoadingDefaults])
 
   const handleChange = (field, value) => {
     setValues(prev => ({ ...prev, [field]: value }))
+    setDirty(true)
   }
 
   const renderField = (fieldKey, def) => {
@@ -196,11 +122,6 @@ export default function OperationSettingsForm({
     }
   }
 
-  const isDirty = React.useMemo(() => {
-    if (isLoadingDefaults || !hasHydratedRef.current || !baselineRef.current) return false
-    return !deepEqual(normalizeForCompare(values), baselineRef.current)
-  }, [values, isLoadingDefaults, baselineRef.current])
-
   return (
     <Card className="mb-4">
       <CardHeader>
@@ -210,9 +131,9 @@ export default function OperationSettingsForm({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {isLoadingDefaults ? (
+        {isLoadingDefaults || isSaving ? (
           // Skeleton placeholders while defaults are loading
-          Object.entries(schema.fields).map(([fieldKey, def]) => (
+          Object.entries(schema.fields).map(([fieldKey]) => (
             <div key={fieldKey} className="space-y-1">
               <div className="h-4 w-24 bg-muted animate-pulse rounded" />
               <div className="h-9 w-full bg-muted animate-pulse rounded" />
@@ -223,8 +144,15 @@ export default function OperationSettingsForm({
         )}
       </CardContent>
       <CardFooter className="flex justify-end gap-2">
-        {isDirty && (
-          <SpinnerButton onClick={async () => { await onSave(values); baselineRef.current = false }} loading={isSaving} disabled={isLoadingDefaults}>
+        {dirty && (
+          <SpinnerButton
+            onClick={async () => {
+              await onSave(values)
+              setDirty(false)
+            }}
+            loading={isSaving}
+            disabled={isLoadingDefaults}
+          >
             Save
           </SpinnerButton>
         )}
