@@ -25,6 +25,64 @@ export default function OperationSettingsForm({
   const schema = OPERATION_SCHEMAS[operation]
   const [values, setValues] = React.useState(getSchemaDefaults(operation))
   const hasHydratedRef = React.useRef(false)
+  const baselineRef = React.useRef(null)
+
+  // Normalize values for stable deep comparison based on schema
+  function normalizeForCompare(vals) {
+    const out = {}
+    const fields = schema?.fields || {}
+    const defaults = getSchemaDefaults(operation)
+    for (const key of Object.keys(fields)) {
+      const def = fields[key] || {}
+      const v = vals && Object.prototype.hasOwnProperty.call(vals, key) ? vals[key] : undefined
+      const d = defaults && Object.prototype.hasOwnProperty.call(defaults, key) ? defaults[key] : undefined
+
+      switch (def.type) {
+        case "flags":
+        case "prompts_multi": {
+          const arr = Array.isArray(v != null ? v : d) ? (v != null ? v : d) : []
+          out[key] = arr.map((x) => String(x)).sort()
+          break
+        }
+        case "enum": {
+          const val = v != null ? v : d
+          out[key] = val == null ? "" : String(val)
+          break
+        }
+        case "boolean": {
+          const val = v != null ? v : d
+          out[key] = !!val
+          break
+        }
+        case "int": {
+          const val = v != null ? v : d
+          let n = typeof val === "number" ? val : parseInt(val, 10)
+          out[key] = Number.isFinite(n) ? n : null
+          break
+        }
+        case "object":
+        case "group_single": {
+          const base = v != null ? v : d
+          const id = (base && typeof base === "object" && "id" in base) ? base.id : ""
+          out[key] = { id: id == null ? "" : String(id) }
+          break
+        }
+        default: {
+          out[key] = v != null ? v : d
+          break
+        }
+      }
+    }
+    return out
+  }
+
+  function deepEqual(a, b) {
+    try {
+      return JSON.stringify(a) === JSON.stringify(b)
+    } catch {
+      return false
+    }
+  }
 
   // Reset hydration when operation changes
   React.useEffect(() => {
@@ -37,9 +95,18 @@ export default function OperationSettingsForm({
     if (!isLoadingDefaults && !hasHydratedRef.current) {
       const normalizedVals = initialValues || getSchemaDefaults(operation)
       setValues(normalizedVals)
+      baselineRef.current = normalizeForCompare(normalizedVals)
       hasHydratedRef.current = true
     }
   }, [isLoadingDefaults, initialValues, operation])
+
+  // Refresh baseline when initialValues change after hydration (e.g., after save/refetch)
+  React.useEffect(() => {
+    if (hasHydratedRef.current && !isLoadingDefaults) {
+      const base = initialValues || getSchemaDefaults(operation)
+      baselineRef.current = normalizeForCompare(base)
+    }
+  }, [initialValues, isLoadingDefaults, operation])
 
   const handleChange = (field, value) => {
     setValues(prev => ({ ...prev, [field]: value }))
@@ -129,6 +196,11 @@ export default function OperationSettingsForm({
     }
   }
 
+  const isDirty = React.useMemo(() => {
+    if (isLoadingDefaults || !hasHydratedRef.current || !baselineRef.current) return false
+    return !deepEqual(normalizeForCompare(values), baselineRef.current)
+  }, [values, isLoadingDefaults, baselineRef.current])
+
   return (
     <Card className="mb-4">
       <CardHeader>
@@ -151,9 +223,11 @@ export default function OperationSettingsForm({
         )}
       </CardContent>
       <CardFooter className="flex justify-end gap-2">
-        <SpinnerButton onClick={() => onSave(values)} loading={isSaving} disabled={isLoadingDefaults}>
-          Save
-        </SpinnerButton>
+        {isDirty && (
+          <SpinnerButton onClick={async () => { await onSave(values); baselineRef.current = false }} loading={isSaving} disabled={isLoadingDefaults}>
+            Save
+          </SpinnerButton>
+        )}
       </CardFooter>
     </Card>
   )
