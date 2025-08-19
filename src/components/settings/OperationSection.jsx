@@ -1,6 +1,6 @@
 import React from "react"
 import OperationSettingsForm from "./OperationSettingsForm"
-import { getSchemaDefaults } from "@/utils/operationSettingsSchema"
+import { getSchemaDefaults } from "@/components/settings/operationSettingsSchema.js"
 import { useOperationDefaults } from "@/contexts/OperationDefaultsContext"
 
 /**
@@ -11,7 +11,8 @@ export default function OperationSection({ operation }) {
     mapByOperation,
     getDefaults,
     updateOperationDefaults,
-    isUpdating
+    isUpdating,
+    isLoading
   } = useOperationDefaults()
 
   const serverRecord = mapByOperation[operation]
@@ -23,17 +24,12 @@ export default function OperationSection({ operation }) {
     await updateOperationDefaults(operation, vals)
   }
 
-  const handleReset = (defaults) => {
-    // reset form values, just pass defaults back into component
-    // Done at OperationSettingsForm level
-  }
-
   return (
     <OperationSettingsForm
       operation={operation}
       initialValues={initialValues}
+      isLoadingDefaults={isLoading}
       onSave={handleSave}
-      onReset={handleReset}
       isSaving={isUpdating}
       updatedAt={serverRecord?.updated_at}
     />

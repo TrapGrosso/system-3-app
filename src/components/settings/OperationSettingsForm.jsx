@@ -18,17 +18,28 @@ export default function OperationSettingsForm({
   operation,
   initialValues,
   onSave,
-  onReset,
   isSaving,
-  updatedAt
+  updatedAt,
+  isLoadingDefaults
 }) {
   const schema = OPERATION_SCHEMAS[operation]
-  const [values, setValues] = React.useState(initialValues || getSchemaDefaults(operation))
+  const [values, setValues] = React.useState(getSchemaDefaults(operation))
+  const hasHydratedRef = React.useRef(false)
 
+  // Reset hydration when operation changes
   React.useEffect(() => {
-    let normalizedVals = initialValues || getSchemaDefaults(operation)
-    setValues(normalizedVals)
-  }, [initialValues, operation])
+    hasHydratedRef.current = false
+    setValues(getSchemaDefaults(operation))
+  }, [operation])
+
+  // One-time hydration once defaults finish loading
+  React.useEffect(() => {
+    if (!isLoadingDefaults && !hasHydratedRef.current) {
+      const normalizedVals = initialValues || getSchemaDefaults(operation)
+      setValues(normalizedVals)
+      hasHydratedRef.current = true
+    }
+  }, [isLoadingDefaults, initialValues, operation])
 
   const handleChange = (field, value) => {
     setValues(prev => ({ ...prev, [field]: value }))
@@ -127,13 +138,20 @@ export default function OperationSettingsForm({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {Object.entries(schema.fields).map(([fieldKey, def]) => renderField(fieldKey, def))}
+        {isLoadingDefaults ? (
+          // Skeleton placeholders while defaults are loading
+          Object.entries(schema.fields).map(([fieldKey, def]) => (
+            <div key={fieldKey} className="space-y-1">
+              <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+              <div className="h-9 w-full bg-muted animate-pulse rounded" />
+            </div>
+          ))
+        ) : (
+          Object.entries(schema.fields).map(([fieldKey, def]) => renderField(fieldKey, def))
+        )}
       </CardContent>
       <CardFooter className="flex justify-end gap-2">
-        <Button variant="outline" onClick={() => onReset(getSchemaDefaults(operation))} disabled={isSaving}>
-          Reset
-        </Button>
-        <SpinnerButton onClick={() => onSave(values)} loading={isSaving}>
+        <SpinnerButton onClick={() => onSave(values)} loading={isSaving} disabled={isLoadingDefaults}>
           Save
         </SpinnerButton>
       </CardFooter>
