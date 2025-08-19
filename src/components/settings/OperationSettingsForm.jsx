@@ -8,6 +8,8 @@ import { SingleSelect } from "@/components/shared/filter/SingleSelect"
 import CheckboxMatrix from "@/components/shared/dialog/CheckboxMatrix"
 import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 import { OPERATION_SCHEMAS, getSchemaDefaults } from "@/utils/operationSettingsSchema"
+import GroupSingleSelect from "@/components/shared/dialog/GroupSingleSelect"
+import PromptMultiSelect from "@/components/shared/dialog/PromptMultiSelect"
 
 /**
  * Form for editing a single operation's default settings.
@@ -24,7 +26,8 @@ export default function OperationSettingsForm({
   const [values, setValues] = React.useState(initialValues || getSchemaDefaults(operation))
 
   React.useEffect(() => {
-    setValues(initialValues || getSchemaDefaults(operation))
+    let normalizedVals = initialValues || getSchemaDefaults(operation)
+    setValues(normalizedVals)
   }, [initialValues, operation])
 
   const handleChange = (field, value) => {
@@ -86,6 +89,27 @@ export default function OperationSettingsForm({
               value={values[fieldKey]?.id || ""}
               onChange={(e) => handleChange(fieldKey, { id: e.target.value })}
               placeholder="Enter group id"
+            />
+          </div>
+        )
+      case "group_single":
+        return (
+          <div key={fieldKey} className="space-y-1">
+            <Label>{fieldKey}</Label>
+            <GroupSingleSelect
+              value={values[fieldKey]?.id || ""}
+              onChange={(id) => handleChange(fieldKey, { id })}
+            />
+          </div>
+        )
+      case "prompts_multi":
+        return (
+          <div key={fieldKey} className="space-y-1">
+            <Label>{fieldKey}</Label>
+            <PromptMultiSelect
+              value={values[fieldKey] || []}
+              type={def.promptType || "all"}
+              onChange={(val) => handleChange(fieldKey, val)}
             />
           </div>
         )

@@ -42,7 +42,8 @@ export const OPERATION_SCHEMAS = {
         default: []
       },
       add_to_group: { type: "boolean", default: false },
-      group: { type: "object", default: null }
+      group: { type: "group_single", default: { id: "" } },
+      prompt_ids: { type: "prompts_multi", default: [], promptType: "deep_research" }
     }
   },
   resolve_deep_search_queue: {
