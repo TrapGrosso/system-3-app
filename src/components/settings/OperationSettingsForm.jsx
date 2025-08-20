@@ -66,13 +66,18 @@ export default function OperationSettingsForm({
       case "boolean":
         const humanize = (s) => s.replace(/_/g, " ").toLowerCase()
         return (
-          <div key={fieldKey} className="flex items-center space-x-2">
+          <label
+            key={fieldKey}
+            className="flex items-center gap-2 cursor-pointer"
+          >
             <Checkbox
               checked={!!values[fieldKey]}
               onCheckedChange={(val) => handleChange(fieldKey, !!val)}
             />
-            <Label className="capitalize cursor-pointer">{def.label || humanize(fieldKey)}</Label>
-          </div>
+            <span className="text-sm capitalize">
+              {def.label || humanize(fieldKey)}
+            </span>
+          </label>
         )
       case "int":
         return (
@@ -100,7 +105,6 @@ export default function OperationSettingsForm({
       case "group_single":
         return (
           <div key={fieldKey} className="space-y-1">
-            <Label>{fieldKey}</Label>
             <GroupSingleSelect
               value={values[fieldKey]?.id || ""}
               onChange={(id) => handleChange(fieldKey, { id })}
@@ -110,7 +114,6 @@ export default function OperationSettingsForm({
       case "prompts_multi":
         return (
           <div key={fieldKey} className="space-y-1">
-            <Label>{fieldKey}</Label>
             <PromptMultiSelect
               value={values[fieldKey] || []}
               type={def.promptType || "all"}
