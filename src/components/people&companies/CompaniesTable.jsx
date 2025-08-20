@@ -260,7 +260,7 @@ export default function CompaniesTable({
       manualSorting={true}
       bulkActions={bulkActions}
       rowActions={rowActions}
-      onRowClick={handleRowClick}
+      //onRowClick={handleRowClick}
     />
   )
 }
