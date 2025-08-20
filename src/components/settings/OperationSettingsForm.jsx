@@ -64,13 +64,14 @@ export default function OperationSettingsForm({
           </div>
         )
       case "boolean":
+        const humanize = (s) => s.replace(/_/g, " ").toLowerCase()
         return (
           <div key={fieldKey} className="flex items-center space-x-2">
             <Checkbox
               checked={!!values[fieldKey]}
               onCheckedChange={(val) => handleChange(fieldKey, !!val)}
             />
-            <Label>{fieldKey}</Label>
+            <Label className="capitalize cursor-pointer">{def.label || humanize(fieldKey)}</Label>
           </div>
         )
       case "int":
