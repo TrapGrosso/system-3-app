@@ -93,7 +93,7 @@ export function DashboardLayout({ children, headerText = "Dashboard" }) {
           { label: "Export", action: "export" }
         ]
       },
-      {
+      /*{
         name: "Custom Actions",
         url: "/custom-actions",
         icon: IconBolt,
@@ -102,7 +102,7 @@ export function DashboardLayout({ children, headerText = "Dashboard" }) {
           { label: "View Logs", action: "logs" },
           { label: "Settings", action: "settings" }
         ]
-      }
+      }*/
     ],
     navSecondary: [
       {
