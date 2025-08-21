@@ -262,7 +262,13 @@ export function DataTable({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className={`cursor-pointer ${rowClassName ? rowClassName(row.original) : ''}`.trim()}
+                  className={`cursor-pointer ${
+                    typeof rowClassName === 'function'
+                      ? rowClassName(row.original)
+                      : typeof rowClassName === 'string'
+                        ? rowClassName
+                        : ''
+                  }`.trim()}
                   onClick={() => handleRowClick(row.original)}
                   role="button"
                   tabIndex={0}
