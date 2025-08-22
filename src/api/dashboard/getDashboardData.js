@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import MOCK_DASHBOARD_DATA from './mockDashboardData'
 
 const getDashboardData = async (params) => {
   const { userId, lookbackDays, campaignsLimit, topN, thresholds, ...extra } = params
@@ -45,7 +46,7 @@ const getDashboardData = async (params) => {
   }
 
   const result = await response.json()
-  return result || {}
+  return MOCK_DASHBOARD_DATA
 }
 
 export const useDashboardDataQuery = (params) => {
