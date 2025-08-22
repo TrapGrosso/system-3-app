@@ -189,6 +189,10 @@ export function StackedBarChart({
   series = [], // [{ key, label, colorVar, color?, stackId? }]
   height = 300,
   className = "",
+  yAxisProps = {},
+  barProps = {},
+  barCategoryGap = "10%",
+  maxBarSize = undefined,
   ...props
 }) {
   const chartConfig = Object.fromEntries(
@@ -212,12 +216,38 @@ export function StackedBarChart({
     )
   }
 
+  // Default Y-axis props with override support
+  const defaultYAxisProps = {
+    tickFormatter: undefined,
+    domain: undefined,
+    ...yAxisProps
+  }
+
+  // Default bar props with override support
+  const defaultBarProps = {
+    minPointSize: 2,
+    radius: [2, 2, 0, 0],
+    ...barProps
+  }
+
   return (
     <ChartContainer config={chartConfig} className={`w-full ${className}`} style={{ height }}>
-      <BarChart data={data} {...props}>
+      <BarChart 
+        data={data} 
+        barCategoryGap={barCategoryGap}
+        maxBarSize={maxBarSize}
+        {...props}
+      >
         <CartesianGrid vertical={false} />
-        <XAxis dataKey={xKey} />
-        <YAxis />
+        <XAxis 
+          dataKey={xKey}
+          tick={{ fontSize: 11 }}
+          interval={0}
+          angle={-30}
+          textAnchor="end"
+          height={60}
+        />
+        <YAxis {...defaultYAxisProps} />
         <ChartTooltip content={<ChartTooltipContent />} />
         <ChartLegend content={<ChartLegendContent />} />
         {series.map((s) => {
@@ -229,8 +259,7 @@ export function StackedBarChart({
               dataKey={s.key} 
               stackId={stackId}
               fill={fill}
-              radius={[2, 2, 0, 0]}
-              minPointSize={2}
+              {...defaultBarProps}
             />
           )
         })}
