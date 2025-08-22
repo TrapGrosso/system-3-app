@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { DataTable } from "@/components/shared/table/DataTable"
-import { MiniAreaChart, formatPercent, formatNumber } from "@/components/shared/ui/ChartKit"
+import { StackedBarChart, formatPercent, formatNumber } from "@/components/shared/ui/ChartKit"
 
 /**
  * CampaignsSection - Complete campaigns overview with running campaigns, best performing, and needs attention
@@ -71,6 +71,94 @@ export function CampaignsSection({ data, thresholds, isLoading = false }) {
 }
 
 /**
+ * Helper function to build step variant performance data
+ * Groups variants by step_number and creates a chart data structure
+ */
+function buildStepVariantPerformanceData(steps = [], { metric = "replies" } = {}) {
+  // Group steps by step_number
+  const stepGroups = new Map()
+  
+  steps.forEach(step => {
+    const stepNumber = step.step_number || "0"
+    if (!stepGroups.has(stepNumber)) {
+      stepGroups.set(stepNumber, [])
+    }
+    stepGroups.get(stepNumber).push(step)
+  })
+
+  // Sort step numbers numerically (handle string numbers)
+  const sortedStepNumbers = Array.from(stepGroups.keys()).sort((a, b) => {
+    const numA = parseInt(a) || 0
+    const numB = parseInt(b) || 0
+    return numA - numB || a.localeCompare(b)
+  })
+
+  // Collect all unique variants across all steps
+  const allVariants = new Set()
+  steps.forEach(step => {
+    allVariants.add(step.variant || "0")
+  })
+  const sortedVariants = Array.from(allVariants).sort()
+
+  // Chart color palette - use proper chart colors instead of brand colors that resolve to black/white
+  const chartColors = [
+    "var(--color-chart-1)", // Teal/Blue
+    "var(--color-chart-2)", // Green/Blue-green  
+    "var(--color-chart-3)", // Orange/Yellow
+    "var(--color-chart-4)", // Purple/Magenta
+    "var(--color-chart-5)", // Red/Pink
+  ]
+  
+  // Build chart data
+  const data = sortedStepNumbers.map(stepNumber => {
+    const stepVariants = stepGroups.get(stepNumber)
+    const dataPoint = { x: stepNumber }
+    
+    stepVariants.forEach(step => {
+      const variant = step.variant || "0"
+      let value = 0
+      
+      switch (metric) {
+        case "replies":
+          value = step.replies || 0
+          break
+        case "opens": 
+          value = step.opened || 0
+          break
+        case "sent":
+          value = step.sent || 0
+          break
+        default:
+          value = step.replies || 0
+      }
+      
+      dataPoint[variant] = value
+    })
+    
+    // Ensure all variants have a value (0 if not present in this step)
+    sortedVariants.forEach(variant => {
+      if (!(variant in dataPoint)) {
+        dataPoint[variant] = 0
+      }
+    })
+    
+    return dataPoint
+  })
+
+  // Build series configuration with explicit colors from chart palette
+  const series = sortedVariants.map((variant, index) => {
+    return {
+      key: variant,
+      label: variant === "0" ? "Original" : `Variant ${variant}`,
+      color: chartColors[index % chartColors.length],
+      colorVar: "primary", // Fallback for compatibility
+    }
+  })
+
+  return { data, series }
+}
+
+/**
  * RunningCampaignCard - Individual campaign card with metrics and sparkline
  */
 function RunningCampaignCard({ campaign, thresholds }) {
@@ -82,11 +170,8 @@ function RunningCampaignCard({ campaign, thresholds }) {
   const isLowReplyRate = analytics.reply_rate < (thresholds?.lowReplyRate || 0.02)
   const isHighBounceRate = analytics.bounce_rate > (thresholds?.highBounceRate || 0.05)
 
-  // Prepare sparkline data from steps
-  const sparklineData = steps.map((step, index) => ({
-    x: step.step_number || index + 1,
-    y: step.reply_rate || 0,
-  }))
+  // Build step variant performance data
+  const stepVariantData = buildStepVariantPerformanceData(steps, { metric: "replies" })
 
   return (
     <Card className="@container/campaign">
@@ -166,17 +251,17 @@ function RunningCampaignCard({ campaign, thresholds }) {
           </div>
         </div>
 
-        {/* Steps Sparkline */}
-        {sparklineData.length > 1 && (
+        {/* Step Variants Performance Chart */}
+        {stepVariantData.data.length > 0 && (
           <div className="space-y-2">
-            <div className="text-xs text-muted-foreground">Reply Rate by Step</div>
-            <MiniAreaChart
-              data={sparklineData}
+            <div className="text-xs text-muted-foreground">Step Variants Performance (Replies)</div>
+            <StackedBarChart
+              data={stepVariantData.data}
               xKey="x"
-              yKey="y"
-              height={40}
-              colorVar="primary"
+              series={stepVariantData.series}
+              height={140}
             />
+            <div className="text-[10px] text-muted-foreground">Replies count per step variant - best performing variants appear taller</div>
           </div>
         )}
       </CardContent>

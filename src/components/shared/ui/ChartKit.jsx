@@ -181,12 +181,12 @@ export function BarChartHorizontal({
 }
 
 /**
- * StackedBarChart - Stacked usage
+ * StackedBarChart - Stacked usage with support for multiple stacks and custom colors
  */
 export function StackedBarChart({
   data = [],
   xKey = "x",
-  series = [], // [{ key, label, colorVar }]
+  series = [], // [{ key, label, colorVar, color?, stackId? }]
   height = 300,
   className = "",
   ...props
@@ -196,7 +196,7 @@ export function StackedBarChart({
       s.key,
       {
         label: s.label,
-        color: `var(--color-${s.colorVar})`,
+        color: s.color || `var(--color-${s.colorVar})`,
       },
     ])
   )
@@ -220,15 +220,20 @@ export function StackedBarChart({
         <YAxis />
         <ChartTooltip content={<ChartTooltipContent />} />
         <ChartLegend content={<ChartLegendContent />} />
-        {series.map((s) => (
-          <Bar 
-            key={s.key}
-            dataKey={s.key} 
-            stackId="stack"
-            fill={`var(--color-${s.colorVar})`}
-            radius={[2, 2, 0, 0]}
-          />
-        ))}
+        {series.map((s) => {
+          const fill = s.color || `var(--color-${s.colorVar})`
+          const stackId = s.stackId || "stack"
+          return (
+            <Bar 
+              key={s.key}
+              dataKey={s.key} 
+              stackId={stackId}
+              fill={fill}
+              radius={[2, 2, 0, 0]}
+              minPointSize={2}
+            />
+          )
+        })}
       </BarChart>
     </ChartContainer>
   )
