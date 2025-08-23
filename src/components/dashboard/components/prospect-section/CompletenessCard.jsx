@@ -1,30 +1,16 @@
 import * as React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { DonutChart, formatNumber, formatPercent } from "@/components/shared/ui/ChartKit"
+import { formatNumber, formatPercent } from "@/components/shared/ui/ChartKit"
 
 /**
- * CompletenessCard - Individual data completeness card with donut chart
+ * CompletenessCard - Individual data completeness card with progress bar
  */
 export function CompletenessCard({ title, icon: Icon, description, data, total }) {
   const count = data?.count || 0
   const percentage = data?.pct || 0
 
-  // Prepare donut chart data
-  const chartData = [
-    {
-      name: "Complete",
-      value: count,
-    },
-    {
-      name: "Missing",
-      value: total - count,
-    },
-  ]
-
-  const colors = [
-    "hsl(var(--primary))",
-    "hsl(var(--muted))",
-  ]
+  // Clamp percentage to [0, 1] range for safety
+  const clampedPercentage = Math.max(0, Math.min(1, percentage))
 
   return (
     <Card className="@container/completeness">
@@ -49,16 +35,23 @@ export function CompletenessCard({ title, icon: Icon, description, data, total }
             </div>
           </div>
           
-          <div className="w-16 @[200px]/completeness:w-20">
-            <DonutChart
-              data={chartData}
-              nameKey="name"
-              valueKey="value"
-              colors={colors}
-              centerText={formatPercent(percentage, 0)}
-              showLegend={false}
-              height={64}
-            />
+          <div className="flex flex-col items-end gap-1">
+            <div className="text-sm font-medium tabular-nums">
+              {formatPercent(clampedPercentage, 0)}
+            </div>
+            <div 
+              className="relative h-2 w-24 @[200px]/completeness:w-28 rounded bg-muted"
+              role="progressbar"
+              aria-valuenow={clampedPercentage * 100}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={`Completeness ${formatPercent(clampedPercentage, 0)}`}
+            >
+              <div 
+                className="absolute left-0 top-0 h-full rounded bg-primary transition-all duration-300 ease-in-out"
+                style={{ width: `${clampedPercentage * 100}%` }}
+              />
+            </div>
           </div>
         </div>
 

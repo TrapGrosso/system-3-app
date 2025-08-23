@@ -1,7 +1,4 @@
 import * as React from "react"
-import { CheckCircle } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { DonutChart, formatNumber, formatPercent } from "@/components/shared/ui/ChartKit"
 import { NewlyAddedTable } from "../components/prospect-section/NewlyAddedTable"
 import { DataCompletenessCards } from "../components/prospect-section/DataCompletenessCards"
 
