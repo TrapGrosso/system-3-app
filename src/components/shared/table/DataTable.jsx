@@ -175,14 +175,18 @@ export function DataTable({
     
     const canSort = header.column.getCanSort()
     const headerContent = flexRender(header.column.columnDef.header, header.getContext())
+    const meta = header.column.columnDef.meta
+    const align = meta?.align || 'left'
     
     if (!canSort) {
       return headerContent
     }
     
+    const justifyClass = align === 'right' ? 'justify-end' : align === 'center' ? 'justify-center' : 'justify-start'
+    
     return (
       <button
-        className="flex items-center hover:text-foreground transition-colors"
+        className={`w-full flex items-center hover:text-foreground transition-colors ${justifyClass}`}
         onClick={header.column.getToggleSortingHandler()}
         type="button"
       >
@@ -248,11 +252,18 @@ export function DataTable({
           <TableHeader className={headerClassName}>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {renderHeader(header)}
-                  </TableHead>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  const meta = header.column.columnDef.meta
+                  const align = meta?.align || 'left'
+                  const alignClass = align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left'
+                  const headerClassNames = [alignClass, meta?.headerClassName].filter(Boolean).join(' ')
+                  
+                  return (
+                    <TableHead key={header.id} className={headerClassNames}>
+                      {renderHeader(header)}
+                    </TableHead>
+                  )
+                })}
               </TableRow>
             ))}
           </TableHeader>
@@ -279,11 +290,18 @@ export function DataTable({
                     }
                   }}
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
+                  {row.getVisibleCells().map((cell) => {
+                    const meta = cell.column.columnDef.meta
+                    const align = meta?.align || 'left'
+                    const alignClass = align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left'
+                    const cellClassNames = [alignClass, meta?.cellClassName].filter(Boolean).join(' ')
+                    
+                    return (
+                      <TableCell key={cell.id} className={cellClassNames}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    )
+                  })}
                 </TableRow>
               ))
             ) : (
