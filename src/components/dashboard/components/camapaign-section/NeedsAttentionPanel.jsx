@@ -1,6 +1,7 @@
 import * as React from "react"
 import { TrendingDown, AlertTriangle } from "lucide-react"
 import { AttentionCard } from "./AttentionCard"
+import CampaignListItem from "./CampaignListItem"
 
 /**
  * NeedsAttentionPanel - Cards showing campaigns that need attention
@@ -49,9 +50,13 @@ export function NeedsAttentionPanel({ needsAttention }) {
   ]
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+    <div className="items-start grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
       {attentionItems.map((item) => (
-        <AttentionCard key={item.title} {...item} />
+        <AttentionCard
+          key={item.title}
+          {...item}
+          renderItem={(campaign) => <CampaignListItem campaign={campaign} />}
+        />
       ))}
     </div>
   )
