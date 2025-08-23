@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { StackedBarChart, formatPercent, formatNumber } from "@/components/shared/ui/ChartKit"
 import { buildStepVariantMetricStackData } from "../../utils/buildStepVariantMetricStackData"
+import AdvancedFiltersCollapsible from "@/components/shared/ui/AdvancedFiltersCollapsible"
 
 /**
  * RunningCampaignCard - Individual campaign card with metrics and sparkline
@@ -20,8 +21,10 @@ export function RunningCampaignCard({ campaign, thresholds }) {
   // Build step variant metric stack data
   const stepVariantData = buildStepVariantMetricStackData(steps)
 
+  const [showPerformance, setShowPerformance] = React.useState(false)
+
   return (
-    <Card className="@container/campaign">
+    <Card className="@container/campaign min-h-80 ">
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="space-y-1">
@@ -100,25 +103,37 @@ export function RunningCampaignCard({ campaign, thresholds }) {
 
         {/* Step Variants Performance Chart */}
         {stepVariantData.data.length > 0 && (
-          <div className="space-y-2">
-            <div className="text-xs text-muted-foreground">Step Variant Performance (Rates)</div>
-            <StackedBarChart
-              data={stepVariantData.data}
-              xKey="x"
-              series={stepVariantData.series}
-              height={160}
-              yAxisProps={{
-                domain: [0, 100],
-                tickFormatter: (value) => `${value}%`
-              }}
-              barProps={{
-                minPointSize: 6
-              }}
-              barCategoryGap="15%"
-              maxBarSize={60}
-            />
-            <div className="text-[10px] text-muted-foreground">Stacked by Open, Click, Reply rate - higher stacks indicate better performance</div>
-          </div>
+          <AdvancedFiltersCollapsible
+            label="Step Variant Performance (Rates)"
+            open={showPerformance}
+            onOpenChange={setShowPerformance}
+            defaultOpen={false}
+            className="space-y-2"
+          >
+            {showPerformance && (
+              <div className="space-y-2">
+                <div className="text-xs text-muted-foreground">Step Variant Performance (Rates)</div>
+                <StackedBarChart
+                  data={stepVariantData.data}
+                  xKey="x"
+                  series={stepVariantData.series}
+                  height={160}
+                  yAxisProps={{
+                    domain: [0, 100],
+                    tickFormatter: (value) => `${value}%`
+                  }}
+                  barProps={{
+                    minPointSize: 6
+                  }}
+                  barCategoryGap="15%"
+                  maxBarSize={60}
+                />
+                <div className="text-[10px] text-muted-foreground">
+                  Stacked by Open, Click, Reply rate - higher stacks indicate better performance
+                </div>
+              </div>
+            )}
+          </AdvancedFiltersCollapsible>
         )}
       </CardContent>
     </Card>

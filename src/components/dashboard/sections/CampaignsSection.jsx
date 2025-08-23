@@ -34,7 +34,7 @@ export function CampaignsSection({ data, thresholds, isLoading = false }) {
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Running Campaigns</h3>
         {running.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 items-start">
             {running.map((campaign) => (
               <RunningCampaignCard 
                 key={campaign.id} 
