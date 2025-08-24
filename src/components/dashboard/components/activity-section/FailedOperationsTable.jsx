@@ -1,6 +1,7 @@
 import * as React from "react"
 import { User2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { useNavigate } from "react-router-dom"
 import { DataTable } from "@/components/shared/table/DataTable"
 import { formatRelativeTime } from "@/components/shared/ui/ChartKit"
 
@@ -8,6 +9,12 @@ import { formatRelativeTime } from "@/components/shared/ui/ChartKit"
  * FailedOperationsTable - Table of failed operations with retry options
  */
 export function FailedOperationsTable({ operations }) {
+  const navigate = useNavigate()
+
+  const handleRowClick = (row) => {
+    navigate(`/logs/${row.id}`)
+  }
+
   const columns = [
     {
       accessorKey: "action",
@@ -69,6 +76,7 @@ export function FailedOperationsTable({ operations }) {
       emptyMessage="No failed operations"
       rowId={(row) => row.id}
       rowClassName="bg-destructive/5"
+      onRowClick={handleRowClick}
     />
   )
 }
