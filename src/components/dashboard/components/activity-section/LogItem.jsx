@@ -3,11 +3,19 @@ import { CheckCircle, XCircle, Clock, Play, User2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { formatRelativeTime } from "@/components/shared/ui/ChartKit"
+import { ActionDropdown } from "@/components/shared/ui/ActionDropdown"
+import { useNavigate } from "react-router-dom"
 
 /**
  * LogItem - Individual log entry card
  */
 export function LogItem({ log }) {
+  const navigate = useNavigate()
+
+  const handleViewDetails = () => {
+    navigate(`/logs/${log.id}`)
+  }
+
   const getStatusIcon = (status) => {
     switch (status?.toLowerCase()) {
       case "success":
@@ -61,6 +69,12 @@ export function LogItem({ log }) {
                 {formatRelativeTime(log.start_time)}
               </div>
             </div>
+            <ActionDropdown
+              items={[{ label: "View Details", onSelect: handleViewDetails }]}
+              align="end"
+              side="bottom"
+              sideOffset={4}
+            />
           </div>
 
           {/* Message */}
