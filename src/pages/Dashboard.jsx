@@ -148,7 +148,7 @@ function Dashboard() {
 
             {/* Tasks Section */}
             <section>
-              <TasksSection data={data} isLoading={isLoading} />
+              <TasksSection data={data} isLoading={isLoading} onRefetch={refetch} />
             </section>
 
             <Separator />

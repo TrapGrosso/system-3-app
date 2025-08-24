@@ -5,11 +5,13 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DataTable } from "@/components/shared/table/DataTable"
 import { formatRelativeTime } from "@/components/shared/ui/ChartKit"
+import { useDialogs } from "@/contexts/DialogsContext"
+import { useTasks } from "@/contexts/TaskContext"
 
 /**
  * TasksSection - Tasks overview with tabs for overdue, about to overdue, and completed
  */
-export function TasksSection({ data, isLoading = false }) {
+export function TasksSection({ data, isLoading = false, onRefetch }) {
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -75,6 +77,7 @@ export function TasksSection({ data, isLoading = false }) {
             tasks={overdue} 
             type="overdue"
             emptyMessage="No overdue tasks"
+            onRefetch={onRefetch}
           />
         </TabsContent>
 
@@ -83,6 +86,7 @@ export function TasksSection({ data, isLoading = false }) {
             tasks={aboutToOverdue} 
             type="about-to-overdue"
             emptyMessage="No tasks due soon"
+            onRefetch={onRefetch}
           />
         </TabsContent>
 
@@ -91,6 +95,7 @@ export function TasksSection({ data, isLoading = false }) {
             tasks={recentlyCompleted} 
             type="completed"
             emptyMessage="No recently completed tasks"
+            onRefetch={onRefetch}
           />
         </TabsContent>
       </Tabs>
@@ -101,7 +106,7 @@ export function TasksSection({ data, isLoading = false }) {
 /**
  * TasksTable - Reusable table component for different task types
  */
-function TasksTable({ tasks, type, emptyMessage }) {
+function TasksTable({ tasks, type, emptyMessage, onRefetch }) {
   const columns = [
     {
       accessorKey: "title",
@@ -200,24 +205,52 @@ function TasksTable({ tasks, type, emptyMessage }) {
     }
   ]
 
-  const rowActions = (task) => [
-    {
-      label: "View Details",
-      onSelect: () => {
-        // Navigate to task details or open ProspectTasksDialog
-        console.log("Open task:", task.id)
-      },
-    },
-    ...(type !== "completed" ? [
-      {
-        label: "Mark Complete",
-        onSelect: () => {
-          // Mark task as completed
-          console.log("Complete task:", task.id)
-        },
+  const { openUpdateTask, confirm } = useDialogs()
+  const { deleteTasks } = useTasks()
+
+  const handleUpdate = async (task) => {
+    try {
+      const result = await openUpdateTask({ taskId: task.id, task })
+      // If the dialog reported success (dialogsRegistry resolves true on success), refresh
+      if (result) {
+        onRefetch?.()
       }
-    ] : []),
-  ]
+    } catch (e) {
+      // No-op; Update dialog handles its own errors/toasts
+    }
+  }
+
+  const handleDelete = async (task) => {
+    try {
+      const ok = await confirm({
+        title: "Delete task?",
+        description: `Delete "${task.title}"? This cannot be undone.`,
+        confirmLabel: "Delete",
+        cancelLabel: "Cancel",
+      })
+      if (!ok) return
+      await deleteTasks(task.id)
+      onRefetch?.()
+    } catch (e) {
+      // deleteTasks toasts errors; nothing else to do
+    }
+  }
+
+  const rowActions = (task) => {
+    if (type !== "about-to-overdue") {
+      return []
+    }
+    return [
+      {
+        label: "Update",
+        onSelect: () => handleUpdate(task),
+      },
+      {
+        label: "Delete",
+        onSelect: () => handleDelete(task),
+      },
+    ]
+  }
 
   const rowClassName = (task) => {
     if (type === "overdue") {
@@ -234,7 +267,7 @@ function TasksTable({ tasks, type, emptyMessage }) {
       columns={columns}
       data={tasks}
       enableSelection={false}
-      rowActions={rowActions}
+      rowActions={type === "about-to-overdue" ? rowActions : undefined}
       rowClassName={rowClassName}
       emptyMessage={emptyMessage}
       rowId={(row) => row.id}
