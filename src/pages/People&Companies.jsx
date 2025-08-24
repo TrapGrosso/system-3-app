@@ -1,27 +1,13 @@
-import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useProspects } from '@/contexts/ProspectsContext'
 import { useCompanies } from '@/contexts/CompaniesContext'
+import { useDialogs } from '@/contexts/DialogsContext'
 import { useNavigate } from 'react-router-dom'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import ProspectsTable from '@/components/people&companies/ProspectsTable'
 import CompaniesTable from '@/components/people&companies/CompaniesTable'
 import FilterBar from '@/components/people&companies/FilterBar'
 import CompaniesFilterBar from '@/components/people&companies/CompaniesFilterBar'
-import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
-import ProspectNotesDialog from '@/components/dialogs/ProspectNotesDialog'
-import ProspectTasksDialog from '@/components/dialogs/ProspectTasksDialog'
-import DeepSearchQueueDialog from '@/components/dialogs/DeepSearchQueueDialog'
-import ProspectEnrichmentsDialog from '@/components/dialogs/enrichments/ProspectEnrichmentsDialog'
-import RemoveFromGroupDialog from '@/components/dialogs/RemoveFromGroupDialog'
-import UpdateCompanyDialog from '@/components/dialogs/UpdateCompanyDialog'
-import UpdateProspectDialog from '@/components/dialogs/UpdateProspectDialog'
-import AddToCampaignDialog from '@/components/dialogs/AddToCampaignDialog'
-import RemoveFromCampaignDialog from '@/components/dialogs/RemoveFromCampaignDialog'
-import DeleteDialog from '@/components/dialogs/DeleteDialog'
-import FindProspectEmailsDialog from '@/components/dialogs/FindProspectEmailsDialog'
-import VerifyProspectEmailsDialog from '@/components/dialogs/VerifyProspectEmailsDialog'
-import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
 
 function PeopleCompanies() {
     const { user } = useAuth()
@@ -39,72 +25,8 @@ function PeopleCompanies() {
         updateCompany
     } = useCompanies()
 
-    // State for HandleGroupsDialog
-    const [addGroupOpen, setAddGroupOpen] = useState(false)
-    const [prospectIdsForGroup, setProspectIdsForGroup] = useState([])
-
-    // State for AddToCampaignDialog
-    const [addToCampaignDialogOpen, setAddToCampaignDialogOpen] = useState(false)
-    const [prospectIdsForCampaign, setProspectIdsForCampaign] = useState([])
-    // State for RemoveFromCampaignDialog
-    const [removeFromCampaignDialogOpen, setRemoveFromCampaignDialogOpen] = useState(false)
-    const [selectedProspectForCampaignRemoval, setSelectedProspectForCampaignRemoval] = useState(null)
-
-    // State for ProspectNotesDialog
-    const [notesDialogOpen, setNotesDialogOpen] = useState(false)
-    const [selectedProspectForNotes, setSelectedProspectForNotes] = useState(null)
-
-    // State for ProspectTasksDialog
-    const [tasksDialogOpen, setTasksDialogOpen] = useState(false)
-    const [selectedProspectForTasks, setSelectedProspectForTasks] = useState(null)
-
-    // State for DeepSearchQueueDialog
-    const [deepSearchDialogOpen, setDeepSearchDialogOpen] = useState(false)
-    const [prospectIdsForDeepSearch, setProspectIdsForDeepSearch] = useState([])
-
-    // State for ProspectEnrichmentsDialog
-    const [enrichDialogOpen, setEnrichDialogOpen] = useState(false)
-    const [prospectIdsForEnrich, setProspectIdsForEnrich] = useState([])
-
-    // State for RemoveFromGroupDialog
-    const [removeFromGroupDialogOpen, setRemoveFromGroupDialogOpen] = useState(false)
-    const [selectedProspectForRemoval, setSelectedProspectForRemoval] = useState(null)
-
-    // State for UpdateCompanyDialog
-    const [updateCompanyDialogOpen, setUpdateCompanyDialogOpen] = useState(false)
-    const [companyToUpdate, setCompanyToUpdate] = useState(null)
-
-    // State for UpdateProspectDialog
-    const [updateProspectDialogOpen, setUpdateProspectDialogOpen] = useState(false)
-    const [prospectToUpdate, setProspectToUpdate] = useState(null)
-
-    // State for bulk delete companies
-    const [bulkDeleteCompaniesOpen, setBulkDeleteCompaniesOpen] = useState(false)
-    const [bulkDeleteCompanyIds, setBulkDeleteCompanyIds] = useState([])
-
-    // State for bulk delete prospects
-    const [bulkDeleteProspectsOpen, setBulkDeleteProspectsOpen] = useState(false)
-    const [bulkDeleteProspectIds, setBulkDeleteProspectIds] = useState([])
-
-    // Single company delete dialog using useDeleteDialog
-    const {
-        openDialog: openDeleteCompanyDialog,
-        DeleteDialogProps: singleDeleteCompanyProps,
-        currentItem: companyToDelete
-    } = useDeleteDialog(
-        (company) => deleteCompany([company.linkedin_id]),
-        () => refetchCompanies()
-    )
-
-    // Single prospect delete dialog using useDeleteDialog
-    const {
-        openDialog: openDeleteProspectDialog,
-        DeleteDialogProps: singleDeleteProspectProps,
-        currentItem: prospectToDelete
-    } = useDeleteDialog(
-        (prospect) => deleteProspect([prospect.linkedin_id]),
-        () => refetch()
-    )
+    // Use dialogs context instead of local state
+    const { confirm, open } = useDialogs()
 
     // Filter and query handlers for child components
     const handleApplyFilters = (newQuery) => {
@@ -123,158 +45,164 @@ function PeopleCompanies() {
         navigate(`/prospects/${linkedinId}`)
     }
 
-    // Individual prospect action handlers
-    const handleAddToGroup = (linkedinId) => {
-        setProspectIdsForGroup([linkedinId])
-        setAddGroupOpen(true)
+    // Individual prospect action handlers using dialogs context
+    const handleAddToGroup = async (linkedinId) => {
+        await open('handleGroups', { user_id: user?.id, prospect_ids: [linkedinId] })
+        refetch()
     }
 
-    const handleAddToCampaign = (linkedinId) => {
-        setProspectIdsForCampaign([linkedinId])
-        setAddToCampaignDialogOpen(true)
+    const handleAddToCampaign = async (linkedinId) => {
+        await open('addToCampaign', { prospect_ids: [linkedinId] })
+        refetch()
     }
 
-    const handleAddToDeepSearch = (linkedinId) => {
-        setProspectIdsForDeepSearch([linkedinId])
-        setDeepSearchDialogOpen(true)
+    const handleAddToDeepSearch = async (linkedinId) => {
+        await open('deepSearchQueue', { prospect_ids: [linkedinId] })
+        refetch()
     }
 
     // Notes handler
-    const handleAddNote = (linkedinId, prospect) => {
-        setSelectedProspectForNotes(prospect)
-        setNotesDialogOpen(true)
+    const handleAddNote = async (linkedinId, prospect) => {
+      console.log(prospect)
+        await open('prospectNotes', { prospect })
+        refetch()
     }
 
     // Tasks handler
-    const handleCreateTask = (linkedinId, prospect) => {
-        setSelectedProspectForTasks(prospect)
-        setTasksDialogOpen(true)
+    const handleCreateTask = async (linkedinId, prospect) => {
+        await open('prospectTasks', { prospect })
+        refetch()
     }
 
     // Find Prospect Emails handlers
-    const handleFindEmails = (linkedinId) => {
-        setProspectIdsForFindEmails([linkedinId])
-        setFindEmailsDialogOpen(true)
+    const handleFindEmails = async (linkedinId) => {
+        await open('findProspectEmails', { prospect_ids: [linkedinId] })
+        refetch()
     }
 
-    const handleBulkFindEmails = (linkedinIds) => {
+    const handleBulkFindEmails = async (linkedinIds) => {
         if (!linkedinIds.length) return
-        setProspectIdsForFindEmails(linkedinIds)
-        setFindEmailsDialogOpen(true)
+        await open('findProspectEmails', { prospect_ids: linkedinIds })
+        refetch()
     }
 
     // Verify Prospect Emails handlers
-    const [verifyEmailsDialogOpen, setVerifyEmailsDialogOpen] = useState(false)
-    const [prospectIdsForVerifyEmails, setProspectIdsForVerifyEmails] = useState([])
-
-    const handleVerifyEmails = (linkedinId) => {
-        setProspectIdsForVerifyEmails([linkedinId])
-        setVerifyEmailsDialogOpen(true)
+    const handleVerifyEmails = async (linkedinId) => {
+        await open('verifyProspectEmails', { prospect_ids: [linkedinId] })
+        refetch()
     }
 
-    const handleBulkVerifyEmails = (linkedinIds) => {
+    const handleBulkVerifyEmails = async (linkedinIds) => {
         if (!linkedinIds.length) return
-        setProspectIdsForVerifyEmails(linkedinIds)
-        setVerifyEmailsDialogOpen(true)
+        await open('verifyProspectEmails', { prospect_ids: linkedinIds })
+        refetch()
     }
 
     // Bulk action handlers
-    const handleBulkAddToGroup = (linkedinIds) => {
+    const handleBulkAddToGroup = async (linkedinIds) => {
         if (!linkedinIds.length) return
-        setProspectIdsForGroup(linkedinIds)
-        setAddGroupOpen(true)
+        await open('handleGroups', { user_id: user?.id, prospect_ids: linkedinIds })
+        refetch()
     }
 
-    const handleBulkAddToCampaign = (linkedinIds) => {
+    const handleBulkAddToCampaign = async (linkedinIds) => {
         if (!linkedinIds.length) return
-        setProspectIdsForCampaign(linkedinIds)
-        setAddToCampaignDialogOpen(true)
+        await open('addToCampaign', { prospect_ids: linkedinIds })
+        refetch()
     }
 
-    const handleBulkAddToDeepSearch = (linkedinIds) => {
+    const handleBulkAddToDeepSearch = async (linkedinIds) => {
         if (!linkedinIds.length) return
-        setProspectIdsForDeepSearch(linkedinIds)
-        setDeepSearchDialogOpen(true)
+        await open('deepSearchQueue', { prospect_ids: linkedinIds })
+        refetch()
     }
 
     // Create Variables handlers
-    const handleCreateVariables = (linkedinId) => {
-        setProspectIdsForEnrich([linkedinId])
-        setEnrichDialogOpen(true)
+    const handleCreateVariables = async (linkedinId) => {
+        await open('prospectEnrichments', { user_id: user?.id, prospectIds: [linkedinId] })
+        refetch()
     }
 
-    const handleBulkCreateVariables = (linkedinIds) => {
+    const handleBulkCreateVariables = async (linkedinIds) => {
         if (!linkedinIds.length) return
-        setProspectIdsForEnrich(linkedinIds)
-        setEnrichDialogOpen(true)
+        await open('prospectEnrichments', { user_id: user?.id, prospectIds: linkedinIds })
+        refetch()
     }
 
     // Remove from group handler
-    const handleRemoveFromGroup = (linkedinId, prospect) => {
-        setSelectedProspectForRemoval(prospect)
-        setRemoveFromGroupDialogOpen(true)
+    const handleRemoveFromGroup = async (linkedinId, prospect) => {
+        await open('removeFromGroup', { prospect })
+        refetch()
     }
 
     // Remove from campaign handler (single only)
-    const handleRemoveFromCampaign = (linkedinId, prospect) => {
-        setSelectedProspectForCampaignRemoval(prospect)
-        setRemoveFromCampaignDialogOpen(true)
+    const handleRemoveFromCampaign = async (linkedinId, prospect) => {
+        await open('removeFromCampaign', { prospect })
+        refetch()
     }
-
-    // State for FindProspectEmailsDialog
-    const [findEmailsDialogOpen, setFindEmailsDialogOpen] = useState(false)
-    const [prospectIdsForFindEmails, setProspectIdsForFindEmails] = useState([])
 
     // Companies query handlers
     const handleCompaniesQueryChange = (queryUpdate) => {
         setCompaniesQuery(queryUpdate)
     }
 
-    // Company action handlers
-    const handleBulkDeleteCompanies = (ids) => {
+    // Company action handlers using dialogs context
+    const handleBulkDeleteCompanies = async (ids) => {
         if (!ids.length) return
-        setBulkDeleteCompanyIds(ids)
-        setBulkDeleteCompaniesOpen(true)
-    }
-
-    const handleDeleteCompany = (company) => {
-        openDeleteCompanyDialog(company)
-    }
-
-    const handleUpdateCompany = (company) => {
-        setCompanyToUpdate(company)
-        setUpdateCompanyDialogOpen(true)
-    }
-
-    const handleBulkDeleteConfirm = async () => {
-        try {
-            await deleteCompany(bulkDeleteCompanyIds)
+        if (await confirm({ 
+            title: 'Delete Companies', 
+            description: `Are you sure you want to delete ${ids.length} companies? This action cannot be undone.`,
+            confirmLabel: `Delete ${ids.length}`,
+            size: 'md'
+        })) {
+            await deleteCompany(ids)
             refetchCompanies()
-        } finally {
-            setBulkDeleteCompaniesOpen(false)
-            setBulkDeleteCompanyIds([])
         }
     }
 
-    // Prospect action handlers
-    const handleUpdateProspect = (prospect) => {
-        setProspectToUpdate(prospect)
-        setUpdateProspectDialogOpen(true)
+    const handleDeleteCompany = async (company) => {
+        if (await confirm({ 
+            title: 'Delete Company', 
+            description: `Are you sure you want to delete "${company.name}"? This action cannot be undone.`,
+            confirmLabel: 'Delete'
+        })) {
+            await deleteCompany([company.linkedin_id])
+            refetchCompanies()
+        }
     }
 
-    const handleBulkDeleteProspects = (ids) => {
+    const handleUpdateCompany = async (company) => {
+        await open('updateCompany', { company })
+        refetchCompanies()
+    }
+
+    // Prospect action handlers using dialogs context
+    const handleUpdateProspect = async (prospect) => {
+        await open('updateProspect', { prospect })
+        refetch()
+    }
+
+    const handleBulkDeleteProspects = async (ids) => {
         if (!ids.length) return
-        setBulkDeleteProspectIds(ids)
-        setBulkDeleteProspectsOpen(true)
+        if (await confirm({ 
+            title: 'Delete Prospects', 
+            description: `Are you sure you want to delete ${ids.length} prospects? This action cannot be undone.`,
+            confirmLabel: `Delete ${ids.length}`,
+            size: 'md'
+        })) {
+            await deleteProspect(ids)
+            refetch()
+        }
     }
 
-    const handleBulkDeleteProspectsConfirm = async () => {
-        try {
-            await deleteProspect(bulkDeleteProspectIds)
+    const handleDeleteProspect = async (prospect) => {
+        if (await confirm({ 
+            title: 'Delete Prospect', 
+            description: `Are you sure you want to delete "${prospect.first_name} ${prospect.last_name}"? This action cannot be undone.`,
+            confirmLabel: 'Delete'
+        })) {
+            await deleteProspect([prospect.linkedin_id])
             refetch()
-        } finally {
-            setBulkDeleteProspectsOpen(false)
-            setBulkDeleteProspectIds([])
         }
     }
 
@@ -312,7 +240,7 @@ function PeopleCompanies() {
           onRemoveFromGroup={handleRemoveFromGroup}
           onRemoveFromCampaign={handleRemoveFromCampaign}
           onUpdate={handleUpdateProspect}
-          onDelete={openDeleteProspectDialog}
+          onDelete={handleDeleteProspect}
           onBulkDelete={handleBulkDeleteProspects}
           onFindEmails={handleFindEmails}
           onBulkFindEmails={handleBulkFindEmails}
@@ -343,208 +271,7 @@ function PeopleCompanies() {
           onUpdate={handleUpdateCompany}
         />
       </div>
-      
-      {/* HandleGroupsDialog - controlled by Dashboard state */}
-      {!!prospectIdsForGroup.length && <HandleGroupsDialog
-        user_id={user?.id}
-        prospect_ids={prospectIdsForGroup}
-        open={addGroupOpen}
-        onOpenChange={setAddGroupOpen}
-        onSuccess={() => {
-          refetch() // Refresh prospects list after successful group addition
-          setAddGroupOpen(false)
-          setProspectIdsForGroup([])
-        }}
-      />}
-
-      {/* AddToCampaignDialog - controlled by Dashboard state */}
-      {!!prospectIdsForCampaign.length && <AddToCampaignDialog
-        prospect_ids={prospectIdsForCampaign}
-        open={addToCampaignDialogOpen}
-        onOpenChange={setAddToCampaignDialogOpen}
-        onSuccess={() => {
-          refetch() // Refresh prospects list after successful campaign addition
-          setAddToCampaignDialogOpen(false)
-          setProspectIdsForCampaign([])
-        }}
-      />}
-      
-      {/* ProspectNotesDialog - controlled by Dashboard state */}
-      {selectedProspectForNotes && (
-        <ProspectNotesDialog
-          prospect_id={selectedProspectForNotes.linkedin_id}
-          prospect_name={`${selectedProspectForNotes.first_name} ${selectedProspectForNotes.last_name}`.trim()}
-          open={notesDialogOpen}
-          onOpenChange={setNotesDialogOpen}
-          onSuccess={() => {
-            refetch() // Refresh prospects list to update note count
-          }}
-        />
-      )}
-      
-      {/* ProspectTasksDialog - controlled by Dashboard state */}
-      {selectedProspectForTasks && (
-        <ProspectTasksDialog
-          prospect_id={selectedProspectForTasks.linkedin_id}
-          prospect_name={`${selectedProspectForTasks.first_name} ${selectedProspectForTasks.last_name}`.trim()}
-          open={tasksDialogOpen}
-          onOpenChange={setTasksDialogOpen}
-          onSuccess={() => {
-            refetch() // Refresh prospects list to update task count
-          }}
-        />
-      )}
-      
-      {/* DeepSearchQueueDialog - controlled by Dashboard state */}
-      {!!prospectIdsForDeepSearch.length && <DeepSearchQueueDialog
-        prospect_ids={prospectIdsForDeepSearch}
-        open={deepSearchDialogOpen}
-        onOpenChange={setDeepSearchDialogOpen}
-        onSuccess={() => {
-          refetch() // Refresh prospects list after successful addition
-          setDeepSearchDialogOpen(false)
-          setProspectIdsForDeepSearch([])
-        }}
-      />}
-      
-      {/* ProspectEnrichmentsDialog - controlled by Dashboard state */}
-      {!!prospectIdsForEnrich.length && <ProspectEnrichmentsDialog
-        user_id={user?.id}
-        prospectIds={prospectIdsForEnrich}
-        open={enrichDialogOpen}
-        onOpenChange={setEnrichDialogOpen}
-        onSuccess={() => {
-          refetch() // Refresh prospects list after successful variable creation
-          setEnrichDialogOpen(false)
-          setProspectIdsForEnrich([])
-        }}
-      />}
-      
-      {/* FindProspectEmailsDialog - controlled by Dashboard state */}
-      {!!prospectIdsForFindEmails.length && (
-        <FindProspectEmailsDialog
-          prospect_ids={prospectIdsForFindEmails}
-          open={findEmailsDialogOpen}
-          onOpenChange={setFindEmailsDialogOpen}
-          onSuccess={() => {
-            refetch()
-            setFindEmailsDialogOpen(false)
-            setProspectIdsForFindEmails([])
-          }}
-        />
-      )}
-
-      {/* VerifyProspectEmailsDialog - controlled by Dashboard state */}
-      {!!prospectIdsForVerifyEmails.length && (
-        <VerifyProspectEmailsDialog
-          prospect_ids={prospectIdsForVerifyEmails}
-          open={verifyEmailsDialogOpen}
-          onOpenChange={setVerifyEmailsDialogOpen}
-          onSuccess={() => {
-            refetch()
-            setVerifyEmailsDialogOpen(false)
-            setProspectIdsForVerifyEmails([])
-          }}
-        />
-      )}
-
-      {/* RemoveFromGroupDialog - controlled by Dashboard state */}
-      {selectedProspectForRemoval && (
-        <RemoveFromGroupDialog
-          prospect_id={selectedProspectForRemoval.linkedin_id}
-          prospect_name={`${selectedProspectForRemoval.first_name} ${selectedProspectForRemoval.last_name}`.trim()}
-          open={removeFromGroupDialogOpen}
-          onOpenChange={setRemoveFromGroupDialogOpen}
-          onSuccess={() => {
-            refetch() // Refresh prospects list after successful group removal
-            setRemoveFromGroupDialogOpen(false)
-            setSelectedProspectForRemoval(null)
-          }}
-        />
-      )}
-
-      {/* RemoveFromCampaignDialog - controlled by Dashboard state */}
-      {selectedProspectForCampaignRemoval && (
-        <RemoveFromCampaignDialog
-          prospect_id={selectedProspectForCampaignRemoval.linkedin_id}
-          prospect_name={`${selectedProspectForCampaignRemoval.first_name} ${selectedProspectForCampaignRemoval.last_name}`.trim()}
-          open={removeFromCampaignDialogOpen}
-          onOpenChange={setRemoveFromCampaignDialogOpen}
-          onSuccess={() => {
-            refetch()
-            setRemoveFromCampaignDialogOpen(false)
-            setSelectedProspectForCampaignRemoval(null)
-          }}
-        />
-      )}
-
-      {/* UpdateCompanyDialog - controlled by Dashboard state */}
-      {companyToUpdate && (
-        <UpdateCompanyDialog
-          open={updateCompanyDialogOpen}
-          onOpenChange={setUpdateCompanyDialogOpen}
-          company={companyToUpdate}
-          onSuccess={() => {
-            refetchCompanies()
-            setCompanyToUpdate(null)
-          }}
-        />
-      )}
-
-      {/* Single Delete Company Dialog */}
-      <DeleteDialog
-        {...singleDeleteCompanyProps}
-        title="Delete Company"
-        itemName={companyToDelete?.name}
-        confirmLabel="Delete"
-        description={companyToDelete ? `Are you sure you want to delete "${companyToDelete.name}"? This action cannot be undone.` : undefined}
-      />
-
-      {/* Bulk Delete Companies Dialog */}
-      <DeleteDialog
-        open={bulkDeleteCompaniesOpen}
-        onOpenChange={setBulkDeleteCompaniesOpen}
-        onConfirm={handleBulkDeleteConfirm}
-        isLoading={companiesLoading}
-        title="Delete Companies"
-        description={`Are you sure you want to delete ${bulkDeleteCompanyIds.length} companies? This action cannot be undone.`}
-        confirmLabel={`Delete ${bulkDeleteCompanyIds.length}`}
-        size="md"
-      />
-
-      {/* UpdateProspectDialog */}
-      {prospectToUpdate && (
-        <UpdateProspectDialog
-          open={updateProspectDialogOpen}
-          onOpenChange={setUpdateProspectDialogOpen}
-          prospect={prospectToUpdate}
-          onSuccess={() => {
-            refetch()
-            setProspectToUpdate(null)
-          }}
-        />
-      )}
-
-      {/* Single Delete Prospect Dialog */}
-      <DeleteDialog
-        {...singleDeleteProspectProps}
-        title="Delete Prospect"
-        itemName={prospectToDelete ? `${prospectToDelete.first_name} ${prospectToDelete.last_name}`.trim() : undefined}
-        confirmLabel="Delete"
-        description={prospectToDelete ? `Are you sure you want to delete "${prospectToDelete.first_name} ${prospectToDelete.last_name}"? This action cannot be undone.` : undefined}
-      />
-
-      {/* Bulk Delete Prospects Dialog */}
-      <DeleteDialog
-        open={bulkDeleteProspectsOpen}
-        onOpenChange={setBulkDeleteProspectsOpen}
-        onConfirm={handleBulkDeleteProspectsConfirm}
-        isLoading={isLoading}
-        title="Delete Prospects"
-        description={`Are you sure you want to delete ${bulkDeleteProspectIds.length} prospects? This action cannot be undone.`}
-        confirmLabel={`Delete ${bulkDeleteProspectIds.length}`}
-        size="md"
-      />
+      {/* All dialogs are now handled by DialogsProvider */}
     </DashboardLayout>
   )
 }

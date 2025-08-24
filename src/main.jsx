@@ -14,6 +14,7 @@ import { CompaniesProvider } from './contexts/CompaniesContext'
 import { CampaignsProvider } from './contexts/CampaignsContext'
 import { NotesProvider } from './contexts/NotesContext'
 import { OperationDefaultsProvider } from './contexts/OperationDefaultsContext'
+import { DialogsProvider } from './contexts/DialogsContext'
 
 const queryClient = new QueryClient()
 
@@ -31,7 +32,9 @@ createRoot(document.getElementById('root')).render(
                       <ProspectsProvider>
                         <CampaignsProvider>
                           <NotesProvider>
-                            <App />
+                            <DialogsProvider>
+                              <App />
+                            </DialogsProvider>
                           </NotesProvider>
                         </CampaignsProvider>
                       </ProspectsProvider>
