@@ -197,34 +197,7 @@ function TasksTable({ tasks, type, emptyMessage }) {
           </div>
         )
       },
-    },
-    {
-      accessorKey: "priority",
-      header: "Priority",
-      cell: ({ row }) => {
-        const task = row.original
-        const priority = task.priority || "medium"
-        
-        const getPriorityVariant = (priority) => {
-          switch (priority.toLowerCase()) {
-            case "high":
-              return "destructive"
-            case "medium":
-              return "outline"
-            case "low":
-              return "secondary"
-            default:
-              return "outline"
-          }
-        }
-        
-        return (
-          <Badge variant={getPriorityVariant(priority)} className="capitalize">
-            {priority}
-          </Badge>
-        )
-      },
-    },
+    }
   ]
 
   const rowActions = (task) => [
