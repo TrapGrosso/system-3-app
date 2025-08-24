@@ -30,10 +30,9 @@ import {
   AlertTriangleIcon
 } from 'lucide-react'
 import { toast } from 'sonner'
-import DeleteDialog from '@/components/dialogs/DeleteDialog'
-import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
 import { useProspects } from '@/contexts/ProspectsContext'
 import { useDeepSearchQueue } from '@/contexts/DeepSearchQueueContext'
+import { useDialogs } from '@/contexts/DialogsContext'
 
 // Utility functions
 const formatDate = (ts) => ts ? new Date(ts).toLocaleString() : "—"
@@ -99,26 +98,31 @@ export default function ProspectHeader({
   const navigate = useNavigate()
   const { deleteProspect } = useProspects()
   const { deleteProspects: deleteQueueItem } = useDeepSearchQueue()
+  const { confirm } = useDialogs()
 
-  const {
-    openDialog: openDeleteProspectDialog,
-    DeleteDialogProps: deleteProspectDialogProps
-  } = useDeleteDialog(
-    async () => {
+  const handleDeleteProspect = async () => {
+    const ok = await confirm({
+      title: 'Delete prospect',
+      description: `Delete ${prospect.first_name} ${prospect.last_name}?`,
+      confirmLabel: 'Delete'
+    })
+    if (ok) {
       await deleteProspect(prospect.linkedin_id)
       navigate('/dashboard')
     }
-  )
+  }
 
-  const {
-    openDialog: openRemoveQueueDialog,
-    DeleteDialogProps: removeQueueDialogProps
-  } = useDeleteDialog(
-    async () => {
+  const handleRemoveFromQueue = async () => {
+    const ok = await confirm({
+      title: 'Remove from deep search queue',
+      description: 'The prospect will be removed from the deep-search queue. Continue?',
+      confirmLabel: 'Remove'
+    })
+    if (ok) {
       await deleteQueueItem(deepSearch.queue_id)
       onRefetch?.()
     }
-  )
+  }
 
   if (!prospect) return null
 
@@ -144,7 +148,7 @@ export default function ProspectHeader({
       id: 'delete-prospect',
       label: 'Delete prospect',
       icon: TrashIcon,
-      onSelect: openDeleteProspectDialog,
+      onSelect: handleDeleteProspect,
       variant: 'destructive'
     },
     'separator',
@@ -165,7 +169,7 @@ export default function ProspectHeader({
         id: 'remove-from-deepsearch-queue',
         label: 'Remove from deepsearch queue',
         icon: XIcon,
-        onSelect: openRemoveQueueDialog,
+        onSelect: handleRemoveFromQueue,
         variant: 'destructive'
       },
       'separator'
@@ -451,20 +455,6 @@ export default function ProspectHeader({
       </Card>
 
       {/* Delete Dialogs */}
-      <DeleteDialog
-        {...deleteProspectDialogProps}
-        title="Delete prospect"
-        itemName={`${first_name} ${last_name}`}
-      />
-
-      {deepSearch?.is_in_queue && (
-        <DeleteDialog
-          {...removeQueueDialogProps}
-          title="Remove from deep search queue"
-          description="The prospect will be removed from the deep-search queue. Continue?"
-          confirmLabel="Remove"
-        />
-      )}
     </div>
   )
 }

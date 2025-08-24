@@ -5,25 +5,28 @@ import { Badge } from '@/components/ui/badge'
 import { ChevronDownIcon, ChevronRightIcon, DatabaseIcon, TrashIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import MarkdownScrollBox from '@/components/shared/ui/MarkdownScrollBox'
-import DeleteDialog from '@/components/dialogs/DeleteDialog'
-import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
+import { useAuth } from '@/contexts/AuthContext'
+import { useDialogs } from '@/contexts/DialogsContext'
+import { useDeleteEnrichments } from '@/api/prospect-details/deleteEnrichments'
 
-export default function EnrichmentAccordion({ enrichment = {}, onDeleteEnrichment }) {
+export default function EnrichmentAccordion({ enrichment = {}, onRefetch }) {
   const [expandedSections, setExpandedSections] = useState({})
+  const [deletingId, setDeletingId] = useState(null)
 
-  const {
-    openDialog: openDeleteDialog,
-    currentItem: enrichmentToDelete,
-    DeleteDialogProps
-  } = useDeleteDialog(
-    async (enrichmentItem) => {
-      if (onDeleteEnrichment) {
-        onDeleteEnrichment(enrichmentItem.id)
-      } else {
-        toast.info('Delete enrichment functionality not implemented yet')
-      }
-    }
-  )
+  const { user } = useAuth()
+  const { confirm } = useDialogs()
+
+  const deleteEnrichments = useDeleteEnrichments({
+    onSuccess: (data) => {
+      toast.success(data.message || 'Enrichment(s) deleted successfully')
+      setDeletingId(null)
+      onRefetch?.()
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to delete enrichment(s)')
+      setDeletingId(null)
+    },
+  })
 
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
@@ -112,8 +115,15 @@ export default function EnrichmentAccordion({ enrichment = {}, onDeleteEnrichmen
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => openDeleteDialog(item)}
+                            onClick={async () => {
+                              const ok = await confirm({ title: 'Delete enrichment?', description: 'This action cannot be undone.' })
+                              if (!ok) return
+
+                              setDeletingId(item.id)
+                              deleteEnrichments.mutate({ user_id: user.id, enrichment_ids: [item.id] })
+                            }}
                             className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                            disabled={deleteEnrichments.isPending && deletingId === item.id}
                           >
                             <TrashIcon className="h-3 w-3" />
                             <span className="sr-only">Delete enrichment</span>
@@ -144,14 +154,6 @@ export default function EnrichmentAccordion({ enrichment = {}, onDeleteEnrichmen
           )
         })}
       </CardContent>
-
-      {enrichmentToDelete && (
-        <DeleteDialog
-          {...DeleteDialogProps}
-          title="Delete enrichment"
-          itemName={`${enrichmentToDelete.type} - ${enrichmentToDelete.source}`}
-        />
-      )}
     </Card>
   )
 }

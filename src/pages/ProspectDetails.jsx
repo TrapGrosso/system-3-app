@@ -1,31 +1,14 @@
-import React, { useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import React from 'react'
+import { useParams } from 'react-router-dom'
 import { DashboardLayout } from '@/components/layouts/DashboardLayout'
-import { Spinner } from '@/components/ui/spinner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { AlertTriangle, Search } from 'lucide-react'
 import { LoadingScreen } from '@/components/shared/ui/LoadingScreen'
 import { useAuth } from '@/contexts/AuthContext'
-import { GroupsProvider } from '@/contexts/GroupsContext'
-import { NotesProvider } from '@/contexts/NotesContext'
-import { TaskProvider } from '@/contexts/TaskContext'
 import { usegetProspectDetails } from '@/api/prospect-details/useGetProspectsDetails'
-import { useDeleteEnrichments } from '@/api/prospect-details/deleteEnrichments'
 import { toast } from 'sonner'
-import ProspectNotesDialog from '@/components/dialogs/ProspectNotesDialog'
-import ProspectTasksDialog from '@/components/dialogs/ProspectTasksDialog'
-import ProspectVariablesDialog from '@/components/dialogs/prospect-variables/ProspectVariablesDialog'
-import DeepSearchQueueDialog from '@/components/dialogs/DeepSearchQueueDialog'
-import HandleGroupsDialog from '@/components/dialogs/HandleGroupsDialog'
-import ChangeCompanyDialog from '@/components/dialogs/changeCompany/ChangeCompanyDialog'
-import UpdateCompanyDialog from '@/components/dialogs/UpdateCompanyDialog'
-import UpdateProspectDialog from '@/components/dialogs/UpdateProspectDialog'
-import { PromptSelectDialog } from '@/components/dialogs/PromptSelectDialog'
-import ResolveDeepSearchItem from '@/components/dialogs/ResolveDeepSearchItem'
-import ProspectEnrichmentsDialog from '@/components/dialogs/enrichments/ProspectEnrichmentsDialog'
-import { RemoveFromCampaignDialog } from '@/components/dialogs'
-import AddToCampaignDialog from '@/components/dialogs/AddToCampaignDialog'
+import { useDialogs } from '@/contexts/DialogsContext'
 import {
   ProspectHeader,
   CompanyCard,
@@ -36,159 +19,98 @@ import {
 export default function ProspectDetails() {
   const { user } = useAuth()
   const { linkedinId } = useParams()
-  const navigate = useNavigate()
   
-  const [notesDialogOpen, setNotesDialogOpen] = useState(false)
-  const [tasksDialogOpen, setTasksDialogOpen] = useState(false)
-  const [variablesDialogOpen, setVariablesDialogOpen] = useState(false)
-  const [deepSearchDialogOpen, setDeepSearchDialogOpen] = useState(false)
-  const [groupsDialogOpen, setGroupsDialogOpen] = useState(false)
-  const [changeCompanyDialogOpen, setChangeCompanyDialogOpen] = useState(false)
-  const [updateCompanyDialogOpen, setUpdateCompanyDialogOpen] = useState(false)
-  const [updateProspectDialogOpen, setUpdateProspectDialogOpen] = useState(false)
-  const [promptSelectDialogOpen, setPromptSelectDialogOpen] = useState(false)
-  const [resolveDialogOpen, setResolveDialogOpen] = useState(false)
-  const [enrichmentsDialogOpen, setEnrichmentsDialogOpen] = useState(false)
-  const [removeFromCampaignDialogOpen, setRemoveFromCampaignDialogOpen] = useState(false)
-  const [removeFromCampaignTarget, setRemoveFromCampaignTarget] = useState(null)
-
-  const [addToCampaignDialogOpen, setAddToCampaignDialogOpen] = useState(false)
 
   const { data, isLoading, isError, refetch } = usegetProspectDetails(user?.id, linkedinId)
 
-  const deleteEnrichments = useDeleteEnrichments({
-    onSuccess: (data) => {
-      toast.success(data.message || 'Enrichment(s) deleted successfully')
-      refetch() // Refresh prospect details to update enrichment data
-    },
-    onError: (error) => {
-      toast.error(error.message || 'Failed to delete enrichment(s)')
-    },
-  })
+  const {
+    openProspectNotes,
+    openProspectTasks,
+    openProspectVariables,
+    openDeepSearchQueue,
+    openHandleGroups,
+    openChangeCompany,
+    openUpdateCompany,
+    openUpdateProspect,
+    openPromptSelect,
+    openResolveDeepSearchItem,
+    openProspectEnrichments,
+    openRemoveFromCampaign,
+    openAddToCampaign,
+    confirm
+  } = useDialogs()
 
-  const handleOpenNotesDialog = () => {
-    setNotesDialogOpen(true)
+  const handleOpenNotesDialog = async () => {
+    await openProspectNotes({ prospect: data.prospect })
+    refetch()
   }
 
-  const handleNotesDialogSuccess = () => {
-    refetch() // Refresh prospect details to update notes count and data
+  const handleOpenTasksDialog = async () => {
+    await openProspectTasks({ prospect: data.prospect })
+    refetch()
   }
 
-  const handleOpenTasksDialog = () => {
-    setTasksDialogOpen(true)
+  const handleOpenDeepSearchDialog = async () => {
+    await openDeepSearchQueue({ prospect_ids: [data.prospect.linkedin_id] })
+    refetch()
   }
 
-  const handleTasksDialogSuccess = () => {
-    refetch() // Refresh prospect details to update tasks count and data
+  const handleOpenGroupsDialog = async () => {
+    await openHandleGroups({ user_id: data.prospect.user_id, prospect_ids: [data.prospect.linkedin_id] })
+    refetch()
   }
 
-  const handleOpenDeepSearchDialog = () => {
-    setDeepSearchDialogOpen(true)
+  const handleOpenVariablesDialog = async () => {
+    await openProspectVariables({ prospect: data.prospect })
+    refetch()
   }
 
-  const handleDeepSearchDialogSuccess = () => {
-    refetch() // Refresh prospect details to update data
-    setDeepSearchDialogOpen(false)
+  const handleOpenChangeCompanyDialog = async () => {
+    await openChangeCompany({ prospectId: data.prospect.linkedin_id })
+    refetch()
   }
 
-  const handleOpenGroupsDialog = () => {
-    setGroupsDialogOpen(true)
-  }
-
-  const handleOpenVariablesDialog = () => {
-    setVariablesDialogOpen(true)
-  }
-
-  const handleVariablesDialogSuccess = () => {
-    refetch() // Refresh prospect details to update variables count and data
-  }
-
-  const handleGroupsDialogSuccess = () => {
-    refetch() // Refresh prospect details to update groups count and data
-  }
-
-  const handleOpenChangeCompanyDialog = () => {
-    setChangeCompanyDialogOpen(true)
-  }
-
-  const handleChangeCompanyDialogSuccess = () => {
-    refetch() // Refresh prospect details to update company data
-    setChangeCompanyDialogOpen(false)
-  }
-
-  const handleOpenUpdateCompanyDialog = () => {
-    setUpdateCompanyDialogOpen(true)
-  }
-
-  const handleUpdateCompanyDialogSuccess = () => {
-    refetch() // Refresh prospect details to update company data
-    setUpdateCompanyDialogOpen(false)
-  }
-
-  const handleDeleteEnrichment = (enrichmentId) => {
-    deleteEnrichments.mutate({
-      user_id: user.id,
-      enrichment_ids: [enrichmentId]
-    })
+  const handleOpenUpdateCompanyDialog = async () => {
+    await openUpdateCompany({ company: data.company })
+    refetch()
   }
 
   // New prospect action handlers
-  const handleOpenUpdateProspectDialog = () => {
-    setUpdateProspectDialogOpen(true)
+  const handleOpenUpdateProspectDialog = async () => {
+    await openUpdateProspect({ prospect: data.prospect })
+    refetch()
   }
 
-  const handleUpdateProspectDialogSuccess = () => {
-    refetch() // Refresh prospect details to update prospect data
-    setUpdateProspectDialogOpen(false)
+  const handleOpenPromptSelectDialog = async () => {
+    if (data.deep_search?.is_in_queue) {
+      await openPromptSelect({ queueItemIds: [data.deep_search.queue_id], selectedCount: 1 })
+      refetch()
+    }
   }
 
-  const handleOpenPromptSelectDialog = () => {
-    setPromptSelectDialogOpen(true)
-  }
-
-  const handlePromptSelectDialogSuccess = () => {
-    refetch() // Refresh prospect details to update queue data
-    setPromptSelectDialogOpen(false)
-  }
-
-  const handleOpenResolveDialog = () => {
-    setResolveDialogOpen(true)
-  }
-
-  const handleResolveDialogSuccess = () => {
-    refetch() // Refresh prospect details to update data
-    setResolveDialogOpen(false)
+  const handleOpenResolveDialog = async () => {
+    if (data.deep_search?.is_in_queue) {
+      await openResolveDeepSearchItem({ queueIds: [data.deep_search.queue_id] })
+      refetch()
+    }
   }
 
   // RemoveFromCampaign dialog handlers
-  const handleOpenRemoveFromCampaignDialog = ({ prospectId, prospectName }) => {
-    setRemoveFromCampaignTarget({ prospectId, prospectName })
-    setRemoveFromCampaignDialogOpen(true)
-  }
-
-  const handleRemoveFromCampaignDialogSuccess = () => {
+  const handleOpenRemoveFromCampaignDialog = async () => {
+    await openRemoveFromCampaign({ prospect: data.prospect })
     refetch()
-    setRemoveFromCampaignDialogOpen(false)
   }
 
   // AddToCampaign dialog handlers
-  const handleOpenAddToCampaignDialog = () => {
-    setAddToCampaignDialogOpen(true)
-  }
-
-  const handleAddToCampaignDialogSuccess = () => {
+  const handleOpenAddToCampaignDialog = async () => {
+    await openAddToCampaign({ prospect_ids: [data.prospect.linkedin_id] })
     refetch()
-    setAddToCampaignDialogOpen(false)
   }
 
   // Enrichments dialog handlers
-  const handleOpenEnrichmentsDialog = () => {
-    setEnrichmentsDialogOpen(true)
-  }
-
-  const handleEnrichmentsDialogSuccess = () => {
-    refetch() // Refresh prospect details to update data
-    setEnrichmentsDialogOpen(false)
+  const handleOpenEnrichmentsDialog = async () => {
+    await openProspectEnrichments({ user_id: user.id, prospectIds: [data.prospect.linkedin_id] })
+    refetch()
   }
 
   if (isLoading) {
@@ -241,9 +163,6 @@ export default function ProspectDetails() {
 
   return (
     <DashboardLayout headerText="Prospect Details">
-      <GroupsProvider>
-        <NotesProvider>
-          <TaskProvider>
             <ProspectHeader 
               prospect={data.prospect} 
               deepSearch={data.deep_search}
@@ -289,156 +208,16 @@ export default function ProspectDetails() {
             logs={data.logs}
             prospect={data.prospect}
             onAddNote={handleOpenNotesDialog}
-            onNotesChanged={handleNotesDialogSuccess}
+            onNotesChanged={handleOpenNotesDialog}
             onAddTask={handleOpenTasksDialog}
-            onTasksChanged={handleTasksDialogSuccess}
+            onTasksChanged={handleOpenTasksDialog}
             onAddVariable={handleOpenVariablesDialog}
-            onVariablesChanged={handleVariablesDialogSuccess}
+            onVariablesChanged={handleOpenVariablesDialog}
             onAddToGroup={handleOpenGroupsDialog}
-            onDeleteEnrichment={handleDeleteEnrichment}
             onOpenRemoveFromCampaign={handleOpenRemoveFromCampaignDialog}
             onAddToCampaign={handleOpenAddToCampaignDialog}
+            onRefetch={refetch}
           />
-
-          {/* ProspectNotesDialog - controlled by ProspectDetails state */}
-          {data.prospect && (
-            <ProspectNotesDialog
-              prospect_id={data.prospect.linkedin_id}
-              prospect_name={`${data.prospect.first_name} ${data.prospect.last_name}`.trim()}
-              open={notesDialogOpen}
-              onOpenChange={setNotesDialogOpen}
-              onSuccess={handleNotesDialogSuccess}
-            />
-          )}
-
-          {/* ProspectTasksDialog - controlled by ProspectDetails state */}
-          {data.prospect && (
-            <ProspectTasksDialog
-              prospect_id={data.prospect.linkedin_id}
-              prospect_name={`${data.prospect.first_name} ${data.prospect.last_name}`.trim()}
-              open={tasksDialogOpen}
-              onOpenChange={setTasksDialogOpen}
-              onSuccess={handleTasksDialogSuccess}
-            />
-          )}
-
-          {/* ProspectVariablesDialog - controlled by ProspectDetails state */}
-          {data.prospect && (
-            <ProspectVariablesDialog
-              prospect_id={data.prospect.linkedin_id}
-              prospect_name={`${data.prospect.first_name} ${data.prospect.last_name}`.trim()}
-              open={variablesDialogOpen}
-              onOpenChange={setVariablesDialogOpen}
-              onSuccess={handleVariablesDialogSuccess}
-            />
-          )}
-
-          {/* DeepSearchQueueDialog - controlled by ProspectDetails state */}
-          {data.prospect && (
-            <DeepSearchQueueDialog
-              prospect_ids={[data.prospect.linkedin_id]}
-              open={deepSearchDialogOpen}
-              onOpenChange={setDeepSearchDialogOpen}
-              onSuccess={handleDeepSearchDialogSuccess}
-            />
-          )}
-
-          {/* HandleGroupsDialog - controlled by ProspectDetails state */}
-          {data.prospect && (
-            <HandleGroupsDialog
-              prospect_ids={[data.prospect.linkedin_id]}
-              user_id={data.prospect.user_id}
-              open={groupsDialogOpen}
-              onOpenChange={setGroupsDialogOpen}
-              onSuccess={handleGroupsDialogSuccess}
-            />
-          )}
-
-          {/* ChangeCompanyDialog - controlled by ProspectDetails state */}
-          {data.prospect && (
-            <ChangeCompanyDialog
-              prospectId={data.prospect.linkedin_id}
-              open={changeCompanyDialogOpen}
-              onOpenChange={setChangeCompanyDialogOpen}
-              onSuccess={handleChangeCompanyDialogSuccess}
-            />
-          )}
-
-          {/* UpdateCompanyDialog - controlled by ProspectDetails state */}
-          {data.company && (
-            <UpdateCompanyDialog
-              open={updateCompanyDialogOpen}
-              onOpenChange={setUpdateCompanyDialogOpen}
-              company={data.company}
-              onSuccess={handleUpdateCompanyDialogSuccess}
-            />
-          )}
-
-          {/* UpdateProspectDialog - controlled by ProspectDetails state */}
-          {data.prospect && (
-            <UpdateProspectDialog
-              open={updateProspectDialogOpen}
-              onOpenChange={setUpdateProspectDialogOpen}
-              prospect={data.prospect}
-              onSuccess={handleUpdateProspectDialogSuccess}
-            />
-          )}
-
-          {/* PromptSelectDialog - controlled by ProspectDetails state */}
-          {data.deep_search?.is_in_queue && (
-            <PromptSelectDialog
-              open={promptSelectDialogOpen}
-              onOpenChange={setPromptSelectDialogOpen}
-              queueItemIds={[data.deep_search.queue_id]}
-              onSuccess={handlePromptSelectDialogSuccess}
-            />
-          )}
-
-          {/* ResolveDeepSearchItem - controlled by ProspectDetails state */}
-          {data.deep_search?.is_in_queue && (
-            <ResolveDeepSearchItem
-              queueIds={[data.deep_search.queue_id]}
-              open={resolveDialogOpen}
-              onOpenChange={setResolveDialogOpen}
-              onSuccess={handleResolveDialogSuccess}
-            />
-          )}
-
-          {/* ProspectEnrichmentsDialog - controlled by ProspectDetails state */}
-          {data.prospect && (
-            <ProspectEnrichmentsDialog
-              user_id={user.id}
-              prospectIds={[data.prospect.linkedin_id]}
-              open={enrichmentsDialogOpen}
-              onOpenChange={setEnrichmentsDialogOpen}
-              onSuccess={handleEnrichmentsDialogSuccess}
-            />
-          )}
-
-          {/* RemoveFromCampaignDialog - controlled by ProspectDetails state */}
-          {data.prospect && (
-            <RemoveFromCampaignDialog
-              prospect_id={removeFromCampaignTarget?.prospectId ?? data.prospect.linkedin_id}
-              prospect_name={removeFromCampaignTarget?.prospectName ?? `${data.prospect.first_name} ${data.prospect.last_name}`.trim()}
-              open={removeFromCampaignDialogOpen}
-              onOpenChange={setRemoveFromCampaignDialogOpen}
-              onSuccess={handleRemoveFromCampaignDialogSuccess}
-            />
-          )}
-
-          {/* AddToCampaignDialog - controlled by ProspectDetails state */}
-          {data.prospect && (
-            <AddToCampaignDialog
-              prospect_ids={[data.prospect.linkedin_id]}
-              open={addToCampaignDialogOpen}
-              onOpenChange={setAddToCampaignDialogOpen}
-              onSuccess={handleAddToCampaignDialogSuccess}
-            />
-          )}
-
-          </TaskProvider>
-        </NotesProvider>
-      </GroupsProvider>
     </DashboardLayout>
   )
 }
