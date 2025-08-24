@@ -145,14 +145,21 @@ export function BarChartHorizontal({
   nameKey = "name",
   valueKey = "value",
   colorVar = "primary",
+  color,
   height = 300,
+  xDomain = [0, "dataMax"],
+  allowDecimals = false,
+  tickFormatter = formatNumber,
+  yAxisWidth = 100,
   className = "",
   ...props
 }) {
+  const fillColor = color || `var(--color-${colorVar})`
+
   const chartConfig = {
     [valueKey]: {
       label: valueKey,
-      color: `var(--color-${colorVar})`,
+      color: fillColor,
     },
   }
 
@@ -169,12 +176,17 @@ export function BarChartHorizontal({
 
   return (
     <ChartContainer config={chartConfig} className={`w-full ${className}`} style={{ height }}>
-      <BarChart data={data} layout="horizontal" {...props}>
+      <BarChart data={data} layout="vertical" {...props}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis type="number" />
-        <YAxis dataKey={nameKey} type="category" width={100} />
+        <XAxis
+          type="number"
+          domain={xDomain}
+          allowDecimals={allowDecimals}
+          tickFormatter={(v) => tickFormatter(v)}
+        />
+        <YAxis dataKey={nameKey} type="category" width={yAxisWidth} />
         <ChartTooltip content={<ChartTooltipContent />} />
-        <Bar dataKey={valueKey} fill={`var(--color-${colorVar})`} radius={[0, 4, 4, 0]} />
+        <Bar dataKey={valueKey} fill={fillColor} radius={[0, 4, 4, 0]} />
       </BarChart>
     </ChartContainer>
   )
@@ -186,13 +198,19 @@ export function BarChartHorizontal({
 export function StackedBarChart({
   data = [],
   xKey = "x",
+  categoryKey = "x",
   series = [], // [{ key, label, colorVar, color?, stackId? }]
+  orientation = "vertical",
   height = 300,
   className = "",
   yAxisProps = {},
   barProps = {},
   barCategoryGap = "10%",
   maxBarSize = undefined,
+  xNumberDomain = [0, "dataMax"],
+  xAllowDecimals = false,
+  xTickFormatter = formatNumber,
+  yAxisWidth = 100,
   ...props
 }) {
   const chartConfig = Object.fromEntries(
@@ -225,45 +243,85 @@ export function StackedBarChart({
 
   // Default bar props with override support
   const defaultBarProps = {
-    minPointSize: 2,
+    minPointSize: 0,
     radius: [2, 2, 0, 0],
     ...barProps
   }
 
+  const computedCategoryKey = categoryKey || xKey
+
   return (
     <ChartContainer config={chartConfig} className={`w-full ${className}`} style={{ height }}>
-      <BarChart 
-        data={data} 
-        barCategoryGap={barCategoryGap}
-        maxBarSize={maxBarSize}
-        {...props}
-      >
-        <CartesianGrid vertical={false} />
-        <XAxis 
-          dataKey={xKey}
-          tick={{ fontSize: 11 }}
-          interval={0}
-          angle={-30}
-          textAnchor="end"
-          height={60}
-        />
-        <YAxis {...defaultYAxisProps} />
-        <ChartTooltip content={<ChartTooltipContent />} />
-        <ChartLegend content={<ChartLegendContent />} />
-        {series.map((s) => {
-          const fill = s.color || `var(--color-${s.colorVar})`
-          const stackId = s.stackId || "stack"
-          return (
-            <Bar 
-              key={s.key}
-              dataKey={s.key} 
-              stackId={stackId}
-              fill={fill}
-              {...defaultBarProps}
-            />
-          )
-        })}
-      </BarChart>
+      {orientation === "horizontal" ? (
+        <BarChart
+          data={data}
+          layout="vertical"
+          barCategoryGap={barCategoryGap}
+          maxBarSize={maxBarSize}
+          {...props}
+        >
+          <CartesianGrid vertical={false} />
+          <XAxis
+            type="number"
+            domain={xNumberDomain}
+            allowDecimals={xAllowDecimals}
+            tickFormatter={(v) => xTickFormatter(v)}
+          />
+          <YAxis
+            dataKey={computedCategoryKey}
+            type="category"
+            width={yAxisWidth}
+          />
+          <ChartTooltip content={<ChartTooltipContent />} />
+          <ChartLegend content={<ChartLegendContent />} />
+          {series.map((s) => {
+            const fill = s.color || `var(--color-${s.colorVar})`
+            const stackId = s.stackId || "stack"
+            return (
+              <Bar
+                key={s.key}
+                dataKey={s.key}
+                stackId={stackId}
+                fill={fill}
+                {...defaultBarProps}
+              />
+            )
+          })}
+        </BarChart>
+      ) : (
+        <BarChart 
+          data={data} 
+          barCategoryGap={barCategoryGap}
+          maxBarSize={maxBarSize}
+          {...props}
+        >
+          <CartesianGrid vertical={false} />
+          <XAxis 
+            dataKey={xKey}
+            tick={{ fontSize: 11 }}
+            interval={0}
+            angle={-30}
+            textAnchor="end"
+            height={60}
+          />
+          <YAxis {...defaultYAxisProps} />
+          <ChartTooltip content={<ChartTooltipContent />} />
+          <ChartLegend content={<ChartLegendContent />} />
+          {series.map((s) => {
+            const fill = s.color || `var(--color-${s.colorVar})`
+            const stackId = s.stackId || "stack"
+            return (
+              <Bar 
+                key={s.key}
+                dataKey={s.key} 
+                stackId={stackId}
+                fill={fill}
+                {...defaultBarProps}
+              />
+            )
+          })}
+        </BarChart>
+      )}
     </ChartContainer>
   )
 }
