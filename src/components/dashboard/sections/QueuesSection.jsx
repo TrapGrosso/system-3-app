@@ -150,29 +150,11 @@ function QueueBreakdownTable({ byPrompt = [] }) {
     },
   ]
 
-  const rowActions = (promptItem) => [
-    {
-      label: "View Queue Items",
-      onSelect: () => {
-        // Navigate to deep search queue filtered by prompt_id
-        console.log("Navigate to queue filtered by prompt:", promptItem.prompt_id)
-      },
-    },
-    {
-      label: "View Prompt Details",
-      onSelect: () => {
-        // Navigate to prompts page filtered by prompt_id
-        console.log("Navigate to prompt details:", promptItem.prompt_id)
-      },
-    },
-  ]
-
   return (
     <DataTable
       columns={columns}
       data={byPrompt}
       enableSelection={false}
-      rowActions={rowActions}
       emptyMessage="No queue data by prompt available"
       rowId={(row) => row.prompt_id || row.prompt_name}
     />
