@@ -1,5 +1,6 @@
 import * as React from "react"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import { FailedOperationsTable } from "../components/activity-section/FailedOperationsTable"
 import { RecentLogsList } from "../components/activity-section/RecentLogsList"
 import { StatusSummaryBadges } from "../components/activity-section/StatusSummaryBadges"
@@ -12,15 +13,15 @@ export function ActivitySection({ data, isLoading = false }) {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 bg-muted/30 animate-pulse rounded w-48" />
+        <Skeleton className="h-8 w-48" />
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <div className="h-32 bg-muted/30 animate-pulse rounded-lg" />
-          <div className="h-32 bg-muted/30 animate-pulse rounded-lg" />
-          <div className="h-32 bg-muted/30 animate-pulse rounded-lg" />
+          <Skeleton className="h-32 rounded-lg" />
+          <Skeleton className="h-32 rounded-lg" />
+          <Skeleton className="h-32 rounded-lg" />
         </div>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="h-64 bg-muted/30 animate-pulse rounded-lg" />
-          <div className="h-64 bg-muted/30 animate-pulse rounded-lg" />
+          <Skeleton className="h-64 rounded-lg" />
+          <Skeleton className="h-64 rounded-lg" />
         </div>
       </div>
     )
