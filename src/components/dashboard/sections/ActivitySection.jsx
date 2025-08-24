@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/shared/table/DataTable"
-import { BarChartHorizontal, formatNumber, formatRelativeTime } from "@/components/shared/ui/ChartKit"
+import { BarChartHorizontal, StackedBarChart, formatNumber, formatRelativeTime } from "@/components/shared/ui/ChartKit"
 
 /**
  * ActivitySection - Recent activity logs, status summary, and failed operations
@@ -27,6 +27,8 @@ export function ActivitySection({ data, isLoading = false }) {
     )
   }
 
+  const [showBreakdown, setShowBreakdown] = React.useState(false)
+
   const activity = data?.activity || {}
   const recentLogs = activity.recentLogs || {}
 
@@ -40,8 +42,17 @@ export function ActivitySection({ data, isLoading = false }) {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* By Action Chart */}
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Activity by Action</h3>
-          <ByActionChart byAction={recentLogs.byAction} />
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium">Activity by Action</h3>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowBreakdown((v) => !v)}
+            >
+              {showBreakdown ? "Show totals" : "Show breakdown"}
+            </Button>
+          </div>
+          <ByActionChart byAction={recentLogs.byAction} breakdown={showBreakdown} />
         </div>
 
         {/* Recent Logs */}
@@ -93,7 +104,7 @@ function StatusSummaryBadges({ byStatus }) {
 /**
  * ByActionChart - Horizontal bar chart showing operations by action type
  */
-function ByActionChart({ byAction = [] }) {
+function ByActionChart({ byAction = [], breakdown = false }) {
   if (!byAction.length) {
     return (
       <Card>
@@ -116,13 +127,31 @@ function ByActionChart({ byAction = [] }) {
   return (
     <Card>
       <CardContent className="pt-6">
-        <BarChartHorizontal
-          data={chartData}
-          nameKey="name"
-          valueKey="value"
-          height={Math.max(200, chartData.length * 40)}
-          colorVar="primary"
-        />
+        {breakdown ? (
+          <StackedBarChart
+            data={chartData}
+            orientation="horizontal"
+            categoryKey="name"
+            series={[
+              { key: "success", label: "Success", color: "hsl(142, 71%, 45%)" },      // green
+              { key: "failed", label: "Failed", color: "hsl(0, 84%, 60%)" },           // red
+              { key: "in_progress", label: "In progress", color: "hsl(217, 91%, 60%)" }, // blue
+            ]}
+            xNumberDomain={[0, "dataMax"]}
+            xAllowDecimals={false}
+            xTickFormatter={formatNumber}
+            yAxisWidth={120}
+            height={Math.max(200, chartData.length * 40)}
+          />
+        ) : (
+          <BarChartHorizontal
+            data={chartData}
+            nameKey="name"
+            valueKey="value"
+            height={Math.max(200, chartData.length * 40)}
+            colorVar="primary"
+          />
+        )}
       </CardContent>
     </Card>
   )
