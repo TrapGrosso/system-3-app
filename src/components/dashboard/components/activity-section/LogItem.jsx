@@ -49,7 +49,7 @@ export function LogItem({ log }) {
 
   return (
     <Card>
-      <CardContent className="pt-4">
+      <CardContent>
         <div className="space-y-3">
           {/* Header */}
           <div className="flex items-start justify-between gap-2">
