@@ -5,11 +5,80 @@ import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/shared/table/DataTable"
 import { StackedBarChart, formatNumber } from "@/components/shared/ui/ChartKit"
 import { KpiCard, KpiGrid } from "@/components/shared/ui/KpiCard"
+import { SingleSelect } from "@/components/shared/filter/SingleSelect"
+
+/**
+ * Helper function to normalize prompts data based on view mode
+ */
+function getPromptsByMode(prompts, mode, topN) {
+  switch (mode) {
+    case 'variables':
+      return (prompts.byVariables || []).slice(0, topN).map(item => ({
+        prompt_id: item.prompt_id,
+        prompt_name: item.prompt_name,
+        variables: item.count || 0,
+        enrichment: 0,
+        totalUsage: item.count || 0
+      }))
+    
+    case 'enrichment':
+      return (prompts.byEnrichment || prompts.byDeepSearch || []).slice(0, topN).map(item => ({
+        prompt_id: item.prompt_id,
+        prompt_name: item.prompt_name,
+        variables: 0,
+        enrichment: item.count || 0,
+        totalUsage: item.count || 0
+      }))
+    
+    case 'both':
+    default:
+      // Prefer prompts.top if available, otherwise merge byVariables and byEnrichment
+      if (prompts.top && prompts.top.length > 0) {
+        return prompts.top.slice(0, topN)
+      }
+      
+      // Fallback: merge byVariables and byEnrichment
+      const variablesMap = new Map()
+      const enrichmentMap = new Map()
+      
+      ;(prompts.byVariables || []).forEach(item => {
+        const key = item.prompt_id || item.prompt_name
+        if (key) variablesMap.set(key, item)
+      })
+      
+      ;(prompts.byEnrichment || prompts.byDeepSearch || []).forEach(item => {
+        const key = item.prompt_id || item.prompt_name
+        if (key) enrichmentMap.set(key, item)
+      })
+      
+      const allKeys = new Set([...variablesMap.keys(), ...enrichmentMap.keys()])
+      const merged = Array.from(allKeys).map(key => {
+        const varItem = variablesMap.get(key)
+        const enrichItem = enrichmentMap.get(key)
+        const variables = varItem?.count || 0
+        const enrichment = enrichItem?.count || 0
+        
+        return {
+          prompt_id: varItem?.prompt_id || enrichItem?.prompt_id,
+          prompt_name: varItem?.prompt_name || enrichItem?.prompt_name,
+          variables,
+          enrichment,
+          totalUsage: variables + enrichment
+        }
+      })
+      
+      return merged
+        .sort((a, b) => b.totalUsage - a.totalUsage)
+        .slice(0, topN)
+  }
+}
 
 /**
  * EngagementSection - Prompts usage overview with KPIs, stacked chart, and top prompts table
  */
 export function EngagementSection({ data, isLoading = false }) {
+  const [viewMode, setViewMode] = React.useState('both')
+  
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -28,10 +97,34 @@ export function EngagementSection({ data, isLoading = false }) {
 
   const engagement = data?.engagement || {}
   const prompts = engagement.prompts || {}
+  const topN = data?.meta?.topN || 5
+
+  // Normalize prompts data based on selected view mode
+  const normalizedPrompts = React.useMemo(() => 
+    getPromptsByMode(prompts, viewMode, topN), 
+    [prompts, viewMode, topN]
+  )
+
+  const viewOptions = [
+    { value: 'both', label: 'Combined' },
+    { value: 'variables', label: 'Variables only' },
+    { value: 'enrichment', label: 'Enrichments only' }
+  ]
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Prompts Usage</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">Prompts Usage</h2>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">View:</span>
+          <SingleSelect
+            value={viewMode}
+            onValueChange={setViewMode}
+            options={viewOptions}
+            triggerClassName="h-8 min-w-[140px]"
+          />
+        </div>
+      </div>
       
       {/* Usage KPIs */}
       <PromptsUsageKpis prompts={prompts} />
@@ -40,13 +133,13 @@ export function EngagementSection({ data, isLoading = false }) {
         {/* Top Prompts Chart */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Top Prompts Usage</h3>
-          <TopPromptsChart prompts={prompts.top} />
+          <TopPromptsChart prompts={normalizedPrompts} mode={viewMode} />
         </div>
 
         {/* Top Prompts Table */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Prompt Details</h3>
-          <TopPromptsTable prompts={prompts.top} />
+          <TopPromptsTable prompts={normalizedPrompts} mode={viewMode} />
         </div>
       </div>
     </div>
@@ -104,9 +197,9 @@ function PromptsUsageKpis({ prompts }) {
 }
 
 /**
- * TopPromptsChart - Stacked bar chart showing variables vs deepSearch usage by prompt
+ * TopPromptsChart - Stacked bar chart showing variables vs enrichment usage by prompt
  */
-function TopPromptsChart({ prompts = [] }) {
+function TopPromptsChart({ prompts = [], mode = 'both' }) {
   if (!prompts.length) {
     return (
       <Card>
@@ -124,18 +217,30 @@ function TopPromptsChart({ prompts = [] }) {
     enrichment: prompt.enrichment || prompt.deepSearch || 0, // Fallback for old data
   }))
 
-  const series = [
-    {
+  // Define series based on mode with explicit HSL colors
+  const series = React.useMemo(() => {
+    const variablesSeries = {
       key: "variables",
       label: "Variables",
-      colorVar: "primary",
-    },
-    {
+      color: "hsl(221 83% 53%)", // Blue
+    }
+    
+    const enrichmentSeries = {
       key: "enrichment", 
       label: "Enrichments",
-      colorVar: "secondary",
-    },
-  ]
+      color: "hsl(12 86% 57%)", // Orange
+    }
+
+    switch (mode) {
+      case 'variables':
+        return [variablesSeries]
+      case 'enrichment':
+        return [enrichmentSeries]
+      case 'both':
+      default:
+        return [variablesSeries, enrichmentSeries]
+    }
+  }, [mode])
 
   return (
     <Card>
@@ -152,11 +257,11 @@ function TopPromptsChart({ prompts = [] }) {
 }
 
 /**
- * TopPromptsTable - Table of top prompts with all usage metrics
+ * TopPromptsTable - Table of top prompts with usage metrics based on mode
  */
-function TopPromptsTable({ prompts = [] }) {
-  const columns = [
-    {
+function TopPromptsTable({ prompts = [], mode = 'both' }) {
+  const columns = React.useMemo(() => {
+    const promptNameColumn = {
       accessorKey: "prompt_name",
       header: "Prompt Name",
       cell: ({ row }) => {
@@ -172,8 +277,9 @@ function TopPromptsTable({ prompts = [] }) {
           </div>
         )
       },
-    },
-    {
+    }
+
+    const variablesColumn = {
       accessorKey: "variables",
       header: "Variables",
       cell: ({ row }) => {
@@ -187,8 +293,9 @@ function TopPromptsTable({ prompts = [] }) {
           </div>
         )
       },
-    },
-    {
+    }
+
+    const enrichmentColumn = {
       accessorKey: "enrichment",
       header: "Enrichments",
       cell: ({ row }) => {
@@ -202,8 +309,9 @@ function TopPromptsTable({ prompts = [] }) {
           </div>
         )
       },
-    },
-    {
+    }
+
+    const totalUsageColumn = {
       accessorKey: "totalUsage",
       header: "Total Usage",
       cell: ({ row }) => {
@@ -217,7 +325,18 @@ function TopPromptsTable({ prompts = [] }) {
         )
       },
     }
-  ]
+
+    // Return different column sets based on mode
+    switch (mode) {
+      case 'variables':
+        return [promptNameColumn, variablesColumn]
+      case 'enrichment':
+        return [promptNameColumn, enrichmentColumn]
+      case 'both':
+      default:
+        return [promptNameColumn, variablesColumn, enrichmentColumn, totalUsageColumn]
+    }
+  }, [mode])
 
   return (
     <DataTable
