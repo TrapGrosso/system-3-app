@@ -31,7 +31,7 @@ export function EngagementSection({ data, isLoading = false }) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Engagement & Prompts</h2>
+      <h2 className="text-xl font-semibold">Prompts Usage</h2>
       
       {/* Usage KPIs */}
       <PromptsUsageKpis prompts={prompts} />
@@ -216,56 +216,7 @@ function TopPromptsTable({ prompts = [] }) {
           </Badge>
         )
       },
-    },
-    {
-      accessorKey: "usage_ratio",
-      header: "Usage Split",
-      cell: ({ row }) => {
-        const variables = row.original.variables || 0
-        const enrichment = row.original.enrichment || row.original.deepSearch || 0 // Fallback for old data
-        const total = variables + enrichment
-        
-        if (total === 0) return "-"
-        
-        const variablesPercent = Math.round((variables / total) * 100)
-        const enrichmentPercent = 100 - variablesPercent
-        
-        return (
-          <div className="space-y-1">
-            <div className="text-xs text-muted-foreground">
-              {variablesPercent}% vars / {enrichmentPercent}% enrichment
-            </div>
-            <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-muted">
-              <div 
-                className="bg-primary transition-all" 
-                style={{ width: `${variablesPercent}%` }}
-              />
-              <div 
-                className="bg-secondary transition-all" 
-                style={{ width: `${enrichmentPercent}%` }}
-              />
-            </div>
-          </div>
-        )
-      },
-    },
-  ]
-
-  const rowActions = (prompt) => [
-    {
-      label: "View Prompt Details",
-      onSelect: () => {
-        // Navigate to prompts page filtered by prompt_id
-        console.log("Navigate to prompt details:", prompt.prompt_id)
-      },
-    },
-    {
-      label: "View Usage History",
-      onSelect: () => {
-        // Navigate to logs filtered by prompt usage
-        console.log("View usage history for prompt:", prompt.prompt_id)
-      },
-    },
+    }
   ]
 
   return (
@@ -273,7 +224,6 @@ function TopPromptsTable({ prompts = [] }) {
       columns={columns}
       data={prompts}
       enableSelection={false}
-      rowActions={rowActions}
       emptyMessage="No prompt usage data available"
       rowId={(row) => row.prompt_id || row.prompt_name}
     />
