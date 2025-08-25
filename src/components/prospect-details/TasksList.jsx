@@ -5,23 +5,22 @@ import { Badge } from '@/components/ui/badge'
 import { CheckSquareIcon, CalendarIcon, PlusIcon, PencilIcon, TrashIcon } from 'lucide-react'
 import { useTasks } from '@/contexts/TaskContext'
 import { DataTable } from '@/components/shared/table/DataTable'
-import DeleteDialog from '@/components/dialogs/DeleteDialog'
-import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
+import { useDialogs } from '@/contexts/DialogsContext'
+import { useState, useEffect } from 'react'
 
-export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
+export default function TasksList({ tasks = [], onAddTask }) {
   const { 
     deleteTasks, 
     isDeletingTask 
   } = useTasks()
 
-  const {
-    openDialog: openDeleteDialog,
-    currentItem: taskToDelete,
-    DeleteDialogProps
-  } = useDeleteDialog(
-    async (task) => await deleteTasks([task.id]),
-    onTasksChanged
-  )
+  const { confirm } = useDialogs()
+
+  const [localTasks, setLocalTasks] = useState(tasks)
+
+  useEffect(() => {
+    setLocalTasks(tasks)
+  }, [tasks])
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -56,7 +55,17 @@ export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
       icon: TrashIcon,
       variant: "destructive",
       disabled: isDeletingTask,
-      onSelect: () => openDeleteDialog(task),
+      onSelect: async (task) => {
+        const ok = await confirm({
+          title: 'Delete task',
+          description: `Are you sure you want to delete "${task.title}"? This action cannot be undone.`,
+          confirmLabel: 'Delete'
+        })
+        if (ok) {
+          await deleteTasks([task.id])
+          setLocalTasks(prev => prev.filter(t => t.id !== task.id))
+        }
+      },
     },
   ]
 
@@ -66,8 +75,15 @@ export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
       icon: TrashIcon,
       variant: "destructive",
       onSelect: async (ids) => {
-        await deleteTasks(ids)
-        onTasksChanged?.()
+        const ok = await confirm({
+          title: 'Delete tasks',
+          description: `Delete ${ids.length} selected task(s)? This action cannot be undone.`,
+          confirmLabel: 'Delete'
+        })
+        if (ok) {
+          await deleteTasks(ids)
+          setLocalTasks(prev => prev.filter(t => !ids.includes(t.id)))
+        }
       },
     },
   ]
@@ -137,7 +153,7 @@ export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
     },
   ]
 
-  if (tasks.length === 0) {
+  if (localTasks.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -169,7 +185,7 @@ export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <CheckSquareIcon className="h-5 w-5" />
-            Tasks ({tasks.length})
+            Tasks ({localTasks.length})
           </CardTitle>
           <Button onClick={handleAddTask} size="sm">
             <PlusIcon className="h-4 w-4 mr-2" />
@@ -180,7 +196,7 @@ export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
       <CardContent>
         <DataTable
           columns={columns}
-          data={tasks}
+          data={localTasks}
           rowId={(row) => row.id}
           enableSelection={true}
           bulkActions={bulkActions}
@@ -190,14 +206,6 @@ export default function TasksList({ tasks = [], onAddTask, onTasksChanged }) {
           onRowClick={() => {}} // Disable row clicks
         />
       </CardContent>
-
-      {taskToDelete && (
-        <DeleteDialog
-          {...DeleteDialogProps}
-          title="Delete task"
-          itemName={taskToDelete.title}
-        />
-      )}
     </Card>
   )
 }

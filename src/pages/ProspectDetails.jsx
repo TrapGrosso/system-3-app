@@ -208,11 +208,8 @@ export default function ProspectDetails() {
             logs={data.logs}
             prospect={data.prospect}
             onAddNote={handleOpenNotesDialog}
-            onNotesChanged={handleOpenNotesDialog}
             onAddTask={handleOpenTasksDialog}
-            onTasksChanged={handleOpenTasksDialog}
             onAddVariable={handleOpenVariablesDialog}
-            onVariablesChanged={handleOpenVariablesDialog}
             onAddToGroup={handleOpenGroupsDialog}
             onOpenRemoveFromCampaign={handleOpenRemoveFromCampaignDialog}
             onAddToCampaign={handleOpenAddToCampaignDialog}

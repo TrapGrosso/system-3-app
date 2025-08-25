@@ -6,19 +6,27 @@ import { ExternalLinkIcon, BuildingIcon, UsersIcon, MapPinIcon, PlusIcon } from 
 import { ActionDropdown } from '@/components/shared/ui/ActionDropdown'
 import { useProspects } from '@/contexts/ProspectsContext'
 import { toast } from 'sonner'
-import DeleteDialog from '@/components/dialogs/DeleteDialog'
-import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
+import { useDialogs } from '@/contexts/DialogsContext'
 
 export default function CompanyCard({ company, prospect, onAddCompany, onEditCompany, refetchProspectDetails }) {
   const { updateProspectCompany, isUpdatingProspect } = useProspects()
+  const { confirm } = useDialogs()
 
-  const {
-    openDialog: openRemoveDialog,
-    DeleteDialogProps
-  } = useDeleteDialog(
-    async () => await updateProspectCompany(prospect.linkedin_id, null),
-    refetchProspectDetails
-  )
+  async function handleRemoveCompany() {
+    const fullName = [prospect?.first_name, prospect?.last_name].filter(Boolean).join(' ')
+    const confirmed = await confirm({
+      title: 'Remove company from prospect',
+      description: `This will unlink ${company?.name ?? 'the company'} from ${fullName || 'this prospect'}.`,
+      confirmLabel: 'Remove',
+      cancelLabel: 'Cancel',
+      size: 'sm'
+    })
+    if (!confirmed) return
+
+    await updateProspectCompany(prospect.linkedin_id, null)
+    await refetchProspectDetails()
+  }
+
 
   const handleAddCompany = () => {
     onAddCompany()
@@ -31,7 +39,7 @@ export default function CompanyCard({ company, prospect, onAddCompany, onEditCom
   const dropdownItems = [
     { label: "Edit company", onSelect: handleEditCompany },
     "separator",
-    { label: "Remove company from prospect", onSelect: () => openRemoveDialog(), variant: "destructive", disabled: isUpdatingProspect },
+    { label: "Remove company from prospect", onSelect: () => handleRemoveCompany(), variant: "destructive", disabled: isUpdatingProspect },
     "separator",
     { label: "Change company", onSelect: handleAddCompany }
   ]
@@ -120,14 +128,6 @@ export default function CompanyCard({ company, prospect, onAddCompany, onEditCom
         </div>
       </CardContent>
 
-      {company && (
-        <DeleteDialog
-          {...DeleteDialogProps}
-          title="Remove company from prospect"
-          itemName={company.name}
-          confirmLabel="Remove"
-        />
-      )}
     </Card>
   )
 }

@@ -6,20 +6,11 @@ import { DataTable } from '@/components/shared/table/DataTable'
 import { TablePopoverCell } from '@/components/shared/table/TablePopoverCell'
 import { PlusIcon, PencilIcon, TrashIcon, Code2, ListIcon } from 'lucide-react'
 import { useVariables } from '@/contexts/VariableContext'
-import DeleteDialog from '@/components/dialogs/DeleteDialog'
-import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
+import { useDialogs } from '@/contexts/DialogsContext'
 
-export default function VariablesTable({ variables = [], prospect, onAddVariable, onVariablesChanged }) {
+export default function VariablesTable({ variables = [], prospect, onAddVariable }) {
   const { deleteVariables, isDeletingVariable } = useVariables()
-
-  const {
-    openDialog: openDeleteDialog,
-    currentItem: variableToDelete,
-    DeleteDialogProps
-  } = useDeleteDialog(
-    async (variable) => await deleteVariables([variable.id]),
-    onVariablesChanged
-  )
+  const { confirm } = useDialogs()
 
   const handleAddVariable = () => {
     if (onAddVariable) {
@@ -38,7 +29,18 @@ export default function VariablesTable({ variables = [], prospect, onAddVariable
       icon: TrashIcon,
       variant: "destructive",
       disabled: isDeletingVariable,
-      onSelect: () => openDeleteDialog(variable),
+      onSelect: async () => {
+        const confirmed = await confirm({
+          title: 'Delete variable',
+          description: `Are you sure you want to delete "${variable.name}"? This action cannot be undone.`,
+          confirmLabel: 'Delete',
+          cancelLabel: 'Cancel',
+          size: 'sm'
+        })
+        if (confirmed) {
+          await deleteVariables([variable.id])
+        }
+      },
     },
   ]
 
@@ -49,8 +51,16 @@ export default function VariablesTable({ variables = [], prospect, onAddVariable
       variant: "destructive",
       disabled: isDeletingVariable,
       onSelect: async (ids) => {
-        await deleteVariables(ids)
-        onVariablesChanged?.()
+        const confirmed = await confirm({
+          title: `Delete ${ids.length} ${ids.length === 1 ? 'variable' : 'variables'}`,
+          description: 'This action cannot be undone.',
+          confirmLabel: 'Delete selected',
+          cancelLabel: 'Cancel',
+          size: 'sm'
+        })
+        if (confirmed) {
+          await deleteVariables(ids)
+        }
       },
     },
   ]
@@ -218,13 +228,6 @@ export default function VariablesTable({ variables = [], prospect, onAddVariable
         />
       </CardContent>
 
-      {variableToDelete && (
-        <DeleteDialog
-          {...DeleteDialogProps}
-          title="Delete variable"
-          itemName={variableToDelete.name}
-        />
-      )}
     </Card>
   )
 }

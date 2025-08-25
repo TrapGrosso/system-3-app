@@ -4,24 +4,16 @@ import { Button } from '@/components/ui/button'
 import { MessageSquareIcon, PlusIcon, PencilIcon, TrashIcon } from 'lucide-react'
 import { useNotes } from '@/contexts/NotesContext'
 import { DataTable } from '@/components/shared/table/DataTable'
-import DeleteDialog from '@/components/dialogs/DeleteDialog'
-import useDeleteDialog from '@/components/shared/dialog/useDeleteDialog'
+import { useDialogs } from '@/contexts/DialogsContext'
 
-export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
+export default function NotesList({ notes = [], onAddNote }) {
   const { 
     deleteNotes, 
     isUpdatingNote, 
     isDeletingNote 
   } = useNotes()
 
-  const {
-    openDialog: openDeleteDialog,
-    currentItem: noteToDelete,
-    DeleteDialogProps
-  } = useDeleteDialog(
-    async (note) => await deleteNotes([note.id]),
-    onNotesChanged
-  )
+  const { confirm } = useDialogs()
 
   const handleAddNote = () => {
     if (onAddNote) {
@@ -50,7 +42,19 @@ export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
       label: 'Delete',
       icon: TrashIcon,
       variant: 'destructive',
-      onSelect: () => openDeleteDialog(note),
+      onSelect: async () => {
+        const preview = note.body.slice(0, 40) + (note.body.length > 40 ? '...' : '')
+        const ok = await confirm({
+          title: 'Delete note',
+          description: `Are you sure you want to delete this note? "${preview}"`,
+          confirmLabel: 'Delete',
+          cancelLabel: 'Cancel',
+          icon: undefined
+        })
+        if (ok) {
+          await deleteNotes([note.id])
+        }
+      },
       disabled: isDeletingNote
     }
   ]
@@ -64,8 +68,15 @@ export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
       variant: 'destructive',
       disabled: isDeletingNote,
       onSelect: async (ids) => {
-        await deleteNotes(ids)
-        onNotesChanged()
+        const ok = await confirm({
+          title: 'Delete notes',
+          description: `Delete ${ids.length} selected note(s)?`,
+          confirmLabel: 'Delete',
+          cancelLabel: 'Cancel'
+        })
+        if (ok) {
+          await deleteNotes(ids)
+        }
       },
     }
   ]
@@ -156,13 +167,6 @@ export default function NotesList({ notes = [], onAddNote, onNotesChanged }) {
         />
       </CardContent>
 
-      {noteToDelete && (
-        <DeleteDialog
-          {...DeleteDialogProps}
-          title="Delete note"
-          itemName={noteToDelete.body.slice(0, 40) + (noteToDelete.body.length > 40 ? '...' : '')}
-        />
-      )}
     </Card>
   )
 }

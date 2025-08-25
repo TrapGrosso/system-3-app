@@ -19,11 +19,8 @@ export default function TabsPanel(
     logs,
     prospect, 
     onAddNote, 
-    onNotesChanged, 
     onAddTask, 
-    onTasksChanged, 
     onAddVariable,
-    onVariablesChanged,
     onAddToGroup,
     onOpenRemoveFromCampaign,
     onAddToCampaign,
@@ -61,7 +58,6 @@ export default function TabsPanel(
           <NotesList 
             notes={notes} 
             onAddNote={onAddNote}
-            onNotesChanged={onNotesChanged}
           />
         </TabsContent>
         
@@ -69,7 +65,6 @@ export default function TabsPanel(
           <TasksList 
             tasks={tasks} 
             onAddTask={onAddTask}
-            onTasksChanged={onTasksChanged}
           />
         </TabsContent>
         
@@ -98,7 +93,6 @@ export default function TabsPanel(
             variables={variables} 
             prospect={prospect}
             onAddVariable={onAddVariable}
-            onVariablesChanged={onVariablesChanged}
           />
         </TabsContent>
         
