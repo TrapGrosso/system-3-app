@@ -54,13 +54,13 @@ export function EngagementSection({ data, isLoading = false }) {
 }
 
 /**
- * PromptsUsageKpis - KPI cards showing total variable and deepSearch usage
+ * PromptsUsageKpis - KPI cards showing total variable and enrichment usage
  */
 function PromptsUsageKpis({ prompts }) {
-  // Calculate totals from byVariables and byDeepSearch arrays
+  // Calculate totals from byVariables and byEnrichment arrays
   const totalVariables = (prompts.byVariables || []).reduce((sum, item) => sum + (item.count || 0), 0)
-  const totalDeepSearch = (prompts.byDeepSearch || []).reduce((sum, item) => sum + (item.count || 0), 0)
-  const totalUsage = totalVariables + totalDeepSearch
+  const totalEnrichment = (prompts.byEnrichment || prompts.byDeepSearch || []).reduce((sum, item) => sum + (item.count || 0), 0)
+  const totalUsage = totalVariables + totalEnrichment
 
   return (
     <KpiGrid>
@@ -74,11 +74,11 @@ function PromptsUsageKpis({ prompts }) {
       />
       
       <KpiCard
-        title="Deep Search"
-        value={totalDeepSearch}
+        title="Enrichments"
+        value={totalEnrichment}
         icon={Search}
-        helpText="Total prompts used for deep search operations"
-        subtext="Search prompts"
+        helpText="Total prompts used for enrichment operations"
+        subtext="Enrichment prompts"
         valueFormatter={formatNumber}
       />
       
@@ -121,7 +121,7 @@ function TopPromptsChart({ prompts = [] }) {
   const chartData = prompts.map((prompt) => ({
     name: prompt.prompt_name || "Unknown Prompt",
     variables: prompt.variables || 0,
-    deepSearch: prompt.deepSearch || 0,
+    enrichment: prompt.enrichment || prompt.deepSearch || 0, // Fallback for old data
   }))
 
   const series = [
@@ -131,8 +131,8 @@ function TopPromptsChart({ prompts = [] }) {
       colorVar: "primary",
     },
     {
-      key: "deepSearch", 
-      label: "Deep Search",
+      key: "enrichment", 
+      label: "Enrichments",
       colorVar: "secondary",
     },
   ]
@@ -189,10 +189,10 @@ function TopPromptsTable({ prompts = [] }) {
       },
     },
     {
-      accessorKey: "deepSearch",
-      header: "Deep Search",
+      accessorKey: "enrichment",
+      header: "Enrichments",
       cell: ({ row }) => {
-        const count = row.original.deepSearch || 0
+        const count = row.original.enrichment || row.original.deepSearch || 0 // Fallback for old data
         return (
           <div className="flex items-center gap-2">
             <Search className="h-3 w-3 text-muted-foreground" />
@@ -207,7 +207,9 @@ function TopPromptsTable({ prompts = [] }) {
       accessorKey: "totalUsage",
       header: "Total Usage",
       cell: ({ row }) => {
-        const total = row.original.totalUsage || 0
+        const variables = row.original.variables || 0
+        const enrichment = row.original.enrichment || row.original.deepSearch || 0
+        const total = row.original.totalUsage || (variables + enrichment) // Fallback for old data
         return (
           <Badge variant="default" className="font-mono">
             {formatNumber(total)}
@@ -220,18 +222,18 @@ function TopPromptsTable({ prompts = [] }) {
       header: "Usage Split",
       cell: ({ row }) => {
         const variables = row.original.variables || 0
-        const deepSearch = row.original.deepSearch || 0
-        const total = variables + deepSearch
+        const enrichment = row.original.enrichment || row.original.deepSearch || 0 // Fallback for old data
+        const total = variables + enrichment
         
         if (total === 0) return "-"
         
         const variablesPercent = Math.round((variables / total) * 100)
-        const deepSearchPercent = 100 - variablesPercent
+        const enrichmentPercent = 100 - variablesPercent
         
         return (
           <div className="space-y-1">
             <div className="text-xs text-muted-foreground">
-              {variablesPercent}% vars / {deepSearchPercent}% search
+              {variablesPercent}% vars / {enrichmentPercent}% enrichment
             </div>
             <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-muted">
               <div 
@@ -240,7 +242,7 @@ function TopPromptsTable({ prompts = [] }) {
               />
               <div 
                 className="bg-secondary transition-all" 
-                style={{ width: `${deepSearchPercent}%` }}
+                style={{ width: `${enrichmentPercent}%` }}
               />
             </div>
           </div>
