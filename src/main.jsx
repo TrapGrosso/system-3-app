@@ -15,8 +15,11 @@ import { CampaignsProvider } from './contexts/CampaignsContext'
 import { NotesProvider } from './contexts/NotesContext'
 import { OperationDefaultsProvider } from './contexts/OperationDefaultsContext'
 import { DialogsProvider } from './contexts/DialogsContext'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const queryClient = new QueryClient()
+
+window.queryClient = queryClient
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -46,6 +49,7 @@ createRoot(document.getElementById('root')).render(
           </TaskProvider>
         </OperationDefaultsProvider>
       </AuthProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   </StrictMode>,
 )
