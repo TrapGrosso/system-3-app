@@ -46,7 +46,7 @@ const getDashboardData = async (params) => {
   }
 
   const result = await response.json()
-  return MOCK_DASHBOARD_DATA
+  return result
 }
 
 export const useDashboardDataQuery = (params) => {
