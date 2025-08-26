@@ -3,6 +3,7 @@ import {
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
 
@@ -77,6 +78,7 @@ export function DataTable({
     pageIndex: 0,
     pageSize: 10,
   })
+  const [internalSorting, setInternalSorting] = React.useState([])
 
   // Build final columns array with selection and actions
   const finalColumns = React.useMemo(() => {
@@ -143,14 +145,15 @@ export function DataTable({
     state: {
       rowSelection,
       ...(isExternal ? {} : { pagination: internalPagination }),
-      ...(sorting ? { sorting } : {}),
+      sorting: sorting ?? internalSorting,
     },
     enableRowSelection: enableSelection,
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     ...(rowId ? { getRowId: rowId } : {}),
     ...(manualSorting ? { manualSorting: true } : {}),
-    ...(onSortingChange ? { onSortingChange } : {}),
+    onSortingChange: onSortingChange ?? setInternalSorting,
     ...(!isExternal ? { 
       getPaginationRowModel: getPaginationRowModel(),
       onPaginationChange: setInternalPagination 
