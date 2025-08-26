@@ -119,8 +119,8 @@ export function RunningCampaignCard({ campaign, thresholds }) {
                   series={stepVariantData.series}
                   height={160}
                   yAxisProps={{
-                    domain: [0, 100],
-                    tickFormatter: (value) => `${value}%`
+                    domain: stepVariantData.yDomain,
+                    hide: true
                   }}
                   barProps={{
                     minPointSize: 6

@@ -3,7 +3,7 @@ export function buildStepVariantMetricStackData(steps = []) {
   const stepGroups = new Map()
   
   steps.forEach(step => {
-    const stepNumber = step.step_number || "0"
+    const stepNumber = step.step || "0"
     if (!stepGroups.has(stepNumber)) {
       stepGroups.set(stepNumber, [])
     }
@@ -51,6 +51,15 @@ export function buildStepVariantMetricStackData(steps = []) {
     })
   })
 
+  // Calculate the maximum stack height for dynamic Y-domain
+  const maxStackHeight = data.length > 0 
+    ? Math.max(...data.map(d => d.opens + d.clicks + d.replies), 0)
+    : 0
+  
+  // Ensure minimum domain of 1 to avoid zero-domain issues
+  const yMax = Math.max(1, maxStackHeight)
+  const yDomain = [0, yMax]
+
   // Build series configuration for the three metrics
   const series = [
     {
@@ -73,5 +82,5 @@ export function buildStepVariantMetricStackData(steps = []) {
     },
   ]
 
-  return { data, series }
+  return { data, series, yMax, yDomain }
 }
