@@ -71,7 +71,6 @@ export const useGetAllTasks = (paramsOrUserId) => {
     queryKey: ['getAllTasks', queryParams], // queryKey now uses the normalized object
     queryFn: () => fetchTasks(queryParams), // Pass the normalized object to the fetch function
     enabled: Boolean(queryParams.user_id), // Only run query if user_id is defined
-    initialData: null, // Return null if query is not enabled
     staleTime: 30000,
     cacheTime: 300000,
     refetchInterval: 60000,

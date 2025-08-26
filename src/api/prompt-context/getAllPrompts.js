@@ -29,7 +29,6 @@ export const useGetAllPrompts = (userId, type) => {
     queryKey: ['getAllPrompts', userId, type],
     queryFn: () => getAllPrompts(userId, type),
     enabled: Boolean(userId), // Only run query if userId is defined
-    initialData: null, // Return null if query is not enabled
     staleTime: 30000,
     cacheTime: 300000,
     refetchInterval: 60000, 

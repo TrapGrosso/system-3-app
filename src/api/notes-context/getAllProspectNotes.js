@@ -29,7 +29,6 @@ export const useGetAllProspectNotes = (userId, prospect_id) => {
     queryKey: ['getAllProspectNotes', userId, prospect_id],
     queryFn: () => getAllProspectNotes(userId, prospect_id),
     enabled: Boolean(userId), // Only run query if userId is defined
-    initialData: null, // Return null if query is not enabled
     staleTime: 30000, // 30 seconds - notes are relatively fresh data
     cacheTime: 300000, // 5 minutes cache
     refetchInterval: 60000, // Refetch every minute

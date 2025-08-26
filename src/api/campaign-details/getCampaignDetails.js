@@ -28,7 +28,6 @@ export const usegetCampaignDetails = (userId, campaign_id) => {
     queryKey: ['getCampaignDetails', userId, campaign_id],
     queryFn: () => getCampaignDetails(userId, campaign_id),
     enabled: Boolean(userId), // Only run query if userId is defined
-    initialData: null, // Return null if query is not enabled
     staleTime: 30000, // 30 seconds 
     cacheTime: 300000, // 5 minutes cache
     refetchInterval: 60000, // Refetch every minute 

@@ -29,7 +29,6 @@ export const useGetDeepSearchQueueItems = (userId) => {
     queryKey: ['getDeepSearchQueueItems', userId],
     queryFn: () => getDeepSearchQueueItems(userId),
     enabled: Boolean(userId), // Only run query if userId is defined
-    initialData: null, // Return null if query is not enabled
     staleTime: 30000,
     cacheTime: 300000,
     refetchInterval: 60000, 

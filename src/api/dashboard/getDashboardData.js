@@ -59,7 +59,6 @@ export const useDashboardDataQuery = (params) => {
     queryKey: ['getDashboardData', params.userId, params],
     queryFn: () => getDashboardData(params),
     enabled: Boolean(params?.userId), // Only run query if userId is defined
-    initialData: null, // Return null if query is not enabled
     staleTime: 30000, // 30 seconds 
     cacheTime: 300000, // 5 minutes cache
     refetchInterval: 60000, // Refetch every minute 

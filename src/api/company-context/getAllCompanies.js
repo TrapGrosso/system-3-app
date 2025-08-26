@@ -40,7 +40,6 @@ export const useGetAllCompaniesQuery = ({ userId, ...query }) => {
     queryKey: ['companies', userId, query],
     queryFn: () => getAllCompanies({ user_id: userId, ...query }),
     enabled: Boolean(userId), // Only run query if userId is defined
-    initialData: null, // Return null if query is not enabled
     keepPreviousData: true, // Keep old data visible while refetching
     staleTime: 60000, // 60 seconds - companies data is relatively stable
     cacheTime: 300000, // 5 minutes cache

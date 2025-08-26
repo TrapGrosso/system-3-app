@@ -48,7 +48,6 @@ export const useLogsByActionQuery = (params) => {
     queryKey: ['logs', params.userId, params.action, params],
     queryFn: () => getLogsByAction(params),
     enabled: Boolean(params?.userId), // Only run query if userId is defined
-    initialData: null, // Return null if query is not enabled
     staleTime: 30000, // 30 seconds - logs are relatively fresh data
     cacheTime: 300000, // 5 minutes cache
     refetchInterval: 60000, // Refetch every minute to get latest logs

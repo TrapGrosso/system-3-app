@@ -38,7 +38,6 @@ export const useGetVariables = ({ userId, prospect_id = null }) => {
     queryKey: ['variables', userId, prospect_id],
     queryFn: () => getVariables({ user_id: userId, prospect_id }),
     enabled: Boolean(userId), // Only run query if userId is defined
-    initialData: null, // Return null if query is not enabled
     keepPreviousData: true, // Keep old data visible while refetching
     staleTime: 60000, // 60 seconds - prospects data is relatively stable
     cacheTime: 300000, // 5 minutes cache

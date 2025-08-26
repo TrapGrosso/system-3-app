@@ -27,7 +27,6 @@ export const useFetchCampaigns = (userId) => {
     queryKey: ['campaigns', userId],
     queryFn: () => fetchCampaigns(userId),
     enabled: Boolean(userId), // Only run query if userId is defined
-    initialData: null, // Return null if query is not enabled
     staleTime: 300000, // 5 minutes - campaigns are relatively stable
     cacheTime: 600000, // 10 minutes cache
     retry: 3,

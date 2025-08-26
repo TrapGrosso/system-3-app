@@ -31,7 +31,6 @@ export const useGetProspectEnrichments = (userId, prospectIds) => {
     queryKey: ['getProspectEnrichments', userId, prospectIds],
     queryFn: () => getProspectEnrichments(userId, prospectIds),
     enabled: Boolean(userId), // Only run query if userId is defined
-    initialData: null, // Return null if query is not enabled
     staleTime: 30000,
     cacheTime: 300000,
     refetchInterval: 60000, 
