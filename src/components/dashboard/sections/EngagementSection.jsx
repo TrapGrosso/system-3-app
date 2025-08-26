@@ -78,22 +78,6 @@ function getPromptsByMode(prompts, mode, topN) {
  */
 export function EngagementSection({ data, isLoading = false }) {
   const [viewMode, setViewMode] = React.useState('both')
-  
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="h-8 bg-muted/30 animate-pulse rounded w-48" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="h-32 bg-muted/30 animate-pulse rounded-lg" />
-          <div className="h-32 bg-muted/30 animate-pulse rounded-lg" />
-        </div>
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="h-64 bg-muted/30 animate-pulse rounded-lg" />
-          <div className="h-64 bg-muted/30 animate-pulse rounded-lg" />
-        </div>
-      </div>
-    )
-  }
 
   const engagement = data?.engagement || {}
   const prompts = engagement.prompts || {}
@@ -110,6 +94,22 @@ export function EngagementSection({ data, isLoading = false }) {
     { value: 'variables', label: 'Variables only' },
     { value: 'enrichment', label: 'Enrichments only' }
   ]
+  
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-8 bg-muted/30 animate-pulse rounded w-48" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="h-32 bg-muted/30 animate-pulse rounded-lg" />
+          <div className="h-32 bg-muted/30 animate-pulse rounded-lg" />
+        </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="h-64 bg-muted/30 animate-pulse rounded-lg" />
+          <div className="h-64 bg-muted/30 animate-pulse rounded-lg" />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
