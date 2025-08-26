@@ -46,6 +46,7 @@ export function TablePagination({
   const canPreviousPage = isExternal ? pageIndex > 0 : table.getCanPreviousPage()
   const canNextPage = isExternal ? pageIndex < pageCount - 1 : table.getCanNextPage()
 
+
   // Use provided totalRows or fallback to table data length
   const total = totalRows ?? (table ? table.getPrePaginationRowModel().rows.length : 0)
   
@@ -149,7 +150,7 @@ export function TablePagination({
           <Pagination className={'md:justify-end'}>
             <PaginationContent className="flex-wrap justify-start lg:justify-end">
               <PaginationPrevious
-                onClick={() => previousPage()}
+                onClick={canPreviousPage ? () => previousPage() : undefined}
                 className={canPreviousPage ? "cursor-pointer" : "cursor-not-allowed opacity-50"}
               />
               {getPageNumbers().map((page, index) =>
@@ -170,7 +171,7 @@ export function TablePagination({
                 )
               )}
               <PaginationNext
-                onClick={() => nextPage()}
+                onClick={canNextPage ? () => nextPage() : undefined}
                 className={canNextPage ? "cursor-pointer" : "cursor-not-allowed opacity-50"}
               />
             </PaginationContent>
