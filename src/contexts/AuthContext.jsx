@@ -49,11 +49,27 @@ export const AuthProvider = ({ children }) => {
     return { error }
   }
 
+  const resetPassword = async (email) => {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    return { data, error }
+  }
+
+  const updatePassword = async (newPassword) => {
+    const { data, error } = await supabase.auth.updateUser({ 
+      password: newPassword 
+    })
+    return { data, error }
+  }
+
   const value = useMemo(() => ({
     user,
     loading,
     signIn,
     signOut,
+    resetPassword,
+    updatePassword,
   }), [user, loading])
 
   return (
