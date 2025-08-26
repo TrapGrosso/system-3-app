@@ -109,10 +109,10 @@ export default function CampaignAnalyticsSection({ analytics, prospects = [] }) 
   } = analytics
 
   // Calculate key metrics and rates
-  const openRate = contacted_count > 0 ? ((open_count / contacted_count) * 100).toFixed(1) : 0
-  const replyRate = contacted_count > 0 ? ((reply_count / contacted_count) * 100).toFixed(1) : 0
-  const clickRate = open_count > 0 ? ((link_click_count / open_count) * 100).toFixed(1) : 0
-  const completionRate = leads_count > 0 ? ((completed_count / leads_count) * 100).toFixed(1) : 0
+  const openRate = open_count > 0 ? ((open_count / emails_sent_count) * 100).toFixed(1) : 0
+  const replyRate = reply_count > 0 ? ((reply_count / emails_sent_count) * 100).toFixed(1) : 0
+  const clickRate = link_click_count > 0 ? ((link_click_count / emails_sent_count) * 100).toFixed(1) : 0
+  const completionRate = completed_count > 0 ? ((completed_count / leads_count) * 100).toFixed(1) : 0
 
   // Prepare response distribution data
   const distributionData = useMemo(() => {
