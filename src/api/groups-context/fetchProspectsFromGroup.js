@@ -29,7 +29,7 @@ export const useFetchProspectsFromGroup = (userId, groupId) => {
   return useQuery({
     queryKey: ['fetchProspectsFromGroup', userId, groupId],
     queryFn: () => fetchProspectsFromGroup(userId, groupId),
-    enabled: Boolean(userId), // Only run query if userId is defined
+    enabled: Boolean(userId) && Boolean(groupId), // Only run query if userId is defined
     staleTime: 30000, // 30 seconds - logs are relatively fresh data
     cacheTime: 300000, // 5 minutes cache
     refetchInterval: 60000, // Refetch every minute to get latest logs
