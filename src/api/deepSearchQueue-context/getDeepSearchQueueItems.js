@@ -1,6 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 
 const getDeepSearchQueueItems = async (user_id) => {
+  if (!user_id) {
+    console.warn('getDeepSearchQueueItems: user_id is not defined. Returning null.')
+    return null
+  }
   const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getDeepSearchQueueItems?user_id=${user_id}`, {
     method: 'GET',
     headers: {
@@ -24,6 +28,8 @@ export const useGetDeepSearchQueueItems = (userId) => {
   return useQuery({
     queryKey: ['getDeepSearchQueueItems', userId],
     queryFn: () => getDeepSearchQueueItems(userId),
+    enabled: Boolean(userId), // Only run query if userId is defined
+    initialData: null, // Return null if query is not enabled
     staleTime: 30000,
     cacheTime: 300000,
     refetchInterval: 60000, 

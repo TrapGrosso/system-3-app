@@ -5,6 +5,11 @@ import { toast } from 'sonner'
 const getLogsByAction = async (params) => {
   const { userId, action, ...filters } = params
   
+  if (!userId) {
+    console.warn('getLogsByAction: userId is not defined. Returning null.')
+    return null
+  }
+
   // Build URL with query parameters
   const searchParams = new URLSearchParams({
     user_id: userId,
@@ -42,6 +47,8 @@ export const useLogsByActionQuery = (params) => {
   return useQuery({
     queryKey: ['logs', params.userId, params.action, params],
     queryFn: () => getLogsByAction(params),
+    enabled: Boolean(params?.userId), // Only run query if userId is defined
+    initialData: null, // Return null if query is not enabled
     staleTime: 30000, // 30 seconds - logs are relatively fresh data
     cacheTime: 300000, // 5 minutes cache
     refetchInterval: 60000, // Refetch every minute to get latest logs
@@ -258,4 +265,3 @@ export const useLogsQueryController = ({ userId, action }) => {
  * Database error (500):
  * {"error": "Database error: [specific error message]"}
  */
- 

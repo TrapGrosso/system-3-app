@@ -21,6 +21,11 @@ const normalizeTaskParams = (paramsOrUserId) => {
 }
 
 const fetchTasks = async (params) => {
+  if (!params?.user_id) {
+    console.warn('fetchTasks: user_id is not defined. Returning null.')
+    return null
+  }
+
   // Build query string, omitting undefined/null/empty values
   const searchParams = new URLSearchParams()
   Object.entries(params).forEach(([key, value]) => {
@@ -54,6 +59,7 @@ const fetchTasks = async (params) => {
 /**
  * Custom hook to fetch tasks.
  * Can fetch all tasks for a user or a single task if taskId is provided.
+ * When user_id is not provided, this hook returns null and will not perform any network request.
  *
  * @param {string | { userId: string, taskId?: string }} paramsOrUserId - User ID string or an object containing userId and optional taskId.
  */
@@ -64,6 +70,8 @@ export const useGetAllTasks = (paramsOrUserId) => {
   return useQuery({
     queryKey: ['getAllTasks', queryParams], // queryKey now uses the normalized object
     queryFn: () => fetchTasks(queryParams), // Pass the normalized object to the fetch function
+    enabled: Boolean(queryParams.user_id), // Only run query if user_id is defined
+    initialData: null, // Return null if query is not enabled
     staleTime: 30000,
     cacheTime: 300000,
     refetchInterval: 60000,

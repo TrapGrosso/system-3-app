@@ -1,6 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 
 const getProspectCampaigns = async (userId, prospectId) => {
+  if (!userId) {
+    console.warn('getProspectCampaigns: userId is not defined. Returning null.')
+    return null
+  }
   const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getProspectCampaigns?user_id=${userId}&prospect_id=${prospectId}`, {
     method: 'GET',
     headers: {
@@ -22,6 +26,8 @@ export const useGetProspectCampaigns = (userId, prospectId) => {
   return useQuery({
     queryKey: ['campaigns', userId, prospectId],
     queryFn: () => getProspectCampaigns(userId, prospectId),
+    enabled: Boolean(userId), // Only run query if userId is defined
+    initialData: null, // Return null if query is not enabled
     staleTime: 300000, // 5 minutes - campaigns are relatively stable
     cacheTime: 600000, // 10 minutes cache
     retry: 3,

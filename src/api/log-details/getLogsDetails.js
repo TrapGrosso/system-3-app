@@ -1,6 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 
 const getLogsDetails = async (user_id, log_id) => {
+  if (!user_id) {
+    console.warn('getLogsDetails: user_id is not defined. Returning null.')
+    return null
+  }
   const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getLogsDetails?user_id=${user_id}&log_id=${log_id}`, {
     method: 'GET',
     headers: {
@@ -23,6 +27,8 @@ export const useGetLogsDetails = (userId, log_id) => {
   return useQuery({
     queryKey: ['getLogsDetails', userId, log_id],
     queryFn: () => getLogsDetails(userId, log_id),
+    enabled: Boolean(userId), // Only run query if userId is defined
+    initialData: null, // Return null if query is not enabled
     staleTime: 30000, // 30 seconds - logs are relatively fresh data
     cacheTime: 300000, // 5 minutes cache
     refetchInterval: 60000, // Refetch every minute to get latest logs

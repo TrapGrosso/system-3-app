@@ -2,6 +2,10 @@ import { useQuery } from '@tanstack/react-query'
 
 // Internal fetch function for the actual API call
 const fetchProspects = async (params) => {
+  if (!params?.user_id) {
+    console.warn('fetchProspects: user_id is not defined. Returning null.')
+    return null
+  }
   // Build query string, omitting undefined/null values
   const searchParams = new URLSearchParams()
   Object.entries(params).forEach(([key, value]) => {
@@ -35,6 +39,8 @@ export const useProspectsQuery = ({ userId, ...query }) => {
   return useQuery({
     queryKey: ['prospects', userId, query],
     queryFn: () => fetchProspects({ user_id: userId, ...query }),
+    enabled: Boolean(userId), // Only run query if userId is defined
+    initialData: null, // Return null if query is not enabled
     keepPreviousData: true, // Keep old data visible while refetching
     staleTime: 60000, // 60 seconds - prospects data is relatively stable
     cacheTime: 300000, // 5 minutes cache

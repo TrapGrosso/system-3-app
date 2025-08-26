@@ -2,6 +2,10 @@ import { useQuery } from '@tanstack/react-query'
 
 // Internal fetch function for the actual API call
 const getAllCompanies = async (params) => {
+  if (!params?.user_id) {
+    console.warn('getAllCompanies: user_id is not defined. Returning null.')
+    return null
+  }
   // Build query string, omitting undefined/null values
   const searchParams = new URLSearchParams()
   Object.entries(params).forEach(([key, value]) => {
@@ -35,6 +39,8 @@ export const useGetAllCompaniesQuery = ({ userId, ...query }) => {
   return useQuery({
     queryKey: ['companies', userId, query],
     queryFn: () => getAllCompanies({ user_id: userId, ...query }),
+    enabled: Boolean(userId), // Only run query if userId is defined
+    initialData: null, // Return null if query is not enabled
     keepPreviousData: true, // Keep old data visible while refetching
     staleTime: 60000, // 60 seconds - companies data is relatively stable
     cacheTime: 300000, // 5 minutes cache

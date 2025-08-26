@@ -1,6 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 
 const getAllProspectNotes = async (user_id, prospect_id) => {
+  if (!user_id) {
+    console.warn('getAllProspectNotes: user_id is not defined. Returning null.')
+    return null
+  }
   const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getAllProspectNotes?user_id=${user_id}&prospect_id=${prospect_id}`, {
     method: 'GET',
     headers: {
@@ -24,6 +28,8 @@ export const useGetAllProspectNotes = (userId, prospect_id) => {
   return useQuery({
     queryKey: ['getAllProspectNotes', userId, prospect_id],
     queryFn: () => getAllProspectNotes(userId, prospect_id),
+    enabled: Boolean(userId), // Only run query if userId is defined
+    initialData: null, // Return null if query is not enabled
     staleTime: 30000, // 30 seconds - notes are relatively fresh data
     cacheTime: 300000, // 5 minutes cache
     refetchInterval: 60000, // Refetch every minute

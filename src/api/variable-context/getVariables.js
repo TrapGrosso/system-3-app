@@ -1,6 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 
 const getVariables = async (params) => {
+  if (!params?.user_id) {
+    console.warn('getVariables: user_id is not defined. Returning null.')
+    return null
+  }
   // Build query string, omitting undefined/null values
   const searchParams = new URLSearchParams()
   Object.entries(params).forEach(([key, value]) => {
@@ -33,6 +37,8 @@ export const useGetVariables = ({ userId, prospect_id = null }) => {
   return useQuery({
     queryKey: ['variables', userId, prospect_id],
     queryFn: () => getVariables({ user_id: userId, prospect_id }),
+    enabled: Boolean(userId), // Only run query if userId is defined
+    initialData: null, // Return null if query is not enabled
     keepPreviousData: true, // Keep old data visible while refetching
     staleTime: 60000, // 60 seconds - prospects data is relatively stable
     cacheTime: 300000, // 5 minutes cache

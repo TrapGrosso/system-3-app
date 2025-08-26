@@ -1,6 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 
 const getAllPrompts = async (user_id, type) => {
+  if (!user_id) {
+    console.warn('getAllPrompts: user_id is not defined. Returning null.')
+    return null
+  }
   const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getAllPrompts?user_id=${user_id}&type=${type}`, {
     method: 'GET',
     headers: {
@@ -24,6 +28,8 @@ export const useGetAllPrompts = (userId, type) => {
   return useQuery({
     queryKey: ['getAllPrompts', userId, type],
     queryFn: () => getAllPrompts(userId, type),
+    enabled: Boolean(userId), // Only run query if userId is defined
+    initialData: null, // Return null if query is not enabled
     staleTime: 30000,
     cacheTime: 300000,
     refetchInterval: 60000, 

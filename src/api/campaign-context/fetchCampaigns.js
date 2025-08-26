@@ -1,6 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 
 const fetchCampaigns = async (userId) => {
+  if (!userId) {
+    console.warn('fetchCampaigns: userId is not defined. Returning null.')
+    return null
+  }
   const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getAllCampaigns?user_id=${userId}`, {
     method: 'GET',
     headers: {
@@ -22,6 +26,8 @@ export const useFetchCampaigns = (userId) => {
   return useQuery({
     queryKey: ['campaigns', userId],
     queryFn: () => fetchCampaigns(userId),
+    enabled: Boolean(userId), // Only run query if userId is defined
+    initialData: null, // Return null if query is not enabled
     staleTime: 300000, // 5 minutes - campaigns are relatively stable
     cacheTime: 600000, // 10 minutes cache
     retry: 3,

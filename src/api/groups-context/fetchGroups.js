@@ -1,6 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 
 const fetchGroups = async (user_id) => {
+  if (!user_id) {
+    console.warn('fetchGroups: user_id is not defined. Returning null.')
+    return null
+  }
   const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/fetchGroups?user_id=${user_id}`, {
     method: 'GET',
     headers: {
@@ -25,6 +29,8 @@ export const useFetchGroups = (userId) => {
   return useQuery({
     queryKey: ['fetchGroups', userId],
     queryFn: () => fetchGroups(userId),
+    enabled: Boolean(userId), // Only run query if userId is defined
+    initialData: null, // Return null if query is not enabled
     staleTime: 30000, // 30 seconds - logs are relatively fresh data
     cacheTime: 300000, // 5 minutes cache
     refetchInterval: 60000, // Refetch every minute to get latest logs

@@ -1,6 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 
 const getProspectEnrichments = async (user_id, prospectIds) => {
+  if (!user_id) {
+    console.warn('getProspectEnrichments: user_id is not defined. Returning null.')
+    return null
+  }
   const prospectIdsparams = prospectIds.join()
 
   const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getProspectEnrichments?user_id=${user_id}&prospect_ids=${prospectIdsparams}`, {
@@ -26,6 +30,8 @@ export const useGetProspectEnrichments = (userId, prospectIds) => {
   return useQuery({
     queryKey: ['getProspectEnrichments', userId, prospectIds],
     queryFn: () => getProspectEnrichments(userId, prospectIds),
+    enabled: Boolean(userId), // Only run query if userId is defined
+    initialData: null, // Return null if query is not enabled
     staleTime: 30000,
     cacheTime: 300000,
     refetchInterval: 60000, 

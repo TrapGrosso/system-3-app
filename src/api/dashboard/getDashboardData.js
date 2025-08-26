@@ -4,6 +4,11 @@ import MOCK_DASHBOARD_DATA from './mockDashboardData'
 const getDashboardData = async (params) => {
   const { userId, lookbackDays, campaignsLimit, topN, thresholds, ...extra } = params
 
+  if (!userId) {
+    console.warn('getDashboardData: userId is not defined. Returning null.')
+    return null
+  }
+
   const searchParams = new URLSearchParams({
     user_id: userId,
   })
@@ -53,6 +58,8 @@ export const useDashboardDataQuery = (params) => {
   return useQuery({
     queryKey: ['getDashboardData', params.userId, params],
     queryFn: () => getDashboardData(params),
+    enabled: Boolean(params?.userId), // Only run query if userId is defined
+    initialData: null, // Return null if query is not enabled
     staleTime: 30000, // 30 seconds 
     cacheTime: 300000, // 5 minutes cache
     refetchInterval: 60000, // Refetch every minute 
