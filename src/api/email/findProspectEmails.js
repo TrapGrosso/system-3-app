@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 
 const findProspectEmails = async (payload) => {
-  const response = await fetch('https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/findProspectEmails', {
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/findProspectEmails`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

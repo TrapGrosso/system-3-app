@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 
 const deleteVariables = async (payload) => {
-  const response = await fetch('https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/deleteVariables', {
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/deleteVariables`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

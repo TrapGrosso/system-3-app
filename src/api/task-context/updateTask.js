@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 
 const updateTask = async (payload) => {
-  const response = await fetch('https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/updateTask', {
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/updateTask`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

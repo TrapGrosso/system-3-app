@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 
 const removeFromAllGroups = async (payload) => {
-  const response = await fetch('https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/removeFromAllGroups', {
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/removeFromAllGroups`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

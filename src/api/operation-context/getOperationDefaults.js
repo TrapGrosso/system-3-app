@@ -6,7 +6,7 @@ const getOperationDefaults = async (operation) => {
     const isAll = !normalized || normalized.toLowerCase() === 'all'
     const qs = isAll ? '' : `?${new URLSearchParams({ operation: normalized })}`
 
-    const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getOperationDefaults${qs}`, {
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/getOperationDefaults${qs}`, {
         method: 'GET',
         headers: {
         'Content-Type': 'application/json',

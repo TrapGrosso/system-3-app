@@ -5,7 +5,7 @@ const fetchGroups = async (user_id) => {
     console.warn('fetchGroups: user_id is not defined. Returning null.')
     return null
   }
-  const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/fetchGroups?user_id=${user_id}`, {
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetchGroups?user_id=${user_id}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

@@ -30,7 +30,7 @@ const getDashboardData = async (params) => {
     }
   })
 
-  const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getDashboardData?${searchParams.toString()}`, {
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/getDashboardData?${searchParams.toString()}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

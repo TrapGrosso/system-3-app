@@ -20,7 +20,7 @@ const withRetry = async (fn, { retries = 3, baseDelay = 1000, maxDelay = 30000, 
 }
 
 const syncIstantlyCampaigns = async (userId) => {
-  const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/syncIstantlyCampaigns?user_id=${userId}`, {
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/syncIstantlyCampaigns?user_id=${userId}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ export const useSyncIstantlyCampaigns = (options = {}) => {
  */
 
 const syncIstantlyProspectCampaigns = async (userId) => {
-  const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/syncIstantlyProspectCampaigns?user_id=${userId}`, {
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/syncIstantlyProspectCampaigns?user_id=${userId}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -119,7 +119,7 @@ export const useSyncIstantlyProspectCampaigns = (options = {}) => {
  */
 
 const updateAllProspectsInCampaigns = async (userId) => {
-  const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/updateAllProspectsInCampaigns?user_id=${userId}`, {
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/updateAllProspectsInCampaigns?user_id=${userId}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

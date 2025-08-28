@@ -7,7 +7,7 @@ const getProspectEnrichments = async (user_id, prospectIds) => {
   }
   const prospectIdsparams = prospectIds.join()
 
-  const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getProspectEnrichments?user_id=${user_id}&prospect_ids=${prospectIdsparams}`, {
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/getProspectEnrichments?user_id=${user_id}&prospect_ids=${prospectIdsparams}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

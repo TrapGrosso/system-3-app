@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 
 const deleteEnrichments = async (payload) => {
-  const response = await fetch('https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/deleteEnrichments', {
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/deleteEnrichments`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

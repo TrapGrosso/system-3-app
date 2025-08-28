@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 
 const deleteDeepSearchQueueItems = async (payload) => {
-  const response = await fetch('https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/deleteDeepSearchQueueItems', {
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/deleteDeepSearchQueueItems`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

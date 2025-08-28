@@ -5,7 +5,7 @@ const getProspectCampaigns = async (userId, prospectId) => {
     console.warn('getProspectCampaigns: userId is not defined. Returning null.')
     return null
   }
-  const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getProspectCampaigns?user_id=${userId}&prospect_id=${prospectId}`, {
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/getProspectCampaigns?user_id=${userId}&prospect_id=${prospectId}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

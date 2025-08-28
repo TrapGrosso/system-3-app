@@ -14,7 +14,7 @@ const fetchProspects = async (params) => {
     }
   })
   
-  const response = await fetch(`https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getAllProspects?${searchParams.toString()}`, {
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/getAllProspects?${searchParams.toString()}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

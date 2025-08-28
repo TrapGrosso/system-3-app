@@ -34,7 +34,7 @@ const fetchTasks = async (params) => {
     }
   })
 
-  const url = `https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/getAllTasks?${searchParams.toString()}`
+  const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/getAllTasks?${searchParams.toString()}`
 
   const response = await fetch(url, {
     method: 'GET',

@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 
 const addToDeepSearchQueue = async (payload) => {
-  const response = await fetch('https://mbojaegemegtbpvlwjwt.supabase.co/functions/v1/addToDeepSearchQueue', {
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/addToDeepSearchQueue`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
