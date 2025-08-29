@@ -21,15 +21,43 @@ import {
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/contexts/AuthContext"
 
+function processUser(user) {
+  const name = user.user_metadata.name || user.email.split('@')[0];
+  const email = user.email;
+  const avatar = null; // For now, avatar is null
+
+  let fallback = '';
+  if (name) {
+    const nameParts = name.split(' ');
+    if (nameParts.length > 1) {
+      fallback = (nameParts[0][0] + nameParts[1][0]).toUpperCase();
+    } else {
+      fallback = nameParts[0][0].toUpperCase();
+    }
+  } else {
+    fallback = email[0].toUpperCase();
+  }
+
+  return {
+    name,
+    email,
+    avatar,
+    fallback
+  };
+}
+
 export function DashboardLayout({ children, headerText = "Dashboard" }) {
   const { user, signOut } = useAuth()
+  console.log(user)
+
+  const processedUser = processUser(user);
 
   const sidebarData = {
     user: {
-      name: user.user_metadata.name,
-      email: user.email,
-      avatar: "/avatars/shadcn.jpg",
-      fallback: user.user_metadata.name.split('')[0].toUpperCase()
+      name: processedUser.name,
+      email: processedUser.email,
+      avatar: processedUser.avatar,
+      fallback: processedUser.fallback
     },
     navMain: [
       {
