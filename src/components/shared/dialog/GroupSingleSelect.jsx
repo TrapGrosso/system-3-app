@@ -11,10 +11,12 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Label } from "@/components/ui/label"
 
 import { useGroups } from "@/contexts/GroupsContext"
+import { useDialogs } from "@/contexts/DialogsContext"
 import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 
 function GroupSingleSelect({ value, onChange, onCreateFirstGroupClick }) {
   const { groups, isLoadingGroups, isErrorGroups, refetchGroups } = useGroups()
+  const dialogs = useDialogs()
 
   if (isLoadingGroups) {
     return (
@@ -41,13 +43,21 @@ function GroupSingleSelect({ value, onChange, onCreateFirstGroupClick }) {
   }
 
   if (groups.length === 0) {
+    const handleCreateFirstGroupClick = () => {
+      if (typeof onCreateFirstGroupClick === 'function') {
+        onCreateFirstGroupClick()
+      } else {
+        dialogs.openHandleGroups({ tab: 'manage' })
+      }
+    }
+
     return (
       <div className="text-center py-4">
         <p className="text-sm text-muted-foreground mb-2">No groups found</p>
         <SpinnerButton 
           variant="outline" 
           size="sm" 
-          onClick={onCreateFirstGroupClick}
+          onClick={handleCreateFirstGroupClick}
         >
           Create your first group
         </SpinnerButton>

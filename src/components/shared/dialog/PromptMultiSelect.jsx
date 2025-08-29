@@ -21,15 +21,18 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
+import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 
 import { useAllPrompts } from "@/contexts/PromptContext"
+import { useDialogs } from "@/contexts/DialogsContext"
 
 function PromptMultiSelect({ 
   value = [], 
   onChange, 
   type = 'all',
   disabled = false,
-  label = "Select prompts"
+  label = "Select prompts",
+  triggerClassName
 }) {
   const [popoverOpen, setPopoverOpen] = useState(false)
   
@@ -38,7 +41,9 @@ function PromptMultiSelect({
     isLoading: isLoadingPrompts, 
     isError: isErrorPrompts, 
     refetch: refetchPrompts 
-  } = useAllPrompts(type) 
+  } = useAllPrompts(type)
+  
+  const dialogs = useDialogs()
 
   const handlePromptToggle = (promptId) => {
     const newValue = value.includes(promptId) 
@@ -102,9 +107,13 @@ function PromptMultiSelect({
       <div className="text-center py-4">
         <Search className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
         <p className="text-sm text-muted-foreground mb-2">No prompts found</p>
-        <p className="text-xs text-muted-foreground">
-          Create prompts in the Prompts section to get started
-        </p>
+        <SpinnerButton 
+          variant="outline" 
+          size="sm" 
+          onClick={() => dialogs.openCreatePrompt()}
+        >
+          Create your first prompt
+        </SpinnerButton>
       </div>
     )
   }
@@ -121,14 +130,14 @@ function PromptMultiSelect({
               variant="outline"
               role="combobox"
               aria-expanded={popoverOpen}
-              className="w-full justify-between"
+              className={`w-full sm:w-[260px] justify-between ${triggerClassName}`}
               disabled={disabled}
             >
               {getSelectionText()}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-full p-0" align="start">
+          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 max-h-72 overflow-auto" align="start">
             <Command>
               <CommandInput placeholder="Search prompts..." />
               <CommandList>
