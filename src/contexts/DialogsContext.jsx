@@ -45,8 +45,8 @@ export function DialogsProvider({ children }) {
   }, [open])
 
   // Convenience helpers for commonly used dialogs
-  const openHandleGroups = useCallback(({ user_id, prospect_ids }) => {
-    return open('handleGroups', { user_id, prospect_ids })
+  const openHandleGroups = useCallback(({ user_id, prospect_ids = [], tab = 'add' }) => {
+    return open('handleGroups', { user_id, prospect_ids, tab })
   }, [open])
 
   const openProspectNotes = useCallback(({ prospect }) => {

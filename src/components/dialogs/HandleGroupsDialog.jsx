@@ -15,6 +15,7 @@ import { useGroups } from "@/contexts/GroupsContext"
 function HandleGroupsDialog({ 
   user_id, 
   prospect_ids = [], 
+  tab = 'add',
   onSuccess,
   trigger,
   children,
@@ -22,7 +23,9 @@ function HandleGroupsDialog({
   onOpenChange
 }) {
   const [selectedGroupId, setSelectedGroupId] = useState("")
-  const [activeTab, setActiveTab] = useState("add")
+  // Compute initial tab: if no prospect_ids and requested tab is 'add', use 'manage' instead
+  const initialTab = prospect_ids.length === 0 && tab === 'add' ? 'manage' : tab
+  const [activeTab, setActiveTab] = useState(initialTab)
   const [groupName, setGroupName] = useState("")
   const [groupDescription, setGroupDescription] = useState("")
   
@@ -69,8 +72,6 @@ function HandleGroupsDialog({
       // Clear form
       setGroupName("")
       setGroupDescription("")
-      // Switch back to add tab
-      setActiveTab("add")
     } catch (error) {
       // Error handling is done in the context
     }
@@ -95,7 +96,8 @@ function HandleGroupsDialog({
       setSelectedGroupId("")
       setGroupName("")
       setGroupDescription("")
-      setActiveTab("add")
+      // Reset to computed initial tab
+      setActiveTab(initialTab)
     }
   }
 

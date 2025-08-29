@@ -40,9 +40,10 @@ const dialogsRegistry = {
   // Handle Groups Dialog
   handleGroups: {
     component: HandleGroupsDialog,
-    mapProps: ({ user_id, prospect_ids = [] }, resolve) => ({
+    mapProps: ({ user_id, prospect_ids = [], tab = 'add' }, resolve) => ({
       user_id,
       prospect_ids,
+      tab,
       onSuccess: (data) => resolve(data)
     })
   },
