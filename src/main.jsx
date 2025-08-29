@@ -25,29 +25,29 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <OperationDefaultsProvider>
-          <TaskProvider>
-            <VariableProvider>
-              <DeepSearchQueueProvider>
-                <PromptProvider>
-                  <GroupsProvider>
-                    <CompaniesProvider>
-                      <ProspectsProvider>
-                        <CampaignsProvider>
-                          <NotesProvider>
-                            <DialogsProvider>
-                              <App />
-                            </DialogsProvider>
-                          </NotesProvider>
-                        </CampaignsProvider>
-                      </ProspectsProvider>
-                    </CompaniesProvider>
-                  </GroupsProvider>
-                </PromptProvider>
-              </DeepSearchQueueProvider>
-            </VariableProvider>
-          </TaskProvider>
-        </OperationDefaultsProvider>
+            <OperationDefaultsProvider>
+              <PromptProvider>
+                <TaskProvider>
+                  <VariableProvider>
+                    <DeepSearchQueueProvider>
+                        <GroupsProvider>
+                          <CompaniesProvider>
+                            <ProspectsProvider>
+                              <CampaignsProvider>
+                                <NotesProvider>
+                                    <DialogsProvider>
+                                      <App />
+                                    </DialogsProvider>
+                                </NotesProvider>
+                              </CampaignsProvider>
+                            </ProspectsProvider>
+                          </CompaniesProvider>
+                        </GroupsProvider>
+                    </DeepSearchQueueProvider>
+                  </VariableProvider>
+                </TaskProvider>
+              </PromptProvider>
+            </OperationDefaultsProvider>
       </AuthProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
