@@ -1,5 +1,5 @@
 import * as React from "react"
-import { RefreshCw, Loader2, Users, Upload, Sparkles } from "lucide-react"
+import { RefreshCw, Loader2, Users, Upload, Sparkles, ClipboardList } from "lucide-react"
 
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { Button } from "@/components/ui/button"
@@ -108,30 +108,15 @@ function CampaignsContent() {
 
         {/* Empty state */}
         {!isLoadingCampaigns && !isErrorCampaigns && campaigns.length === 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">No campaigns found</CardTitle>
-            </CardHeader>
-            <CardContent className="flex items-center justify-between gap-4">
-              <p className="text-sm text-muted-foreground">
-                Get started by creating your first campaign.
-              </p>
-              <ActionDropdown
-                items={syncItems}
-                renderTrigger={(triggerProps) => (
-                  <Button {...triggerProps} variant="outline" disabled={isAnySyncing}>
-                    {isAnySyncing
-                      ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      : <RefreshCw className="h-4 w-4 mr-2" />}
-                    Sync with Instantly
-                  </Button>
-                )}
-                align="end"
-                side="bottom"
-                sideOffset={6}
-              />
-            </CardContent>
-          </Card>
+          <div className="text-center py-20" role="status">
+            <ClipboardList className="h-16 w-16 mx-auto text-muted-foreground mb-4" aria-hidden="true" />
+            <p className="text-base text-muted-foreground mb-2">
+              No campaigns found
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Create your first campaign to get started
+            </p>
+          </div>
         )}
 
         {/* Campaigns grid */}
