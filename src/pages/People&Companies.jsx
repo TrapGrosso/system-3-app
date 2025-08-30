@@ -12,7 +12,7 @@ import CompaniesFilterBar from '@/components/people&companies/CompaniesFilterBar
 function PeopleCompanies() {
     const { user } = useAuth()
     const navigate = useNavigate()
-    const { data, total, query, setQuery, resetFilters, isLoading, refetch, deleteProspect } = useProspects()
+    const { data, total, query, setQuery, resetFilters, isLoading, refetch, deleteProspect, isError: ProspectIsError } = useProspects()
     const { 
         data: companies, 
         total: companiesTotal, 
@@ -21,6 +21,7 @@ function PeopleCompanies() {
         resetFilters: resetCompaniesFilters, 
         isLoading: companiesLoading, 
         refetch: refetchCompanies,
+        isError: CompanyIsError,
         deleteCompany,
         updateCompany
     } = useCompanies()
@@ -205,6 +206,8 @@ function PeopleCompanies() {
         }
     }
 
+    console.log(CompanyIsError)
+
   return (
     <DashboardLayout headerText="Dashboard">
       <div className="px-4 lg:px-6">
@@ -226,6 +229,8 @@ function PeopleCompanies() {
           onQueryChange={handleQueryChange}
           loading={isLoading}
           onRowClick={handleRowClick}
+          error={ProspectIsError}
+          errorMessage={'Error fetching prospects'}
           onAddNote={handleAddNote}
           onCreateTask={handleCreateTask}
           onAddToGroup={handleAddToGroup}
@@ -265,6 +270,8 @@ function PeopleCompanies() {
           query={companiesQuery}
           onQueryChange={handleCompaniesQueryChange}
           loading={companiesLoading}
+          error={CompanyIsError}
+          errorMessage={'Error fetching companies'}
           onBulkDelete={handleBulkDeleteCompanies}
           onDelete={handleDeleteCompany}
           onUpdate={handleUpdateCompany}

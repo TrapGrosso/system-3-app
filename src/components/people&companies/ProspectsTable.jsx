@@ -35,11 +35,13 @@ const getStatusVariant = (status) => {
 }
 
 export default function ProspectsTable({ 
-  data,
+  data = [],
   total,
   query,
   onQueryChange,
   loading,
+  error,
+  errorMessage,
   onRowClick,
   onAddNote,
   onCreateTask,
@@ -640,7 +642,7 @@ export default function ProspectsTable({
         }
       }
     },
-  ], [onBulkAddToGroup, onBulkAddToCampaign, onBulkAddToDeepSearch, onBulkCreateVariables, onBulkDelete, onBulkFindEmails])
+  ], [onBulkAddToGroup, onBulkAddToCampaign, onBulkAddToDeepSearch, onBulkCreateVariables, onBulkDelete, onBulkFindEmails, onBulkVerifyEmails])
 
   // Row actions function
   const rowActions = React.useCallback((ctx) => [
@@ -737,6 +739,8 @@ export default function ProspectsTable({
       data={data || []}
       rowId={(row) => row.linkedin_id}
       loading={loading}
+      error={error}
+      errorMessage={errorMessage}
       emptyMessage="No prospects found"
       mode="external"
       paginationState={paginationState}

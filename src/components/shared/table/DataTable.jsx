@@ -16,33 +16,206 @@ import { TableActionsDropdown } from './TableActionsDropdown'
 import { SortIcon } from './SortIcon'
 
 /**
- * Generic reusable data table component that handles all common table functionality
- * 
+ * Generic reusable data table component that handles common table functionality.
+ *
+ * Rendering precedence (highest to lowest):
+ * 1) loading === true -> show skeleton
+ * 2) error === true -> show errorMessage
+ * 3) data is empty -> show emptyMessage
+ * 4) render table
+ *
+ * Column meta options supported by this table:
+ * - meta.align: 'left' | 'center' | 'right' (controls header and cell text alignment)
+ * - meta.headerClassName: string (applied to TableHead)
+ * - meta.cellClassName: string (applied to TableCell)
+ *
+ * @typedef {'left'|'center'|'right'} ColumnAlign
+ *
+ * @typedef {Object} ColumnMeta
+ * @property {ColumnAlign} [align='left'] - Text alignment for header and cells
+ * @property {string} [headerClassName] - Extra class for header cell
+ * @property {string} [cellClassName] - Extra class for body cells
+ *
+ * @typedef {Object} RowAction
+ * @property {string} label - Visible label of the action item
+ * @property {function(Object): void} onSelect - Handler invoked with the current row's original data
+ * @property {string} [variant] - Optional visual variant (e.g. 'destructive'); rendering depends on UI implementation
+ *
+ * @typedef {'separator'} ActionSeparator
+ *
+ * @typedef {RowAction|ActionSeparator} RowActionItem
+ *
+ * @typedef {Object} BulkAction
+ * @property {string} label - Visible label of the bulk action
+ * @property {string} value - Unique identifier for the bulk action
+ * @property {function(string[]): void} [onSelect] - Optional handler invoked with selected row IDs; if omitted and onBulkAction is provided, onBulkAction(value, selectedIds) will be called
+ * @property {string} [variant] - Optional visual variant (e.g. 'destructive')
+ *
+ * @typedef {'separator'} BulkActionSeparator
+ *
+ * @typedef {BulkAction|BulkActionSeparator} BulkActionItem
+ *
  * @param {Object} props
- * @param {Array} props.columns - TanStack table column definitions (without select/actions columns)
- * @param {Array} props.data - Array of data to display
- * @param {Function} props.rowId - Function to get unique ID from row: (row) => string|number
- * @param {boolean} props.loading - Show loading skeleton
- * @param {string} props.emptyMessage - Message when no data
- * @param {boolean} props.enableSelection - Add selection checkbox column (default: true)
- * @param {Array} props.bulkActions - Bulk actions array for TableBulkActions
- * @param {Function} props.rowActions - Function returning row actions: (rowData) => ActionItem[]
- * @param {Function} props.onRowClick - Row click handler: (rowData) => void
- * @param {string} props.mode - Pagination mode: "internal" | "external" (default: "internal")
- * @param {Object} props.paginationState - External pagination state: { pageIndex, pageSize, pageCount, totalElements }
- * @param {Function} props.onPaginationChange - External pagination handler: (update) => void
- * @param {Array} props.pageSizes - Available page sizes (default: [10, 20, 30, 50])
- * @param {Array} props.sorting - External sorting state for TanStack table
- * @param {Function} props.onSortingChange - External sorting handler
- * @param {boolean} props.manualSorting - Enable manual sorting
- * @param {Function} props.rowClassName - Function to get row className: (rowData) => string
+ * @param {Array<Object>} props.columns - TanStack table column definitions (without select/actions columns); each column can include a `meta` object per ColumnMeta
+ * @param {Array<Object>} props.data - Array of data to display
+ * @param {function(Object): (string|number)} props.rowId - Function to get unique ID from a row
+ * @param {boolean} [props.loading=false] - Show loading skeleton
+ * @param {boolean} [props.error=false] - Show error state when true (docs-only addition; implement alongside UI when ready)
+ * @param {string} [props.errorMessage="Something went wrong"] - Message when error is true
+ * @param {string} [props.emptyMessage="No results found"] - Message when no data
+ * @param {boolean} [props.enableSelection=true] - Add selection checkbox column
+ * @param {Array<BulkActionItem>} [props.bulkActions=[]] - Bulk actions configuration
+ * @param {function(string, string[]): void} [props.onBulkAction] - Optional fallback bulk handler invoked as onBulkAction(value, selectedIds) when an action item has no onSelect
+ * @param {function(Object): Array<RowActionItem>} [props.rowActions] - Function returning row actions for TableActionsDropdown
+ * @param {function(Object): void} [props.onRowClick] - Row click handler, invoked with rowData
+ * @param {'internal'|'external'} [props.mode="internal"] - Pagination mode
+ * @param {{ pageIndex: number, pageSize: number, pageCount?: number, totalElements?: number }} [props.paginationState] - External pagination state
+ * @param {function(Object): void} [props.onPaginationChange] - External pagination update handler: e.g. ({ pageIndex }) or ({ pageSize })
+ * @param {Array<number>} [props.pageSizes=[10, 20, 30, 50]] - Available page sizes
+ * @param {Array<Object>} [props.sorting] - External sorting state for TanStack table
+ * @param {function(Function|Array<Object>): void} [props.onSortingChange] - External sorting handler
+ * @param {boolean} [props.manualSorting=false] - Enable manual sorting (for server-driven sort)
+ * @param {string|function(Object): string} [props.rowClassName] - Static className or function mapping rowData -> className
+ * @param {string} [props.className] - Container className
+ * @param {string} [props.headerClassName] - TableHeader className
+ * @param {string} [props.bodyClassName] - TableBody className
+ *
+ * @example
+ * // Minimal usage with internal pagination and selection
+ * const columns = [
+ *   {
+ *     accessorKey: 'first_name',
+ *     header: 'First Name',
+ *     cell: ({ row }) => row.original.first_name ?? '—',
+ *     meta: { align: 'left' }
+ *   },
+ *   {
+ *     accessorKey: 'last_name',
+ *     header: 'Last Name',
+ *     cell: ({ row }) => row.original.last_name ?? '—',
+ *     meta: { align: 'left' }
+ *   },
+ * ];
+ *
+ * <DataTable
+ *   columns={columns}
+ *   data={rows}
+ *   rowId={(r) => r.id}
+ * />
+ *
+ * @example
+ * // External pagination and sorting + error handling
+ * const paginationState = {
+ *   pageIndex: query.page - 1,
+ *   pageSize: query.page_size,
+ *   pageCount: Math.ceil(total / query.page_size),
+ *   totalElements: total
+ * };
+ *
+ * const sorting = [{ id: query.sort_by, desc: query.sort_dir === 'desc' }];
+ *
+ * const handlePaginationChange = (update) => {
+ *   if (update.pageIndex != null) setQuery({ page: update.pageIndex + 1 });
+ *   if (update.pageSize != null) setQuery({ page_size: update.pageSize, page: 1 });
+ * };
+ *
+ * const handleSortingChange = (next) => {
+ *   const s = (typeof next === 'function' ? next(sorting) : next)[0] || {};
+ *   setQuery({ sort_by: s.id || 'created_at', sort_dir: s.desc ? 'desc' : 'asc' });
+ * };
+ *
+ * <DataTable
+ *   columns={columns}
+ *   data={rows}
+ *   rowId={(r) => r.id}
+ *   loading={isLoading}
+ *   error={Boolean(loadError)}
+ *   errorMessage={loadError?.message || 'Failed to load data'}
+ *   mode="external"
+ *   paginationState={paginationState}
+ *   onPaginationChange={handlePaginationChange}
+ *   sorting={sorting}
+ *   onSortingChange={handleSortingChange}
+ *   manualSorting
+ * />
+ *
+ * @example
+ * // Bulk actions – per-action onSelect
+ * const bulkActions = [
+ *   {
+ *     label: 'Export Selected',
+ *     value: 'export',
+ *     onSelect: (selectedIds) => exportIds(selectedIds)
+ *   },
+ *   'separator',
+ *   {
+ *     label: 'Delete Selected',
+ *     value: 'delete',
+ *     variant: 'destructive',
+ *     onSelect: (selectedIds) => deleteIds(selectedIds)
+ *   }
+ * ];
+ *
+ * <DataTable
+ *   columns={columns}
+ *   data={rows}
+ *   rowId={(r) => r.id}
+ *   enableSelection
+ *   bulkActions={bulkActions}
+ * />
+ *
+ * @example
+ * // Bulk actions – using global onBulkAction when an item has no onSelect
+ * const bulkActions = [
+ *   { label: 'Add to Group', value: 'addToGroup' },
+ *   'separator',
+ *   { label: 'Delete', value: 'delete', variant: 'destructive' }
+ * ];
+ *
+ * const onBulkAction = (value, selectedIds) => {
+ *   switch (value) {
+ *     case 'addToGroup':
+ *       return openGroupDialog(selectedIds);
+ *     case 'delete':
+ *       return deleteIds(selectedIds);
+ *     default:
+ *       return;
+ *   }
+ * };
+ *
+ * <DataTable
+ *   columns={columns}
+ *   data={rows}
+ *   rowId={(r) => r.id}
+ *   enableSelection
+ *   bulkActions={bulkActions}
+ *   onBulkAction={onBulkAction}
+ * />
+ *
+ * @example
+ * // Row actions – with a separator
+ * const rowActions = (row) => ([
+ *   { label: 'View', onSelect: (r) => openDetails(r) },
+ *   'separator',
+ *   { label: 'Delete', variant: 'destructive', onSelect: (r) => deleteOne(r) }
+ * ]);
+ *
+ * <DataTable
+ *   columns={columns}
+ *   data={rows}
+ *   rowId={(r) => r.id}
+ *   rowActions={rowActions}
+ * />
  */
+ 
 export function DataTable({
   // Core props
   columns = [],
   data = [],
   rowId,
   loading = false,
+  error = false,
+  errorMessage = "Something went wrong",
   emptyMessage = "No results found",
   
   // Selection & bulk actions
@@ -216,6 +389,27 @@ export function DataTable({
           headers={skeletonHeaders}
           rowCount={10}
         />
+        <div className="opacity-50 pointer-events-none">
+          <TablePagination
+            table={table}
+            totalRows={0}
+            selectedCount={0}
+            mode={mode}
+            pageSizes={pageSizes}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <TableBulkActions actions={bulkActions} selectedIds={[]} />
+        <div role="alert" aria-live="polite" className="text-center py-8 text-destructive">
+          {errorMessage}
+        </div>
         <div className="opacity-50 pointer-events-none">
           <TablePagination
             table={table}

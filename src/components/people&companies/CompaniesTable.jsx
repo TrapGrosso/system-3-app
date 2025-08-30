@@ -17,7 +17,7 @@ const getSizeCategory = (size) => {
 }
 
 export default function CompaniesTable({ 
-  data,
+  data = [],
   total,
   query,
   onQueryChange,
@@ -25,7 +25,9 @@ export default function CompaniesTable({
   onRowClick,
   onBulkDelete,
   onDelete,
-  onUpdate
+  onUpdate,
+  error,
+  errorMessage
 }) {
 
   // Column definitions (without select and actions - DataTable handles these)
@@ -248,6 +250,8 @@ export default function CompaniesTable({
   return (
     <DataTable
       columns={columns}
+      error={error}
+      errorMessage={errorMessage}
       data={data || []}
       rowId={(row) => row.linkedin_id}
       loading={loading}
