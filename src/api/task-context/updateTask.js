@@ -23,7 +23,6 @@ export const useUpdateTask = (options = {}) => {
   return useMutation({
     mutationFn: updateTask,
     onSuccess: (data) => {
-      console.log('Task updated successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

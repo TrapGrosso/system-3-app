@@ -23,7 +23,6 @@ export const useUpdatePrompt = (options = {}) => {
   return useMutation({
     mutationFn: updatePrompt,
     onSuccess: (data) => {
-      console.log('Prompt updated successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

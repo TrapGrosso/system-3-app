@@ -19,7 +19,6 @@ const getDeepSearchQueueItems = async (user_id) => {
   }
 
   const result = await response.json()
-  console.log(result)
   
   return result || []
 }

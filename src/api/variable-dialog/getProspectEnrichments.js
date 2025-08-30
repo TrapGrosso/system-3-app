@@ -21,7 +21,6 @@ const getProspectEnrichments = async (user_id, prospectIds) => {
   }
 
   const result = await response.json()
-  console.log(result)
   
   return result || []
 }

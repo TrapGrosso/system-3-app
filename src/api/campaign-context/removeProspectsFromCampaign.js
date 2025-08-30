@@ -23,7 +23,6 @@ export const useRemoveProspectFromCampaign = (options = {}) => {
   return useMutation({
     mutationFn: removeProspectFromCampaign,
     onSuccess: (data) => {
-      console.log('Prospect removed successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

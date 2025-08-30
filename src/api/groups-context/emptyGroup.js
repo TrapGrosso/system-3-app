@@ -23,7 +23,6 @@ export const useEmptyGroup = (options = {}) => {
   return useMutation({
     mutationFn: emptyGroup,
     onSuccess: (data) => {
-      console.log('Group emptied successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

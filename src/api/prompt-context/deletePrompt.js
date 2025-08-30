@@ -23,7 +23,6 @@ export const useDeletePrompt = (options = {}) => {
   return useMutation({
     mutationFn: deletePrompt,
     onSuccess: (data) => {
-      console.log('Prompt deleted successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

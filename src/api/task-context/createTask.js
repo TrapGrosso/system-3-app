@@ -23,7 +23,6 @@ export const useCreateTask = (options = {}) => {
   return useMutation({
     mutationFn: createTask,
     onSuccess: (data) => {
-      console.log('Task created successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

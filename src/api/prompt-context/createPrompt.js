@@ -23,7 +23,6 @@ export const useCreatePrompt = (options = {}) => {
   return useMutation({
     mutationFn: createPrompt,
     onSuccess: (data) => {
-      console.log('Prompt created successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

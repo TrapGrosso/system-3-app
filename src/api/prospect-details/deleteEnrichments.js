@@ -23,7 +23,6 @@ export const useDeleteEnrichments = (options = {}) => {
   return useMutation({
     mutationFn: deleteEnrichments,
     onSuccess: (data) => {
-      console.log('Enrichments deleted successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

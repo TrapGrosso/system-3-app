@@ -23,7 +23,6 @@ export const useAddProspectToCampaign = (options = {}) => {
   return useMutation({
     mutationFn: addProspectToCampaign,
     onSuccess: (data) => {
-      console.log('Prospect added successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

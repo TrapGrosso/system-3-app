@@ -63,7 +63,6 @@ function PeopleCompanies() {
 
     // Notes handler
     const handleAddNote = async (linkedinId, prospect) => {
-      console.log(prospect)
         await open('prospectNotes', { prospect })
         refetch()
     }

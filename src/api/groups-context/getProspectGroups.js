@@ -19,7 +19,6 @@ const getProspectGroups = async (user_id, prospect_id) => {
   }
 
   const result = await response.json()
-  console.log(result)
   
   // Extract only the data field from the response
   return result || []

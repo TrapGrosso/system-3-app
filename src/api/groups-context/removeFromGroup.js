@@ -23,7 +23,6 @@ export const useRemoveFromGroup = (options = {}) => {
   return useMutation({
     mutationFn: removeFromGroup,
     onSuccess: (data) => {
-      console.log('Lead(s) successfully removed from group:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

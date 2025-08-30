@@ -19,7 +19,6 @@ const getAllPrompts = async (user_id, type) => {
   }
 
   const result = await response.json()
-  console.log(result)
   
   return result || []
 }

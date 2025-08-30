@@ -23,7 +23,6 @@ export const useUpdateProspect = (options = {}) => {
   return useMutation({
     mutationFn: updateProspect,
     onSuccess: (data) => {
-      console.log('Prospect updated successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

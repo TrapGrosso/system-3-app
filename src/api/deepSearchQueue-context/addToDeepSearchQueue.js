@@ -23,7 +23,6 @@ export const useAddToDeepSearchQueue = (options = {}) => {
   return useMutation({
     mutationFn: addToDeepSearchQueue,
     onSuccess: (data) => {
-      console.log('Successfully added to queue:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

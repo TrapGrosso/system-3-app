@@ -23,7 +23,6 @@ export const useUpdateOperationDefaults = (options = {}) => {
   return useMutation({
     mutationFn: updateOperationDefaults,
     onSuccess: (data) => {
-      console.log('Operation updated successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

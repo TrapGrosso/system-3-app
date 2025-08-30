@@ -23,7 +23,6 @@ export const useDeleteNote = (options = {}) => {
   return useMutation({
     mutationFn: deleteNote,
     onSuccess: (data) => {
-      console.log('Note deleted successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

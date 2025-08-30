@@ -23,7 +23,6 @@ export const useDeleteDeepSearchQueueItems = (options = {}) => {
   return useMutation({
     mutationFn: deleteDeepSearchQueueItems,
     onSuccess: (data) => {
-      console.log('Deep search item(s) deleted successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

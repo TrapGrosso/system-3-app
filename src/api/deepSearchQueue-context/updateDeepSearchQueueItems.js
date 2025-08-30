@@ -23,7 +23,6 @@ export const useUpdateDeepSearchQueueItems = (options = {}) => {
   return useMutation({
     mutationFn: updateDeepSearchQueueItems,
     onSuccess: (data) => {
-      console.log('Deep search item(s) updated successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

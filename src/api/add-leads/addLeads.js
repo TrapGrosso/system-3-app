@@ -23,7 +23,6 @@ export const useAddLeads = (options = {}) => {
   return useMutation({
     mutationFn: addLeads,
     onSuccess: (data) => {
-      console.log('Leads submitted successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

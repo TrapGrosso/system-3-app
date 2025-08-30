@@ -23,7 +23,6 @@ export const usefindProspectEmails = (options = {}) => {
   return useMutation({
     mutationFn: findProspectEmails,
     onSuccess: (data) => {
-      console.log('Prospects submitted successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

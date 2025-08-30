@@ -23,7 +23,6 @@ export const useCreateNote = (options = {}) => {
   return useMutation({
     mutationFn: createNote,
     onSuccess: (data) => {
-      console.log('Group creating note:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

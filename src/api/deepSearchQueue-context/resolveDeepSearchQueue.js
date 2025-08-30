@@ -23,7 +23,6 @@ export const useResolveDeepSearchQueue = (options = {}) => {
   return useMutation({
     mutationFn: resolveDeepSearchQueue,
     onSuccess: (data) => {
-      console.log('Successfully resolved queue:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

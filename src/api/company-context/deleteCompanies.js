@@ -23,7 +23,6 @@ export const useDeleteCompanies = (options = {}) => {
   return useMutation({
     mutationFn: deleteCompanies,
     onSuccess: (data) => {
-      console.log('Prompt deleted successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

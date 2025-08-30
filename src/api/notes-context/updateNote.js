@@ -23,7 +23,6 @@ export const useUpdateNote = (options = {}) => {
   return useMutation({
     mutationFn: updateNote,
     onSuccess: (data) => {
-      console.log('Note updated successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

@@ -23,7 +23,6 @@ export const useAddToGroup = (options = {}) => {
   return useMutation({
     mutationFn: addToGroup,
     onSuccess: (data) => {
-      console.log('Leads successfully added to group:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

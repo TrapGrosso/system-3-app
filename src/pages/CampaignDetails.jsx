@@ -89,7 +89,6 @@ export default function CampaignDetails() {
     }
   }
 
-  console.log(data)
 
   return (
     <DashboardLayout headerText="Campaign Details">

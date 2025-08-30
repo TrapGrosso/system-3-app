@@ -23,7 +23,6 @@ export const useDeleteGroup = (options = {}) => {
   return useMutation({
     mutationFn: deleteGroup,
     onSuccess: (data) => {
-      console.log('Group deleted successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

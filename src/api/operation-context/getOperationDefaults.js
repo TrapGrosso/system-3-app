@@ -20,7 +20,6 @@ const getOperationDefaults = async (operation) => {
     }
 
     const result = await response.json()
-    console.log(result)
     
     return result || []
     }

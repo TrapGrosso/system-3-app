@@ -48,7 +48,6 @@ function processUser(user) {
 
 export function DashboardLayout({ children, headerText = "Dashboard" }) {
   const { user, signOut } = useAuth()
-  console.log(user)
 
   const processedUser = processUser(user);
 

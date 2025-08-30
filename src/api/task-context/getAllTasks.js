@@ -51,7 +51,6 @@ const fetchTasks = async (params) => {
   }
 
   const result = await response.json()
-  console.log(result) // Keep original console.log as it was in the prompt
   
   return result
 }

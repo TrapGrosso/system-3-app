@@ -57,7 +57,6 @@ function ChangeCompanyDialog({
   // AddLeads mutation
   const addLeadsMutation = useAddLeads({
     onSuccess: (data) => {
-      console.log('Company submitted successfully:', data)
       toast.success(data.message || 'Company submitted successfully')
       handleReset()
       onOpenChange(false)
@@ -72,7 +71,6 @@ function ChangeCompanyDialog({
   // AI Company Search mutation
   const aiSearchMutation = useAiCompanySearch({
     onSuccess: (data) => {
-      console.log('AI search started successfully:', data)
       toast.success(data.message || 'AI search started successfully')
       handleReset()
       onOpenChange(false)

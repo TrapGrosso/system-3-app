@@ -23,7 +23,6 @@ export const useverifyProspectEmails = (options = {}) => {
   return useMutation({
     mutationFn: verifyProspectEmails,
     onSuccess: (data) => {
-      console.log('Prospects submitted successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

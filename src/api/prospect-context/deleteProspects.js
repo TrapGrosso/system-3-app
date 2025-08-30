@@ -23,7 +23,6 @@ export const useDeleteProspects = (options = {}) => {
   return useMutation({
     mutationFn: deleteProspects,
     onSuccess: (data) => {
-      console.log('Prospect(s) deleted successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

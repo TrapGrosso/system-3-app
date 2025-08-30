@@ -23,7 +23,6 @@ export const useAiCompanySearch = (options = {}) => {
   return useMutation({
     mutationFn: aiCompanySearch,
     onSuccess: (data) => {
-      console.log('Leads submitted successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

@@ -19,7 +19,6 @@ const getAllProspectNotes = async (user_id, prospect_id) => {
   }
 
   const result = await response.json()
-  console.log(result)
   
   return result || []
 }

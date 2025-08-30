@@ -23,7 +23,6 @@ export const useCreateVariable = (options = {}) => {
   return useMutation({
     mutationFn: createVariable,
     onSuccess: (data) => {
-      console.log('Variable created successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

@@ -23,7 +23,6 @@ export const useDeleteTask = (options = {}) => {
   return useMutation({
     mutationFn: deleteTask,
     onSuccess: (data) => {
-      console.log('Task(s) deleted successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

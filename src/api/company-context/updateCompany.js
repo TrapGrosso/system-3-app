@@ -23,7 +23,6 @@ export const useUpdateCompany = (options = {}) => {
   return useMutation({
     mutationFn: updateCompany,
     onSuccess: (data) => {
-      console.log('Company updated successfully:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {

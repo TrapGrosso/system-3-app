@@ -23,7 +23,6 @@ export const useRemoveFromAllGroups = (options = {}) => {
   return useMutation({
     mutationFn: removeFromAllGroups,
     onSuccess: (data) => {
-      console.log('Lead successfully removed from all groups:', data)
       options.onSuccess?.(data)
     },
     onError: (error) => {
