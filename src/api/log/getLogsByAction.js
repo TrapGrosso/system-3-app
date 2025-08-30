@@ -94,7 +94,7 @@ export const useLogsQueryController = ({ userId, action }) => {
     }
   }, [])
 
-  const internalResetFilters = useCallback(() => {
+  const resetFilters = useCallback(() => {
     // Internal programmatic reset used by fallback effect
     setQueryState(prev => ({
       ...prev,
@@ -120,8 +120,8 @@ export const useLogsQueryController = ({ userId, action }) => {
     toast.warning(
       `Filters failed (${queryApi.error?.message ?? 'unknown error'}). Showing all logs instead.`
     )
-    internalResetFilters()
-  }, [queryApi.isError, queryApi.isFetching, queryApi.error])
+    resetFilters()
+  }, [queryApi.isError, queryApi.isFetching, queryApi.error, resetFilters])
 
   const value = useMemo(() => ({
     // React Query data and states
@@ -141,18 +141,7 @@ export const useLogsQueryController = ({ userId, action }) => {
     updateQuery: (updateFn) => {
       return userSetQuery(updateFn)
     },
-    resetFilters: () => {
-      userSetQuery(prev => ({
-        ...prev,
-        status: '',
-        action: '',
-        date_from: '',
-        date_to: '',
-        date_field: 'start_time',
-        message: '',
-        page: 1,
-      }))
-    },
+    resetFilters,
 
     // Utility functions for common operations
     getLogById: (id) => {
@@ -172,7 +161,7 @@ export const useLogsQueryController = ({ userId, action }) => {
       })
       return counts
     },
-  }), [queryApi, query, userSetQuery])
+  }), [queryApi, query, userSetQuery, resetFilters])
 
   return value
 }

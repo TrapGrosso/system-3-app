@@ -69,7 +69,7 @@ export const CompaniesProvider = ({ children }) => {
     }
   }, [])
 
-  const internalResetFilters = useCallback(() => {
+  const resetFilters = useCallback(() => {
     // Internal programmatic reset used by fallback effect
     setQueryState(prev => ({
       ...prev,
@@ -97,8 +97,8 @@ export const CompaniesProvider = ({ children }) => {
     toast.warning(
       `Filters failed (${queryApi.error?.message ?? 'unknown error'}). Showing all companies instead.`
     )
-    internalResetFilters()
-  }, [queryApi.isError, queryApi.isFetching, queryApi.error])
+    resetFilters()
+  }, [queryApi.isError, queryApi.isFetching, queryApi.error, resetFilters])
 
   // Helper functions for CRUD operations
   const updateCompany = React.useCallback(
@@ -140,19 +140,7 @@ export const CompaniesProvider = ({ children }) => {
     updateQuery: (updateFn) => {
       return userSetQuery(updateFn)
     },
-    resetFilters: () => {
-      userSetQuery(prev => ({
-        ...prev,
-        name: '',
-        industry: '',
-        location: '',
-        size_op: '',
-        size_val: '',
-        prospect_first_name: '',
-        prospect_last_name: '',
-        page: 1,
-      }))
-    },
+    resetFilters,
 
     // Utility functions for common operations
     getCompanyByLinkedinId: (linkedinId) => {
@@ -183,7 +171,8 @@ export const CompaniesProvider = ({ children }) => {
     deleteCompany,
     updateCompanyMutation,
     deleteCompaniesMutation,
-    userSetQuery
+    userSetQuery,
+    resetFilters
   ])
 
   return (

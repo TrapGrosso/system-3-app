@@ -72,7 +72,7 @@ export const ProspectsProvider = ({ children }) => {
     }
   }, [])
 
-  const internalResetFilters = useCallback(() => {
+  const resetFilters = useCallback(() => {
     // Internal programmatic reset used by fallback effect
     setQueryState(prev => ({
       ...prev,
@@ -103,8 +103,8 @@ export const ProspectsProvider = ({ children }) => {
     toast.warning(
       `Filters failed (${queryApi.error?.message ?? 'unknown error'}). Showing all prospects instead.`
     )
-    internalResetFilters()
-  }, [queryApi.isError, queryApi.isFetching, queryApi.error])
+    resetFilters()
+  }, [queryApi.isError, queryApi.isFetching, queryApi.error, resetFilters])
 
   // Helper functions for CRUD operations
   const updateProspect = React.useCallback(
@@ -155,22 +155,7 @@ export const ProspectsProvider = ({ children }) => {
     updateQuery: (updateFn) => {
       return userSetQuery(updateFn)
     },
-    resetFilters: () => {
-      userSetQuery(prev => ({
-        ...prev,
-        q: '',
-        search_fields: '',
-        status: '',
-        in_group: '',
-        group_names: '',
-        in_campaign: '',
-        campaign_names: '',
-        prompt_names: '',
-        has_bd_scrape: '',
-        has_deep_search: '',
-        page: 1,
-      }))
-    },
+    resetFilters,
 
     // Utility functions for common operations
     getProspectById: (linkedinId) => {
@@ -211,7 +196,8 @@ export const ProspectsProvider = ({ children }) => {
     updateProspectCompany,
     updateProspectMutation,
     deleteProspectsMutation,
-    userSetQuery
+    userSetQuery,
+    resetFilters
   ])
 
   return (
