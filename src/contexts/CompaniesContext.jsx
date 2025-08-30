@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useMemo, useEffect } from 'react'
+import React, { createContext, useContext, useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useGetAllCompaniesQuery } from '@/api/company-context/getAllCompanies'
 import { useDeleteCompanies } from '@/api/company-context/deleteCompanies'
@@ -13,7 +13,7 @@ export const CompaniesProvider = ({ children }) => {
   const queryClient = useQueryClient()
 
   // Query params kept in context
-  const [query, setQuery] = useState({
+  const [query, setQueryState] = useState({
     page: 1,
     page_size: 10,
     sort_by: 'created_at',
@@ -28,8 +28,8 @@ export const CompaniesProvider = ({ children }) => {
     prospect_last_name: '',
   })
 
-  // Track if we've already attempted a fallback to prevent infinite loops
-  const [didFallback, setDidFallback] = useState(false)
+  // Fallback guard to prevent infinite loops
+  const fallbackDoneRef = useRef(false)
 
   // Use the companies query hook
   const queryApi = useGetAllCompaniesQuery({ userId: user?.id, ...query })
@@ -58,43 +58,47 @@ export const CompaniesProvider = ({ children }) => {
     },
   })
 
-  // Centralized error handling with fallback logic
+  // Hoisted user-controlled setter and internal reset for fallback
+  const userSetQuery = useCallback((partialOrUpdater) => {
+    // Re-arm fallback on any user-driven change
+    fallbackDoneRef.current = false
+    if (typeof partialOrUpdater === 'function') {
+      setQueryState(prev => partialOrUpdater(prev))
+    } else {
+      setQueryState(prev => ({ ...prev, ...partialOrUpdater }))
+    }
+  }, [])
+
+  const internalResetFilters = useCallback(() => {
+    // Internal programmatic reset used by fallback effect
+    setQueryState(prev => ({
+      ...prev,
+      name: '',
+      industry: '',
+      location: '',
+      size_op: '',
+      size_val: '',
+      prospect_first_name: '',
+      prospect_last_name: '',
+      page: 1,
+    }))
+  }, [])
+
+  // Single error handling effect with fallback guard
   useEffect(() => {
     if (!queryApi.isError || queryApi.isFetching) return
 
-    const hasExtraFilters = Object.values(query).some(
-      v => v !== '' && v !== null && v !== undefined && !(v === 1 || v === 10)
-    )
-
-    if (hasExtraFilters && !didFallback) {
-      // Show warning toast and attempt fallback by clearing filters
-      toast.warning(
-        `Filters failed (${queryApi.error?.message ?? 'unknown error'}). Showing all companies instead.`
-      )
-      // Clear filters and reset page to 1
-      setQuery(prev => ({
-        ...prev,
-        name: '',
-        industry: '',
-        location: '',
-        size_op: '',
-        size_val: '',
-        prospect_first_name: '',
-        prospect_last_name: '',
-        page: 1,
-      }))
-      setDidFallback(true) // Prevent infinite fallback attempts
-      // React-Query will automatically refetch because queryKey changed
-    } else {
-      // Show error toast for cases where fallback isn't appropriate or already attempted
+    if (fallbackDoneRef.current) {
       toast.error(queryApi.error?.message ?? 'Failed to fetch companies')
+      return
     }
-  }, [queryApi.isError, queryApi.isFetching, queryApi.error, query, didFallback])
 
-  // Reset didFallback flag when user manually changes filters
-  useEffect(() => {
-    setDidFallback(false)
-  }, [query])
+    fallbackDoneRef.current = true
+    toast.warning(
+      `Filters failed (${queryApi.error?.message ?? 'unknown error'}). Showing all companies instead.`
+    )
+    internalResetFilters()
+  }, [queryApi.isError, queryApi.isFetching, queryApi.error])
 
   // Helper functions for CRUD operations
   const updateCompany = React.useCallback(
@@ -131,13 +135,13 @@ export const CompaniesProvider = ({ children }) => {
     // Query state management
     query,
     setQuery: (partial) => {
-      setQuery(prev => ({ ...prev, ...partial }))
+      return userSetQuery(partial)
     },
     updateQuery: (updateFn) => {
-      setQuery(updateFn)
+      return userSetQuery(updateFn)
     },
     resetFilters: () => {
-      setQuery(prev => ({
+      userSetQuery(prev => ({
         ...prev,
         name: '',
         industry: '',
@@ -146,7 +150,7 @@ export const CompaniesProvider = ({ children }) => {
         size_val: '',
         prospect_first_name: '',
         prospect_last_name: '',
-        page: 1, // Reset to first page when clearing filters
+        page: 1,
       }))
     },
 
@@ -178,7 +182,8 @@ export const CompaniesProvider = ({ children }) => {
     updateCompany, 
     deleteCompany,
     updateCompanyMutation,
-    deleteCompaniesMutation
+    deleteCompaniesMutation,
+    userSetQuery
   ])
 
   return (

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { toast } from 'sonner'
 
 const getLogsByAction = async (params) => {
@@ -64,7 +64,7 @@ export const useGetLogsByAction = (userId, action) => {
 
 // Query controller hook that mirrors ProspectsContext functionality
 export const useLogsQueryController = ({ userId, action }) => {
-  const [query, setQuery] = useState({
+  const [query, setQueryState] = useState({
     page: 1,
     page_size: 10,
     sort_by: 'created_at',
@@ -77,47 +77,51 @@ export const useLogsQueryController = ({ userId, action }) => {
     message: '',
   })
 
-  // Track if we've already attempted a fallback to prevent infinite loops
-  const [didFallback, setDidFallback] = useState(false)
+  // Fallback guard to prevent infinite loops
+  const fallbackDoneRef = useRef(false)
 
   // Use the logs query hook
   const queryApi = useLogsByActionQuery({ userId, action, ...query })
 
-  // Centralized error handling with fallback logic
+  // Hoisted user-controlled setter and internal reset for fallback
+  const userSetQuery = useCallback((partialOrUpdater) => {
+    // Re-arm fallback on any user-driven change
+    fallbackDoneRef.current = false
+    if (typeof partialOrUpdater === 'function') {
+      setQueryState(prev => partialOrUpdater(prev))
+    } else {
+      setQueryState(prev => ({ ...prev, ...partialOrUpdater }))
+    }
+  }, [])
+
+  const internalResetFilters = useCallback(() => {
+    // Internal programmatic reset used by fallback effect
+    setQueryState(prev => ({
+      ...prev,
+      status: '',
+      date_from: '',
+      date_to: '',
+      date_field: 'start_time',
+      message: '',
+      page: 1,
+    }))
+  }, [])
+
+  // Single error handling effect with fallback guard
   useEffect(() => {
     if (!queryApi.isError || queryApi.isFetching) return
 
-    const hasExtraFilters = Object.values(query).some(
-      v => v !== '' && v !== null && v !== undefined && v !== 1 && v !== 10 && v !== 'created_at' && v !== 'desc' && v !== 'start_time'
-    )
-
-    if (hasExtraFilters && !didFallback) {
-      // Show warning toast and attempt fallback by clearing filters
-      toast.warning(
-        `Filters failed (${queryApi.error?.message ?? 'unknown error'}). Showing all logs instead.`
-      )
-      // Clear filters and reset page to 1
-      setQuery(prev => ({
-        ...prev,
-        status: '',
-        date_from: '',
-        date_to: '',
-        date_field: 'start_time',
-        message: '',
-        page: 1,
-      }))
-      setDidFallback(true) // Prevent infinite fallback attempts
-      // React-Query will automatically refetch because queryKey changed
-    } else {
-      // Show error toast for cases where fallback isn't appropriate or already attempted
+    if (fallbackDoneRef.current) {
       toast.error(queryApi.error?.message ?? 'Failed to fetch logs')
+      return
     }
-  }, [queryApi.isError, queryApi.isFetching, queryApi.error, query, didFallback])
 
-  // Reset didFallback flag when user manually changes filters
-  useEffect(() => {
-    setDidFallback(false)
-  }, [query])
+    fallbackDoneRef.current = true
+    toast.warning(
+      `Filters failed (${queryApi.error?.message ?? 'unknown error'}). Showing all logs instead.`
+    )
+    internalResetFilters()
+  }, [queryApi.isError, queryApi.isFetching, queryApi.error])
 
   const value = useMemo(() => ({
     // React Query data and states
@@ -132,13 +136,13 @@ export const useLogsQueryController = ({ userId, action }) => {
     // Query state management
     query,
     setQuery: (partial) => {
-      setQuery(prev => ({ ...prev, ...partial }))
+      return userSetQuery(partial)
     },
     updateQuery: (updateFn) => {
-      setQuery(updateFn)
+      return userSetQuery(updateFn)
     },
     resetFilters: () => {
-      setQuery(prev => ({
+      userSetQuery(prev => ({
         ...prev,
         status: '',
         action: '',
@@ -146,7 +150,7 @@ export const useLogsQueryController = ({ userId, action }) => {
         date_to: '',
         date_field: 'start_time',
         message: '',
-        page: 1, // Reset to first page when clearing filters
+        page: 1,
       }))
     },
 
@@ -168,7 +172,7 @@ export const useLogsQueryController = ({ userId, action }) => {
       })
       return counts
     },
-  }), [queryApi, query])
+  }), [queryApi, query, userSetQuery])
 
   return value
 }
