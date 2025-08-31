@@ -43,10 +43,7 @@ export const makeStagedBindings = (initialQuery, schema, onApplyFilters, onReset
           }
           break
         case 'dateRange':
-          initial[key] = {
-            from: initialQuery[field.fromKey] ?? '',
-            to: initialQuery[field.toKey] ?? ''
-          }
+          initial[key] = decodeDateRange(initialQuery, [field.fromKey, field.toKey])
           break
         case 'oneOf':
           initial[key] = decodeOneOfText(initialQuery, toOneOfKeys(field.options))
@@ -80,10 +77,7 @@ export const makeStagedBindings = (initialQuery, schema, onApplyFilters, onReset
           }
           break
         case 'dateRange':
-          newValue = {
-            from: initialQuery[field.fromKey] ?? '',
-            to: initialQuery[field.toKey] ?? ''
-          }
+          newValue = decodeDateRange(initialQuery, [field.fromKey, field.toKey])
           break
         case 'oneOf':
           newValue = decodeOneOfText(initialQuery, toOneOfKeys(field.options))
@@ -143,8 +137,7 @@ export const makeStagedBindings = (initialQuery, schema, onApplyFilters, onReset
           newQuery[field.labelKey] = stagedValue[field.labelKey]
           break
         case 'dateRange':
-          newQuery[field.fromKey] = stagedValue.from
-          newQuery[field.toKey] = stagedValue.to
+          Object.assign(newQuery, encodeDateRange(stagedValue, [field.fromKey, field.toKey]))
           break
         case 'oneOf':
           const { field: oneOfField, value: oneOfValue } = stagedValue || {}
