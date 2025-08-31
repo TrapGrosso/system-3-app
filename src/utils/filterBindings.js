@@ -22,6 +22,8 @@ import { parseCsv, toCsv } from './csv'
  *   - `reset`: A function to reset all staged filters to their initial state.
  */
 export const makeStagedBindings = (initialQuery, schema, onApplyFilters, onResetFilters) => {
+  const toOneOfKeys = (opts) => (Array.isArray(opts) ? opts.map(o => typeof o === 'string' ? o : o?.value).filter(Boolean) : [])
+
   const [stagedValues, setStagedValues] = useState(() => {
     const initial = {}
     for (const key in schema) {
@@ -47,7 +49,7 @@ export const makeStagedBindings = (initialQuery, schema, onApplyFilters, onReset
           }
           break
         case 'oneOf':
-          initial[key] = decodeOneOfText(initialQuery, field.options)
+          initial[key] = decodeOneOfText(initialQuery, toOneOfKeys(field.options))
           break
         default:
           initial[key] = ''
@@ -84,7 +86,7 @@ export const makeStagedBindings = (initialQuery, schema, onApplyFilters, onReset
           }
           break
         case 'oneOf':
-          newValue = decodeOneOfText(initialQuery, field.options)
+          newValue = decodeOneOfText(initialQuery, toOneOfKeys(field.options))
           break
         default:
           newValue = ''
@@ -145,7 +147,8 @@ export const makeStagedBindings = (initialQuery, schema, onApplyFilters, onReset
           newQuery[field.toKey] = stagedValue.to
           break
         case 'oneOf':
-          Object.assign(newQuery, encodeOneOfText(stagedValue, field.options))
+          const { field: oneOfField, value: oneOfValue } = stagedValue || {}
+          Object.assign(newQuery, encodeOneOfText(oneOfField, oneOfValue, toOneOfKeys(field.options)))
           break
         default:
           break
@@ -176,7 +179,7 @@ export const makeStagedBindings = (initialQuery, schema, onApplyFilters, onReset
           resetValues[key] = { from: '', to: '' }
           break
         case 'oneOf':
-          resetValues[key] = null
+          resetValues[key] = { field: '', value: '' }
           break
         default:
           resetValues[key] = ''

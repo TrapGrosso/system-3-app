@@ -206,8 +206,6 @@ function PeopleCompanies() {
         }
     }
 
-    console.log(CompanyIsError)
-
   return (
     <DashboardLayout headerText="Dashboard">
       <div className="px-4 lg:px-6">
@@ -260,7 +258,7 @@ function PeopleCompanies() {
 
         <CompaniesFilterBar
           query={companiesQuery}
-          onApplyFilters={(q) => setCompaniesQuery({ ...q, page: 1 })}
+          onApplyFilters={setCompaniesQuery}
           onResetFilters={resetCompaniesFilters}
           loading={companiesLoading}
         />
