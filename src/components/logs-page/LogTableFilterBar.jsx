@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { SingleSelect } from "../shared/filter/SingleSelect"
 import { DateTimeRangePicker } from "../shared/filter/DateTimeRangePicker"
+import { makeStagedBindings } from "@/utils/filterBindings"
+import { countActiveFilters } from "@/utils/activeFilters"
 
 const STATUS_OPTIONS = [
   { value: null, label: 'All Statuses' },
@@ -28,87 +30,26 @@ const DATE_FIELD_OPTIONS = [
 ]
 
 export default function LogTableFilterBar({ query, onApplyFilters, onResetFilters, loading }) {
-  // Local state for search input
-  const [searchInput, setSearchInput] = React.useState(query.message || '')
+  const schema = React.useMemo(() => ({
+    message: { kind: "input" },
+    status: { kind: "singleSelect" },
+    action: { kind: "singleSelect" },
+    date_field: { kind: "singleSelect", defaultValue: "start_time" },
+    date_range: { kind: "dateRange", fromKey: "date_from", toKey: "date_to" }
+  }), [])
 
-  // Local state for single-value selects
-  const [status, setStatus] = React.useState(query.status || '')
-  const [action, setAction] = React.useState(query.action || '')
-  const [dateField, setDateField] = React.useState(query.date_field || 'start_time')
-
-  // Local state for date range
-  const [dateFrom, setDateFrom] = React.useState(query.date_from || '')
-  const [dateTo, setDateTo] = React.useState(query.date_to || '')
-
-  // Sync local search input with external filter changes
-  React.useEffect(() => {
-    if (query.message !== searchInput) {
-      setSearchInput(query.message || '')
-    }
-  }, [query.message])
-
-  // Sync single-value selects with external filter changes
-  React.useEffect(() => {
-    if (query.status !== status) {
-      setStatus(query.status || '')
-    }
-  }, [query.status])
-
-  React.useEffect(() => {
-    if (query.action !== action) {
-      setAction(query.action || '')
-    }
-  }, [query.action])
-
-  React.useEffect(() => {
-    if (query.date_field !== dateField) {
-      setDateField(query.date_field || 'start_time')
-    }
-  }, [query.date_field])
-
-  // Sync date range with external filter changes
-  React.useEffect(() => {
-    if (query.date_from !== dateFrom) {
-      setDateFrom(query.date_from || '')
-    }
-  }, [query.date_from])
-
-  React.useEffect(() => {
-    if (query.date_to !== dateTo) {
-      setDateTo(query.date_to || '')
-    }
-  }, [query.date_to])
-
-  const handleApplyFilters = () => {
-    onApplyFilters({
-      message: searchInput.trim(),
-      status,
-      action,
-      date_from: dateFrom,
-      date_to: dateTo,
-      date_field: dateField
-    })
-  }
-
-  const handleReset = () => {
-    setSearchInput('')
-    setStatus('')
-    setAction('')
-    setDateFrom('')
-    setDateTo('')
-    setDateField('start_time')
-    onResetFilters()
-  }
+  const {
+    staged,
+    apply,
+    reset
+  } = makeStagedBindings(query, schema, onApplyFilters, onResetFilters)
 
   const handleDateRangeChange = ({ from, to }) => {
-    setDateFrom(from)
-    setDateTo(to)
+    staged.date_range.set({ from, to })
   }
 
-  // Count active filters
-  const activeFilters = Object.entries(query).filter(([key, value]) => 
-    key !== 'page' && key !== 'page_size' && key !== 'sort_by' && key !== 'sort_dir' && value !== 'start_time' && value
-  ).length
+  const dateField = staged.date_field.value || "start_time"
+  const activeFilters = countActiveFilters(query, ['page','page_size','sort_by','sort_dir'], { excludeDefaults: { date_field: 'start_time' }})
 
   return (
     <Card className="mb-6">
@@ -130,7 +71,7 @@ export default function LogTableFilterBar({ query, onApplyFilters, onResetFilter
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleReset}
+                  onClick={reset}
                   className="h-8 px-2"
                 >
                   <XIcon className="h-3 w-3 mr-1" />
@@ -151,8 +92,8 @@ export default function LogTableFilterBar({ query, onApplyFilters, onResetFilter
                     <Input
                       id="search"
                       placeholder="Search log messages..."
-                      value={searchInput}
-                      onChange={(e) => setSearchInput(e.target.value)}
+                      value={staged.message.value}
+                      onChange={(e) => staged.message.set(e.target.value)}
                       className="pl-9 h-9"
                     />
                   </div>
@@ -162,7 +103,7 @@ export default function LogTableFilterBar({ query, onApplyFilters, onResetFilter
                 <div className="space-y-2">
                   <Label className="text-[13px] font-medium text-muted-foreground">&nbsp;</Label>
                   <Button 
-                    onClick={handleApplyFilters}
+                    onClick={apply}
                     className="w-full h-9"
                   >
                     Apply Filters
@@ -175,8 +116,8 @@ export default function LogTableFilterBar({ query, onApplyFilters, onResetFilter
                 <div className="space-y-2">
                   <Label className="text-[13px] font-medium text-muted-foreground">Action</Label>
                   <SingleSelect
-                    value={action}
-                    onValueChange={setAction}
+                    value={staged.action.value}
+                    onValueChange={staged.action.set}
                     options={ACTION_OPTIONS}
                     placeholder="All Actions"
                   />
@@ -184,8 +125,8 @@ export default function LogTableFilterBar({ query, onApplyFilters, onResetFilter
                 <div className="space-y-2">
                   <Label className="text-[13px] font-medium text-muted-foreground">Status</Label>
                   <SingleSelect
-                    value={status}
-                    onValueChange={setStatus}
+                    value={staged.status.value}
+                    onValueChange={staged.status.set}
                     options={STATUS_OPTIONS}
                     placeholder="All Statuses"
                   />
@@ -193,8 +134,8 @@ export default function LogTableFilterBar({ query, onApplyFilters, onResetFilter
                 <div className="space-y-2">
                   <Label className="text-[13px] font-medium text-muted-foreground">Date Field</Label>
                   <SingleSelect
-                    value={dateField}
-                    onValueChange={setDateField}
+                    value={staged.date_field.value}
+                    onValueChange={staged.date_field.set}
                     options={DATE_FIELD_OPTIONS}
                     placeholder="Select field"
                   />
@@ -204,8 +145,8 @@ export default function LogTableFilterBar({ query, onApplyFilters, onResetFilter
               {/* Date Range Filter */}
               <div className="space-y-4">
                 <DateTimeRangePicker
-                  from={dateFrom}
-                  to={dateTo}
+                  from={staged.date_range.value.from}
+                  to={staged.date_range.value.to}
                   onChange={handleDateRangeChange}
                   withTime={false}
                   label={`Date Range (filtered by ${dateField === 'start_time' ? 'Start Time' : 'End Time'})`}

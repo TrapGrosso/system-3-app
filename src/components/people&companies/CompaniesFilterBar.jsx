@@ -8,6 +8,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { SingleSelect } from "../shared/filter/SingleSelect"
 import { SizeFilter } from "../shared/filter/SizeFilter"
 import AdvancedFiltersCollapsible from "../shared/ui/AdvancedFiltersCollapsible"
+import { makeStagedBindings } from "@/utils/filterBindings"
+import { countActiveFilters } from "@/utils/activeFilters"
 
 const TEXT_FIELD_OPTIONS = [
   { value: null, label: 'Select Field' },
@@ -19,102 +21,22 @@ const TEXT_FIELD_OPTIONS = [
 ]
 
 export default function CompaniesFilterBar({ query, onApplyFilters, onResetFilters, loading }) {
-  // Local state for search input and selected field
-  const [searchInput, setSearchInput] = React.useState(
-    query.name || 
-    query.industry || 
-    query.location || 
-    query.prospect_first_name || 
-    query.prospect_last_name || 
-    ''
-  )
-  
-  const [selectedField, setSelectedField] = React.useState(
-    query.name ? 'name' :
-    query.industry ? 'industry' :
-    query.location ? 'location' :
-    query.prospect_first_name ? 'prospect_first_name' :
-    query.prospect_last_name ? 'prospect_last_name' : ''
-  )
+  const schema = React.useMemo(() => ({
+    search: { kind: "oneOf", options: TEXT_FIELD_OPTIONS.filter(opt => opt.value !== null) },
+    size: { kind: "pair", valueKey: "size_val", labelKey: "size_op" }
+  }), [])
 
-  // Local state for size filters
-  const [sizeOp, setSizeOp] = React.useState(query.size_op || '')
-  const [sizeVal, setSizeVal] = React.useState(query.size_val || '')
+  const {
+    staged,
+    apply,
+    reset
+  } = makeStagedBindings(query, schema, onApplyFilters, onResetFilters)
 
-  // Sync local search input with external filter changes
-  React.useEffect(() => {
-    const fieldValue = 
-      query.name || 
-      query.industry || 
-      query.location || 
-      query.prospect_first_name || 
-      query.prospect_last_name || 
-      ''
-    
-    if (fieldValue !== searchInput) {
-      setSearchInput(fieldValue)
-    }
-  }, [query.name, query.industry, query.location, query.prospect_first_name, query.prospect_last_name])
-
-  // Sync selected field with external filter changes
-  React.useEffect(() => {
-    const field = 
-      query.name ? 'name' :
-      query.industry ? 'industry' :
-      query.location ? 'location' :
-      query.prospect_first_name ? 'prospect_first_name' :
-      query.prospect_last_name ? 'prospect_last_name' : ''
-    
-    if (field !== selectedField) {
-      setSelectedField(field)
-    }
-  }, [query.name, query.industry, query.location, query.prospect_first_name, query.prospect_last_name])
-
-  // Sync size filters with external filter changes
-  React.useEffect(() => {
-    if (query.size_op !== sizeOp) {
-      setSizeOp(query.size_op || '')
-    }
-  }, [query.size_op])
-
-  React.useEffect(() => {
-    if (query.size_val !== sizeVal) {
-      setSizeVal(query.size_val || '')
-    }
-  }, [query.size_val])
-
-  const handleApplyFilters = () => {
-    // Build query object with all fields reset
-    const newQuery = {
-      name: '',
-      industry: '',
-      location: '',
-      prospect_first_name: '',
-      prospect_last_name: '',
-      size_op: sizeOp,
-      size_val: sizeVal
-    }
-
-    // Set the value for the selected field
-    if (searchInput.trim() && selectedField) {
-      newQuery[selectedField] = searchInput.trim()
-    }
-
-    onApplyFilters(newQuery)
+  const handleSizeChange = ({ size_op, size_val }) => {
+    staged.size.set({ size_op, size_val })
   }
 
-  const handleReset = () => {
-    setSearchInput('')
-    setSelectedField('')
-    setSizeOp('')
-    setSizeVal('')
-    onResetFilters()
-  }
-
-  // Count active filters (excluding pagination and sorting)
-  const activeFilters = Object.entries(query).filter(([key, value]) => 
-    key !== 'page' && key !== 'page_size' && key !== 'sort_by' && key !== 'sort_dir' && value
-  ).length
+  const activeFilters = countActiveFilters(query, ['page','page_size','sort_by','sort_dir'])
 
   return (
     <Card className="mb-6">
@@ -136,7 +58,7 @@ export default function CompaniesFilterBar({ query, onApplyFilters, onResetFilte
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleReset}
+                  onClick={reset}
                   className="h-8 px-3 text-sm transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-offset-2"
                 >
                   <XIcon className="h-3 w-3 ms-1" aria-label="Clear filters" />
@@ -159,8 +81,8 @@ export default function CompaniesFilterBar({ query, onApplyFilters, onResetFilte
                     <Input
                       id="search"
                       placeholder="Search companies..."
-                      value={searchInput}
-                      onChange={(e) => setSearchInput(e.target.value)}
+                      value={staged.search.value?.value || ''}
+                      onChange={(e) => staged.search.set({ field: staged.search.value?.field, value: e.target.value })}
                       className="pl-9 h-9 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-offset-2"
                     />
                   </div>
@@ -172,8 +94,8 @@ export default function CompaniesFilterBar({ query, onApplyFilters, onResetFilte
                     Search Field
                   </Label>
                   <SingleSelect
-                    value={selectedField}
-                    onValueChange={setSelectedField}
+                    value={staged.search.value?.field || ''}
+                    onValueChange={(field) => staged.search.set({ field, value: staged.search.value?.value })}
                     options={TEXT_FIELD_OPTIONS}
                     placeholder="Select Field"
                     triggerClassName="h-9 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-offset-2"
@@ -181,7 +103,7 @@ export default function CompaniesFilterBar({ query, onApplyFilters, onResetFilte
                 </div>
                 {/* Apply Filters */}
                 <Button
-                  onClick={handleApplyFilters}
+                  onClick={apply}
                   className="md:w-auto w-full md:flex-none flex-grow h-9 px-4 text-sm transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-offset-2"
                 >
                   Apply Filters
@@ -197,12 +119,9 @@ export default function CompaniesFilterBar({ query, onApplyFilters, onResetFilte
                         Company Size
                       </Label>
                       <SizeFilter
-                        sizeOp={sizeOp}
-                        sizeVal={sizeVal}
-                        onChange={({ size_op, size_val }) => {
-                          setSizeOp(size_op)
-                          setSizeVal(size_val)
-                        }}
+                      sizeOp={staged.size.value.size_op}
+                      sizeVal={staged.size.value.size_val}
+                      onChange={handleSizeChange}
                       />
                     </div>
                   </div>

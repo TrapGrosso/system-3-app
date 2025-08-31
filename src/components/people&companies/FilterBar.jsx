@@ -12,6 +12,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { MultiSelectChipPicker } from "../shared/filter/MultiSelectChipPicker"
 import { SingleSelect } from "../shared/filter/SingleSelect"
 import AdvancedFiltersCollapsible from "../shared/ui/AdvancedFiltersCollapsible"
+import { makeStagedBindings } from "@/utils/filterBindings"
+import { countActiveFilters } from "@/utils/activeFilters"
 
 const STATUS_OPTIONS = [
   { value: null, label: 'All Statuses' },
@@ -55,131 +57,26 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
   const { data: campaigns = [] } = useFetchCampaigns(user?.id)
   const { data: prompts = [] } = useAllPrompts('deep_research')
 
-  // Local state for search input and selected fields
-  const [searchInput, setSearchInput] = React.useState(query.q || '')
-  const [selectedFields, setSelectedFields] = React.useState(
-    query.search_fields ? query.search_fields.split(',') : []
-  )
+  const schema = React.useMemo(() => ({
+    q: { kind: "input" },
+    search_fields: { kind: "multiCsv" },
+    status: { kind: "singleSelect" },
+    in_group: { kind: "singleSelect" },
+    in_campaign: { kind: "singleSelect" },
+    has_bd_scrape: { kind: "singleSelect" },
+    has_deep_search: { kind: "singleSelect" },
+    group_names: { kind: "multiCsv" },
+    campaign_names: { kind: "multiCsv" },
+    prompt_names: { kind: "multiCsv" },
+  }), [])
 
-  // Local state for single-value selects
-  const [status, setStatus] = React.useState(query.status || '')
-  const [inGroup, setInGroup] = React.useState(query.in_group || '')
-  const [inCampaign, setInCampaign] = React.useState(query.in_campaign || '')
-  const [hasBdScrape, setHasBdScrape] = React.useState(query.has_bd_scrape || '')
-  const [hasDeepSearch, setHasDeepSearch] = React.useState(query.has_deep_search || '')
+  const {
+    staged,
+    apply,
+    reset
+  } = makeStagedBindings(query, schema, onApplyFilters, onResetFilters)
 
-  // Local state for multi-select CSV filters
-  const [selectedGroupNames, setSelectedGroupNames] = React.useState(
-    query.group_names ? query.group_names.split(',').filter(Boolean) : []
-  )
-  const [selectedCampaignNames, setSelectedCampaignNames] = React.useState(
-    query.campaign_names ? query.campaign_names.split(',').filter(Boolean) : []
-  )
-  const [selectedPromptNames, setSelectedPromptNames] = React.useState(
-    query.prompt_names ? query.prompt_names.split(',').filter(Boolean) : []
-  )
-
-  // Sync local search input with external filter changes
-  React.useEffect(() => {
-    if (query.q !== searchInput) {
-      setSearchInput(query.q || '')
-    }
-  }, [query.q])
-
-  // Sync selected fields with external filter changes
-  React.useEffect(() => {
-    const fieldsFromFilter = query.search_fields ? query.search_fields.split(',') : []
-    if (JSON.stringify(fieldsFromFilter) !== JSON.stringify(selectedFields)) {
-      setSelectedFields(fieldsFromFilter)
-    }
-  }, [query.search_fields])
-
-  // Sync single-value selects with external filter changes
-  React.useEffect(() => {
-    if (query.status !== status) {
-      setStatus(query.status || '')
-    }
-  }, [query.status])
-
-  React.useEffect(() => {
-    if (query.in_group !== inGroup) {
-      setInGroup(query.in_group || '')
-    }
-  }, [query.in_group])
-
-  React.useEffect(() => {
-    if (query.in_campaign !== inCampaign) {
-      setInCampaign(query.in_campaign || '')
-    }
-  }, [query.in_campaign])
-
-  React.useEffect(() => {
-    if (query.has_bd_scrape !== hasBdScrape) {
-      setHasBdScrape(query.has_bd_scrape || '')
-    }
-  }, [query.has_bd_scrape])
-
-  React.useEffect(() => {
-    if (query.has_deep_search !== hasDeepSearch) {
-      setHasDeepSearch(query.has_deep_search || '')
-    }
-  }, [query.has_deep_search])
-
-  // Sync multi-select arrays with external filter changes
-  React.useEffect(() => {
-    const groupNamesFromFilter = query.group_names ? query.group_names.split(',').filter(Boolean) : []
-    if (JSON.stringify(groupNamesFromFilter) !== JSON.stringify(selectedGroupNames)) {
-      setSelectedGroupNames(groupNamesFromFilter)
-    }
-  }, [query.group_names])
-
-  React.useEffect(() => {
-    const campaignNamesFromFilter = query.campaign_names ? query.campaign_names.split(',').filter(Boolean) : []
-    if (JSON.stringify(campaignNamesFromFilter) !== JSON.stringify(selectedCampaignNames)) {
-      setSelectedCampaignNames(campaignNamesFromFilter)
-    }
-  }, [query.campaign_names])
-
-  React.useEffect(() => {
-    const promptNamesFromFilter = query.prompt_names ? query.prompt_names.split(',').filter(Boolean) : []
-    if (JSON.stringify(promptNamesFromFilter) !== JSON.stringify(selectedPromptNames)) {
-      setSelectedPromptNames(promptNamesFromFilter)
-    }
-  }, [query.prompt_names])
-
-  const handleApplyFilters = () => {
-    onApplyFilters({
-      q: searchInput.trim(),
-      search_fields: selectedFields.length ? selectedFields.join(',') : '',
-      group_names: selectedGroupNames.length ? selectedGroupNames.join(',') : '',
-      campaign_names: selectedCampaignNames.length ? selectedCampaignNames.join(',') : '',
-      prompt_names: selectedPromptNames.length ? selectedPromptNames.join(',') : '',
-      status,
-      in_group: inGroup,
-      in_campaign: inCampaign,
-      has_bd_scrape: hasBdScrape,
-      has_deep_search: hasDeepSearch
-    })
-  }
-
-  const handleReset = () => {
-    setSearchInput('')
-    setSelectedFields([])
-    setStatus('')
-    setInGroup('')
-    setInCampaign('')
-    setHasBdScrape('')
-    setHasDeepSearch('')
-    setSelectedGroupNames([])
-    setSelectedCampaignNames([])
-    setSelectedPromptNames([])
-    onResetFilters()
-  }
-
-  // Count active filters
-  const activeFilters = Object.entries(query).filter(([key, value]) => 
-    key !== 'page' && key !== 'page_size' && key !== 'sort_by' && key !== 'sort_dir' && value
-  ).length
+  const activeFilters = countActiveFilters(query, ['page','page_size','sort_by','sort_dir'])
 
   return (
     <Card className="mb-6">
@@ -201,7 +98,7 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleReset}
+                  onClick={reset}
                   className="h-8 px-2"
                 >
                   <XIcon className="h-3 w-3 mr-1" />
@@ -222,8 +119,8 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
                     <Input
                       id="search"
                       placeholder="Search prospects..."
-                      value={searchInput}
-                      onChange={(e) => setSearchInput(e.target.value)}
+                      value={staged.q.value}
+                      onChange={(e) => staged.q.set(e.target.value)}
                       className="pl-9 h-9"
                     />
                   </div>
@@ -233,7 +130,7 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
                 <div className="space-y-2">
                   <Label className="text-[13px] font-medium text-muted-foreground">&nbsp;</Label>
                   <Button 
-                    onClick={handleApplyFilters}
+                    onClick={apply}
                     className="w-full h-9"
                   >
                     Apply Filters
@@ -248,8 +145,8 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
                 </Label>
                 <MultiSelectChipPicker
                   options={SEARCH_FIELD_OPTIONS}
-                  value={selectedFields}
-                  onValueChange={setSelectedFields}
+                  value={staged.search_fields.value}
+                  onValueChange={staged.search_fields.set}
                   placeholder="Choose search fields..."
                 />
               </div>
@@ -262,8 +159,8 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
                   <div className="space-y-2">
                     <Label className="text-[13px] font-medium text-muted-foreground">Status</Label>
                     <SingleSelect
-                      value={status}
-                      onValueChange={setStatus}
+                      value={staged.status.value}
+                      onValueChange={staged.status.set}
                       options={STATUS_OPTIONS}
                       placeholder="All Statuses"
                     />
@@ -273,8 +170,8 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
                   <div className="space-y-2">
                     <Label className="text-[13px] font-medium text-muted-foreground">In Group</Label>
                     <SingleSelect
-                      value={inGroup}
-                      onValueChange={setInGroup}
+                      value={staged.in_group.value}
+                      onValueChange={staged.in_group.set}
                       options={BOOLEAN_OPTIONS}
                       placeholder="All"
                     />
@@ -284,8 +181,8 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
                   <div className="space-y-2">
                     <Label className="text-[13px] font-medium text-muted-foreground">In Campaign</Label>
                     <SingleSelect
-                      value={inCampaign}
-                      onValueChange={setInCampaign}
+                      value={staged.in_campaign.value}
+                      onValueChange={staged.in_campaign.set}
                       options={BOOLEAN_OPTIONS}
                       placeholder="All"
                     />
@@ -295,8 +192,8 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
                   <div className="space-y-2">
                     <Label className="text-[13px] font-medium text-muted-foreground">BD Enrichment</Label>
                     <SingleSelect
-                      value={hasBdScrape}
-                      onValueChange={setHasBdScrape}
+                      value={staged.has_bd_scrape.value}
+                      onValueChange={staged.has_bd_scrape.set}
                       options={BOOLEAN_OPTIONS}
                       placeholder="All"
                     />
@@ -306,8 +203,8 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
                   <div className="space-y-2">
                     <Label className="text-[13px] font-medium text-muted-foreground">Deep Search</Label>
                     <SingleSelect
-                      value={hasDeepSearch}
-                      onValueChange={setHasDeepSearch}
+                      value={staged.has_deep_search.value}
+                      onValueChange={staged.has_deep_search.set}
                       options={BOOLEAN_OPTIONS}
                       placeholder="All"
                     />
@@ -323,8 +220,8 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
                     </Label>
                     <MultiSelectChipPicker
                       options={groups.map(group => ({ value: group.name, label: group.name }))}
-                      value={selectedGroupNames}
-                      onValueChange={setSelectedGroupNames}
+                      value={staged.group_names.value}
+                      onValueChange={staged.group_names.set}
                       placeholder={groups.length ? "Choose groups..." : "No groups available"}
                     />
                   </div>
@@ -336,8 +233,8 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
                     </Label>
                     <MultiSelectChipPicker
                       options={campaigns.map(campaign => ({ id: campaign.id,value: campaign.name, label: campaign.name }))}
-                      value={selectedCampaignNames}
-                      onValueChange={setSelectedCampaignNames}
+                      value={staged.campaign_names.value}
+                      onValueChange={staged.campaign_names.set}
                       placeholder={campaigns.length ? "Choose campaigns..." : "No campaigns available"}
                     />
                   </div>
@@ -349,8 +246,8 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
                     </Label>
                     <MultiSelectChipPicker
                       options={prompts.map(prompt => ({ value: prompt.name, label: prompt.name }))}
-                      value={selectedPromptNames}
-                      onValueChange={setSelectedPromptNames}
+                      value={staged.prompt_names.value}
+                      onValueChange={staged.prompt_names.set}
                       placeholder={prompts.length ? "Choose prompts..." : "No prompts available"}
                     />
                   </div>
