@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { buildSearchParams } from '@/utils/searchParams'
 
 const getLogsByAction = async (params) => {
-  if (!params?.userId) {
+  if (!params?.user_id) {
     console.warn('getLogsByAction: userId is not defined. Returning null.')
     return null
   }
