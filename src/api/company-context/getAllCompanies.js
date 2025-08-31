@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { buildSearchParams } from '@/utils/searchParams'
 
 // Internal fetch function for the actual API call
 const getAllCompanies = async (params) => {
@@ -6,15 +7,10 @@ const getAllCompanies = async (params) => {
     console.warn('getAllCompanies: user_id is not defined. Returning null.')
     return null
   }
-  // Build query string, omitting undefined/null values
-  const searchParams = new URLSearchParams()
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
-      searchParams.append(key, value)
-    }
-  })
   
-  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/getAllCompanies?${searchParams.toString()}`, {
+  const searchParams = buildSearchParams(params)
+
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/getAllCompanies?${searchParams}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

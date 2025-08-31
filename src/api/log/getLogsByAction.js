@@ -1,29 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { toast } from 'sonner'
+import { buildSearchParams } from '@/utils/searchParams'
 
 const getLogsByAction = async (params) => {
-  const { userId, action, ...filters } = params
-  
-  if (!userId) {
+  if (!params?.userId) {
     console.warn('getLogsByAction: userId is not defined. Returning null.')
     return null
   }
 
-  // Build URL with query parameters
-  const searchParams = new URLSearchParams({
-    user_id: userId,
-    action: action,
-  })
+  const searchParams = buildSearchParams(params)
 
-  // Add optional filters to URL if they have values
-  Object.entries(filters).forEach(([key, value]) => {
-    if (value !== '' && value !== null && value !== undefined) {
-      searchParams.append(key, value)
-    }
-  })
-
-  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/getLogsByAction?${searchParams.toString()}`, {
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/getLogsByAction?${searchParams}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -46,7 +34,7 @@ const getLogsByAction = async (params) => {
 export const useLogsByActionQuery = (params) => {
   return useQuery({
     queryKey: ['logs', params.userId, params.action, params],
-    queryFn: () => getLogsByAction(params),
+    queryFn: () => getLogsByAction({ ...params, user_id: params.userId, userId: null }),
     enabled: Boolean(params?.userId), // Only run query if userId is defined
     staleTime: 30000, // 30 seconds - logs are relatively fresh data
     cacheTime: 300000, // 5 minutes cache
@@ -59,7 +47,7 @@ export const useLogsByActionQuery = (params) => {
 
 // Legacy hook for backward compatibility
 export const useGetLogsByAction = (userId, action) => {
-  return useLogsByActionQuery({ userId, action })
+  return useLogsByActionQuery({ user_id: userId, action })
 }
 
 // Query controller hook that mirrors ProspectsContext functionality

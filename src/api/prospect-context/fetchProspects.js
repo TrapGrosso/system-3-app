@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { buildSearchParams } from "@/utils/searchParams.js"
 
 // Internal fetch function for the actual API call
 const fetchProspects = async (params) => {
@@ -7,13 +8,8 @@ const fetchProspects = async (params) => {
     return null
   }
   // Build query string, omitting undefined/null values
-  const searchParams = new URLSearchParams()
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
-      searchParams.append(key, value)
-    }
-  })
-  
+  const searchParams = buildSearchParams(params, { omitEmpty: true })
+
   const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/getAllProspects?${searchParams.toString()}`, {
     method: 'GET',
     headers: {
