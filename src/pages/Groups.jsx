@@ -6,7 +6,7 @@ import { GroupsProvider, useGroups, useGroupProspects } from '@/contexts/GroupsC
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { Button } from "@/components/ui/button"
 import { GroupTable, GroupProspectsTable } from "@/components/groups"
-import HandleGroupsDialog from "@/components/dialogs/HandleGroupsDialog"
+import { useDialogs } from "@/contexts/DialogsContext"
 
 function GroupsContent() {
     const { user } = useAuth()
@@ -78,8 +78,15 @@ function GroupsContent() {
         }
     }
 
-    const handleCreateGroupSuccess = () => {
-        refetchGroups()
+    const { openHandleGroups } = useDialogs()
+    const handleOpenManageGroups = async () => {
+      await openHandleGroups({
+        user_id: user?.id,
+        prospect_ids: [],
+        tab: 'manage'
+      })
+      // Regardless of create/delete actions, refresh after dialog closes
+      refetchGroups()
     }
 
     return (
@@ -90,16 +97,10 @@ function GroupsContent() {
                         <h2 className="text-2xl font-bold">Group Management</h2>
                         <p className="text-muted-foreground">Create, organize and review your prospect groups</p>
                     </div>
-                    <HandleGroupsDialog 
-                        user_id={user?.id}
-                        prospect_ids={[]} // Empty for creating groups only
-                        onSuccess={handleCreateGroupSuccess}
-                    >
-                        <Button>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Create Group
-                        </Button>
-                    </HandleGroupsDialog>
+                    <Button onClick={handleOpenManageGroups}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Manage Groups
+                    </Button>
                 </div>
                 
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
