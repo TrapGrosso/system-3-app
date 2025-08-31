@@ -5,6 +5,7 @@ import { useDeleteCompanies } from '@/api/company-context/deleteCompanies'
 import { useUpdateCompany } from '@/api/company-context/updateCompany'
 import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
+import { useQueryErrorFallback } from '@/utils/useQueryErrorFallback'
 
 const CompaniesContext = createContext(null)
 
@@ -28,11 +29,28 @@ export const CompaniesProvider = ({ children }) => {
     prospect_last_name: '',
   })
 
-  // Fallback guard to prevent infinite loops
-  const fallbackDoneRef = useRef(false)
-
   // Use the companies query hook
   const queryApi = useGetAllCompaniesQuery({ userId: user?.id, ...query })
+
+  const resetFilters = useCallback(() => {
+    // Internal programmatic reset used by fallback effect
+    setQueryState(prev => ({
+      ...prev,
+      name: '',
+      industry: '',
+      location: '',
+      size_op: '',
+      size_val: '',
+      prospect_first_name: '',
+      prospect_last_name: '',
+      page: 1,
+    }))
+  }, [])
+
+  const { resetFallback } = useQueryErrorFallback(queryApi, resetFilters, 'companies', {
+    resetOnlyIfFiltersActive: true,
+    query,
+  })
 
   // Delete companies mutation
   const deleteCompaniesMutation = useDeleteCompanies({
@@ -61,44 +79,13 @@ export const CompaniesProvider = ({ children }) => {
   // Hoisted user-controlled setter and internal reset for fallback
   const userSetQuery = useCallback((partialOrUpdater) => {
     // Re-arm fallback on any user-driven change
-    fallbackDoneRef.current = false
+    resetFallback()
     if (typeof partialOrUpdater === 'function') {
       setQueryState(prev => partialOrUpdater(prev))
     } else {
       setQueryState(prev => ({ ...prev, ...partialOrUpdater }))
     }
-  }, [])
-
-  const resetFilters = useCallback(() => {
-    // Internal programmatic reset used by fallback effect
-    setQueryState(prev => ({
-      ...prev,
-      name: '',
-      industry: '',
-      location: '',
-      size_op: '',
-      size_val: '',
-      prospect_first_name: '',
-      prospect_last_name: '',
-      page: 1,
-    }))
-  }, [])
-
-  // Single error handling effect with fallback guard
-  useEffect(() => {
-    if (!queryApi.isError || queryApi.isFetching) return
-
-    if (fallbackDoneRef.current) {
-      toast.error(queryApi.error?.message ?? 'Failed to fetch companies')
-      return
-    }
-
-    fallbackDoneRef.current = true
-    toast.warning(
-      `Filters failed (${queryApi.error?.message ?? 'unknown error'}). Showing all companies instead.`
-    )
-    resetFilters()
-  }, [queryApi.isError, queryApi.isFetching, queryApi.error, resetFilters])
+  }, [resetFallback])
 
   // Helper functions for CRUD operations
   const updateCompany = React.useCallback(

@@ -5,6 +5,7 @@ import { useDeleteProspects } from '@/api/prospect-context/deleteProspects'
 import { useUpdateProspect } from '@/api/prospect-context/updateProspect'
 import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
+import { useQueryErrorFallback } from '@/utils/useQueryErrorFallback'
 
 const ProspectsContext = createContext(null)
 
@@ -31,11 +32,31 @@ export const ProspectsProvider = ({ children }) => {
     has_deep_search: '',
   })
 
-  // Fallback guard to prevent infinite loops
-  const fallbackDoneRef = useRef(false)
-
   // Use the prospects query hook
   const queryApi = useProspectsQuery({ userId: user?.id, ...query })
+
+  const resetFilters = useCallback(() => {
+    // Internal programmatic reset used by fallback effect
+    setQueryState(prev => ({
+      ...prev,
+      q: '',
+      search_fields: '',
+      status: '',
+      in_group: '',
+      group_names: '',
+      in_campaign: '',
+      campaign_names: '',
+      prompt_names: '',
+      has_bd_scrape: '',
+      has_deep_search: '',
+      page: 1,
+    }))
+  }, [])
+
+  const { resetFallback } = useQueryErrorFallback(queryApi, resetFilters, 'prospects', {
+    resetOnlyIfFiltersActive: true,
+    query,
+  })
 
   // Delete prospects mutation
   const deleteProspectsMutation = useDeleteProspects({
@@ -64,47 +85,13 @@ export const ProspectsProvider = ({ children }) => {
   // Hoisted user-controlled setter and internal reset for fallback
   const userSetQuery = useCallback((partialOrUpdater) => {
     // Re-arm fallback on any user-driven change
-    fallbackDoneRef.current = false
+    resetFallback()
     if (typeof partialOrUpdater === 'function') {
       setQueryState(prev => partialOrUpdater(prev))
     } else {
       setQueryState(prev => ({ ...prev, ...partialOrUpdater }))
     }
-  }, [])
-
-  const resetFilters = useCallback(() => {
-    // Internal programmatic reset used by fallback effect
-    setQueryState(prev => ({
-      ...prev,
-      q: '',
-      search_fields: '',
-      status: '',
-      in_group: '',
-      group_names: '',
-      in_campaign: '',
-      campaign_names: '',
-      prompt_names: '',
-      has_bd_scrape: '',
-      has_deep_search: '',
-      page: 1,
-    }))
-  }, [])
-
-  // Single error handling effect with fallback guard
-  useEffect(() => {
-    if (!queryApi.isError || queryApi.isFetching) return
-
-    if (fallbackDoneRef.current) {
-      toast.error(queryApi.error?.message ?? 'Failed to fetch prospects')
-      return
-    }
-
-    fallbackDoneRef.current = true
-    toast.warning(
-      `Filters failed (${queryApi.error?.message ?? 'unknown error'}). Showing all prospects instead.`
-    )
-    resetFilters()
-  }, [queryApi.isError, queryApi.isFetching, queryApi.error, resetFilters])
+  }, [resetFallback])
 
   // Helper functions for CRUD operations
   const updateProspect = React.useCallback(

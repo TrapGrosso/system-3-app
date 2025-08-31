@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { toast } from 'sonner'
 import { buildSearchParams } from '@/utils/searchParams'
+import { useQueryErrorFallback } from '@/utils/useQueryErrorFallback'
 
 const getLogsByAction = async (params) => {
   if (!params?.user_id) {
@@ -65,22 +66,8 @@ export const useLogsQueryController = ({ userId, action }) => {
     message: '',
   })
 
-  // Fallback guard to prevent infinite loops
-  const fallbackDoneRef = useRef(false)
-
   // Use the logs query hook
   const queryApi = useLogsByActionQuery({ userId, action, ...query })
-
-  // Hoisted user-controlled setter and internal reset for fallback
-  const userSetQuery = useCallback((partialOrUpdater) => {
-    // Re-arm fallback on any user-driven change
-    fallbackDoneRef.current = false
-    if (typeof partialOrUpdater === 'function') {
-      setQueryState(prev => partialOrUpdater(prev))
-    } else {
-      setQueryState(prev => ({ ...prev, ...partialOrUpdater }))
-    }
-  }, [])
 
   const resetFilters = useCallback(() => {
     // Internal programmatic reset used by fallback effect
@@ -95,21 +82,24 @@ export const useLogsQueryController = ({ userId, action }) => {
     }))
   }, [])
 
-  // Single error handling effect with fallback guard
-  useEffect(() => {
-    if (!queryApi.isError || queryApi.isFetching) return
-
-    if (fallbackDoneRef.current) {
-      toast.error(queryApi.error?.message ?? 'Failed to fetch logs')
-      return
+  const { resetFallback } = useQueryErrorFallback(queryApi, resetFilters, 'logs', {
+    resetOnlyIfFiltersActive: true,
+    query,
+    activeFilterOptions: {
+      defaults: { date_field: 'start_time' }
     }
+  })
 
-    fallbackDoneRef.current = true
-    toast.warning(
-      `Filters failed (${queryApi.error?.message ?? 'unknown error'}). Showing all logs instead.`
-    )
-    resetFilters()
-  }, [queryApi.isError, queryApi.isFetching, queryApi.error, resetFilters])
+  // Hoisted user-controlled setter and internal reset for fallback
+  const userSetQuery = useCallback((partialOrUpdater) => {
+    // Re-arm fallback on any user-driven change
+    resetFallback()
+    if (typeof partialOrUpdater === 'function') {
+      setQueryState(prev => partialOrUpdater(prev))
+    } else {
+      setQueryState(prev => ({ ...prev, ...partialOrUpdater }))
+    }
+  }, [resetFallback])
 
   const value = useMemo(() => ({
     // React Query data and states
