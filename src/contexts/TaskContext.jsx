@@ -1,7 +1,8 @@
 import * as React from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
-import { useGetAllTasks } from "@/api/task-context/getAllTasks"
+import { useGetAllTasksQuery } from "@/api/task-context/getAllTasks"
+import { useQueryErrorFallback } from "@/utils/useQueryErrorFallback"
 import { useGetAllProspectTasks } from "@/api/task-context/getAllProspectTasks"
 import { useCreateTask } from "@/api/task-context/createTask"
 import { useUpdateTask } from "@/api/task-context/updateTask"
@@ -23,12 +24,7 @@ export const TaskProvider = ({ children }) => {
     onSuccess: (data) => {
       const message = data.message || 'Task created successfully'
       toast.success(message)
-      // Invalidate all tasks queries that match the user_id (handles both list and single task queries)
-      // Use a predicate to invalidate all keys starting with 'getAllTasks' for the current user_id
-      queryClient.invalidateQueries({
-        queryKey: ['getAllTasks'],
-        predicate: (query) => query.queryKey[1]?.user_id === user_id,
-      })
+      queryClient.invalidateQueries({ queryKey: ['tasks', user_id] })
       // If tasks were created for specific prospects, invalidate those queries too
       if (data.data?.tasks) {
         data.data.tasks.forEach(task => {
@@ -48,17 +44,9 @@ export const TaskProvider = ({ children }) => {
     onSuccess: (data) => {
       const message = data.message || 'Task updated successfully'
       toast.success(message)
-      // Invalidate all tasks queries that match the user_id (handles both list and single task queries)
-      // Use a predicate to invalidate all keys starting with 'getAllTasks' for the current user_id
-      queryClient.invalidateQueries({
-        queryKey: ['getAllTasks'],
-        predicate: (query) => query.queryKey[1]?.user_id === user_id,
-      })
-      // Also invalidate the specific single task query if a task_id is present in the response
+      queryClient.invalidateQueries({ queryKey: ['tasks', user_id] })
       if (data.data?.task?.id) {
-        queryClient.invalidateQueries({
-          queryKey: ['getAllTasks', { user_id, task_id: data.data.task.id }],
-        });
+        queryClient.invalidateQueries({ queryKey: ['tasks', user_id, { taskId: data.data.task.id }] })
       }
       // If the task has a prospect_id, invalidate that specific prospect's tasks
       if (data.data?.task?.prospect_id) {
@@ -75,12 +63,7 @@ export const TaskProvider = ({ children }) => {
     onSuccess: (data) => {
       const message = data.message || 'Task(s) deleted successfully'
       toast.success(message)
-      // Invalidate all tasks queries that match the user_id (handles both list and single task queries)
-      // Use a predicate to invalidate all keys starting with 'getAllTasks' for the current user_id
-      queryClient.invalidateQueries({
-        queryKey: ['getAllTasks'],
-        predicate: (query) => query.queryKey[1]?.user_id === user_id,
-      })
+      queryClient.invalidateQueries({ queryKey: ['tasks', user_id] })
       // Invalidate all prospect tasks queries since we don't know which prospects were affected
       queryClient.invalidateQueries(['getAllProspectTasks', user_id])
     },
@@ -89,7 +72,56 @@ export const TaskProvider = ({ children }) => {
     },
   })
 
-  // Helper functions
+  // Query params kept in context
+  const [query, setQueryState] = React.useState({
+    page: 1,
+    page_size: 10,
+    sort_by: 'created_at',
+    sort_dir: 'desc',
+    title: '',
+    description: '',
+    status: '',
+    due_date_from: '',
+    due_date_to: '',
+    ended_at_from: '',
+    ended_at_to: '',
+  })
+
+  // Use the tasks query hook
+  const queryApi = useGetAllTasksQuery({ userId: user_id, ...query })
+
+  const resetFilters = React.useCallback(() => {
+    setQueryState(prev => ({
+      ...prev,
+      title: '',
+      description: '',
+      status: '',
+      due_date_from: '',
+      due_date_to: '',
+      ended_at_from: '',
+      ended_at_to: '',
+      page: 1,
+    }))
+  }, [])
+
+  const { resetFallback } = useQueryErrorFallback(queryApi, resetFilters, 'tasks', {
+    resetOnlyIfFiltersActive: true,
+    query,
+    activeFilterOptions: {
+      defaults: { sort_by: 'created_at', sort_dir: 'desc' }
+    }
+  })
+
+  const userSetQuery = React.useCallback((partialOrUpdater) => {
+    resetFallback()
+    if (typeof partialOrUpdater === 'function') {
+      setQueryState(prev => partialOrUpdater(prev))
+    } else {
+      setQueryState(prev => ({ ...prev, ...partialOrUpdater }))
+    }
+  }, [resetFallback])
+
+  // Helper functions (prospect tasks)
   const getProspectTasks = React.useCallback(
     (prospect_id) => {
       return queryClient.getQueryData(['getAllProspectTasks', user_id, prospect_id]) || []
@@ -106,11 +138,7 @@ export const TaskProvider = ({ children }) => {
 
   const invalidateAllTasks = React.useCallback(
     () => {
-      // Invalidate all tasks queries that match the user_id (handles both list and single task queries)
-      queryClient.invalidateQueries({
-        queryKey: ['getAllTasks'],
-        predicate: (query) => query.queryKey[1]?.user_id === user_id,
-      })
+      queryClient.invalidateQueries({ queryKey: ['tasks', user_id] })
       queryClient.invalidateQueries(['getAllProspectTasks', user_id])
     },
     [queryClient, user_id]
@@ -204,6 +232,21 @@ export const TaskProvider = ({ children }) => {
       deleteTasks,
       useTask, // Expose the new useTask hook
 
+      // Query data/states
+      data: queryApi.data?.data || queryApi.data || [],
+      total: queryApi.data?.total || 0,
+      isLoading: queryApi.isLoading,
+      isFetching: queryApi.isFetching,
+      isError: queryApi.isError,
+      error: queryApi.error,
+      refetch: queryApi.refetch,
+
+      // Query controls
+      query,
+      setQuery: (partial) => userSetQuery(partial),
+      updateQuery: (fn) => userSetQuery(fn),
+      resetFilters,
+
       // Loading states
       isCreatingTask: createTaskMutation.isPending,
       isUpdatingTask: updateTaskMutation.isPending,
@@ -226,6 +269,10 @@ export const TaskProvider = ({ children }) => {
       updateTaskDetails,
       deleteTasks,
       useTask,
+      queryApi,
+      query,
+      userSetQuery,
+      resetFilters
     ]
   )
 
@@ -250,19 +297,16 @@ export const useProspectTasks = (prospect_id) => {
   return useGetAllProspectTasks(user_id, prospect_id)
 }
 
-// Hook for getting all user tasks
+// Hook for getting all user tasks (prefer context)
 export const useAllTasks = () => {
-  const { user_id } = useTasks()
-  return useGetAllTasks({ userId: user_id })
+  return useTasks()
 }
 
 // Hook for getting a specific task by ID
 export const useTask = (task_id) => {
   const { user_id } = useTasks()
-  // The API returns an array for multiple tasks, and a single object for one task.
-  // We expect a single object here, so we normalize the result.
-  const { data, ...rest } = useGetAllTasks({ userId: user_id, taskId: task_id })
-  
+  const { data, ...rest } = useGetAllTasksQuery({ userId: user_id, taskId: task_id })
+
   return {
     data: Array.isArray(data) ? data[0] : data,
     ...rest
