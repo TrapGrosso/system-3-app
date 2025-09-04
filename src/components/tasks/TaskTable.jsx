@@ -56,34 +56,6 @@ function TaskTable({ onSelect, selectedTaskId, className }) {
     resetFilters,
   } = useAllTasks()
 
-  // Handle filter apply
-  const handleFilterApply = React.useCallback((filterData) => {
-    const { field, value } = filterData
-    
-    // Map filter fields to query params
-    const filterParams = {}
-    switch (field) {
-      case 'title':
-        filterParams.title = value
-        break
-      case 'description':
-        filterParams.description = value
-        break
-      case 'due_date':
-        filterParams.due_date_from = value
-        filterParams.due_date_to = value
-        break
-      default:
-        break
-    }
-    
-    setQuery({ ...filterParams, page: 1 })
-  }, [setQuery])
-
-  // Handle filter clear
-  const handleFilterClear = React.useCallback(() => {
-    resetFilters()
-  }, [resetFilters])
 
   // Column definitions
   const columns = React.useMemo(() => [
@@ -252,7 +224,7 @@ function TaskTable({ onSelect, selectedTaskId, className }) {
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Filters */}
-      <TaskFilters onApply={handleFilterApply} onClear={handleFilterClear} />
+      <TaskFilters />
       
       {/* DataTable */}
       <DataTable
