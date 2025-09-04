@@ -3,24 +3,8 @@ import { Calendar, CheckSquare, Clock, ClipboardList } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
-
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { DataTable } from "@/components/shared/table/DataTable"
 import TaskFilters from "./TaskFilters"
 import { useAllTasks } from "@/contexts/TaskContext"
 
@@ -60,247 +44,235 @@ const getStatusLabel = (status) => {
 }
 
 function TaskTable({ onSelect, selectedTaskId, className }) {
-  const [currentPage, setCurrentPage] = React.useState(1)
-  const [filter, setFilter] = React.useState(null)
-  const perPage = 10
-
   const {
     data: tasks = [],
+    total,
     isLoading,
     isError,
+    error,
     refetch,
+    query,
+    setQuery,
+    resetFilters,
   } = useAllTasks()
 
-  // Apply filtering
-  const filteredTasks = React.useMemo(() => {
-    if (!filter) return tasks
+  // Handle filter apply
+  const handleFilterApply = React.useCallback((filterData) => {
+    const { field, value } = filterData
+    
+    // Map filter fields to query params
+    const filterParams = {}
+    switch (field) {
+      case 'title':
+        filterParams.title = value
+        break
+      case 'description':
+        filterParams.description = value
+        break
+      case 'due_date':
+        filterParams.due_date_from = value
+        filterParams.due_date_to = value
+        break
+      default:
+        break
+    }
+    
+    setQuery({ ...filterParams, page: 1 })
+  }, [setQuery])
 
-    return tasks.filter(task => {
-      const { field, value } = filter
-      
-      switch (field) {
-        case 'title':
-          return task.title?.toLowerCase().includes(value.toLowerCase())
-        case 'description':
-          return task.description?.toLowerCase().includes(value.toLowerCase())
-        case 'due_date':
-          // Compare date strings (YYYY-MM-DD format)
-          return task.due_date === value
-        default:
-          return true
-      }
+  // Handle filter clear
+  const handleFilterClear = React.useCallback(() => {
+    resetFilters()
+  }, [resetFilters])
+
+  // Column definitions
+  const columns = React.useMemo(() => [
+    {
+      accessorKey: "title",
+      header: "Title",
+      cell: ({ row }) => {
+        const title = row.original.title || '—'
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="font-medium cursor-default truncate max-w-xs">
+                {title}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{title}</p>
+            </TooltipContent>
+          </Tooltip>
+        )
+      },
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      enableSorting: false,
+      cell: ({ row }) => {
+        const status = row.original.status
+        return (
+          <Badge variant={getStatusVariant(status)}>
+            {getStatusLabel(status)}
+          </Badge>
+        )
+      },
+    },
+    {
+      accessorKey: "due_date",
+      header: "Due Date",
+      cell: ({ row }) => {
+        const dueDate = row.original.due_date
+        return dueDate ? (
+          <div className="flex items-center gap-1 text-xs">
+            <Calendar className="h-3 w-3" />
+            {formatDate(dueDate)}
+          </div>
+        ) : (
+          <span className="text-muted-foreground text-xs">No due date</span>
+        )
+      },
+    },
+    {
+      accessorKey: "description",
+      header: "Description",
+      enableSorting: false,
+      cell: ({ row }) => {
+        const description = row.original.description || 'No description'
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="truncate text-sm text-muted-foreground max-w-sm">
+                {description}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{description}</p>
+            </TooltipContent>
+          </Tooltip>
+        )
+      },
+    },
+    {
+      accessorKey: "created_at",
+      header: "Created",
+      cell: ({ row }) => {
+        const createdAt = row.original.created_at
+        return createdAt ? (
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Clock className="h-3 w-3" />
+            {formatDate(createdAt)}
+          </div>
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
+        )
+      },
+    },
+    {
+      accessorKey: "ended_at",
+      header: "Ended",
+      cell: ({ row }) => {
+        const endedAt = row.original.ended_at
+        return endedAt ? (
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <CheckSquare className="h-3 w-3" />
+            {formatDate(endedAt)}
+          </div>
+        ) : (
+          <span className="text-muted-foreground text-xs">—</span>
+        )
+      },
+    },
+    {
+      accessorKey: "prospect_id",
+      header: "Prospect",
+      enableSorting: false,
+      cell: ({ row }) => {
+        const prospectId = row.original.prospect_id
+        return prospectId ? (
+          <Badge variant="outline" className="truncate max-w-[120px]">
+            {prospectId}
+          </Badge>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )
+      },
+    },
+  ], [])
+
+  // External pagination state
+  const paginationState = React.useMemo(() => ({
+    pageIndex: query.page - 1,
+    pageSize: query.page_size,
+    pageCount: Math.ceil(total / query.page_size),
+    totalElements: total || null
+  }), [query.page, query.page_size, total])
+
+  // Pagination handler
+  const handlePaginationChange = React.useCallback((update) => {
+    if (update.pageIndex !== undefined) {
+      setQuery({ page: update.pageIndex + 1 })
+    }
+    if (update.pageSize !== undefined) {
+      setQuery({ page_size: update.pageSize, page: 1 })
+    }
+  }, [setQuery])
+
+  // Sorting state and handler
+  const sorting = React.useMemo(() => [
+    { id: query.sort_by, desc: query.sort_dir === 'desc' }
+  ], [query.sort_by, query.sort_dir])
+
+  const handleSortingChange = React.useCallback((updatedSorting) => {
+    const newSorting = typeof updatedSorting === 'function' ? updatedSorting(sorting) : updatedSorting
+    const s = newSorting[0] || {}
+    setQuery({ 
+      sort_by: s.id || 'created_at', 
+      sort_dir: s.desc ? 'desc' : 'asc',
+      page: 1
     })
-  }, [tasks, filter])
+  }, [setQuery, sorting])
 
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredTasks.length / perPage)
-  const startIndex = (currentPage - 1) * perPage
-  const endIndex = startIndex + perPage
-  const paginatedTasks = filteredTasks.slice(startIndex, endIndex)
+  // Check if there are active filters
+  const hasActiveFilters = React.useMemo(() => {
+    return query.title || query.description || query.status || 
+           query.due_date_from || query.due_date_to || 
+           query.ended_at_from || query.ended_at_to
+  }, [query])
 
-  // Reset to page 1 when filter changes
-  React.useEffect(() => {
-    setCurrentPage(1)
-  }, [filter])
-
-  const handleFilterApply = (filterData) => {
-    setFilter(filterData)
-  }
-
-  const handleFilterClear = () => {
-    setFilter(null)
-  }
-
-  const handleRowClick = (task) => {
-    onSelect(task)
-  }
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page)
-  }
-
-  if (isLoading) {
-    return (
-      <div className={`space-y-4 ${className}`}>
-        <TaskFilters onApply={handleFilterApply} onClear={handleFilterClear} />
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Due Date</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Created</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {[...Array(5)].map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                  <TableCell><Skeleton className="h-6 w-16" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-    )
-  }
-
-  if (isError) {
-    return (
-      <div className={`space-y-4 ${className}`}>
-        <TaskFilters onApply={handleFilterApply} onClear={handleFilterClear} />
-        <div className="text-center py-8">
-          <p className="text-sm text-destructive mb-2">Failed to load tasks</p>
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            Retry
-          </Button>
-        </div>
-      </div>
-    )
-  }
-
-  if (filteredTasks.length === 0) {
-    return (
-      <div className={`space-y-4 ${className}`}>
-        <TaskFilters onApply={handleFilterApply} onClear={handleFilterClear} />
-        <div className="text-center py-12">
-          <ClipboardList className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-          <p className="text-sm text-muted-foreground mb-2">
-            {filter ? 'No tasks match your filter' : 'No tasks found'}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {filter ? 'Try adjusting your filter criteria' : 'Create your first task to get started'}
-          </p>
-        </div>
-      </div>
-    )
-  }
+  // Empty message based on filters
+  const emptyMessage = React.useMemo(() => {
+    if (hasActiveFilters) {
+      return 'No tasks match your filter'
+    }
+    return 'No tasks found'
+  }, [hasActiveFilters])
 
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Filters */}
       <TaskFilters onApply={handleFilterApply} onClear={handleFilterClear} />
-
-      {/* Results info */}
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <span>
-          Showing {startIndex + 1}-{Math.min(endIndex, filteredTasks.length)} of {filteredTasks.length} tasks
-          {filter && ` (filtered from ${tasks.length} total)`}
-        </span>
-      </div>
-
-      {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Due Date</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Created</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedTasks.map((task) => (
-              <TableRow
-                key={task.id}
-                onClick={() => handleRowClick(task)}
-                className={`cursor-pointer hover:bg-muted/50 ${
-                  selectedTaskId === task.id ? 'bg-muted' : ''
-                }`}
-              >
-                <TableCell className="font-medium max-w-xs">
-                  <div className="truncate" title={task.title}>
-                    {task.title}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={getStatusVariant(task.status)}>
-                    {getStatusLabel(task.status)}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  {task.due_date ? (
-                    <div className="flex items-center gap-1 text-xs">
-                      <Calendar className="h-3 w-3" />
-                      {formatDate(task.due_date)}
-                    </div>
-                  ) : (
-                    <span className="text-muted-foreground text-xs">No due date</span>
-                  )}
-                </TableCell>
-                <TableCell className="max-w-sm">
-                  <div className="truncate text-sm text-muted-foreground" title={task.description}>
-                    {task.description || 'No description'}
-                  </div>
-                </TableCell>
-                <TableCell className="text-xs text-muted-foreground">
-                  {formatDate(task.created_at)}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                />
-              </PaginationItem>
-              
-              {[...Array(totalPages)].map((_, i) => {
-                const page = i + 1
-                if (
-                  page === 1 ||
-                  page === totalPages ||
-                  (page >= currentPage - 1 && page <= currentPage + 1)
-                ) {
-                  return (
-                    <PaginationItem key={page}>
-                      <PaginationLink
-                        onClick={() => handlePageChange(page)}
-                        isActive={page === currentPage}
-                        className="cursor-pointer"
-                      >
-                        {page}
-                      </PaginationLink>
-                    </PaginationItem>
-                  )
-                }
-                if (page === currentPage - 2 || page === currentPage + 2) {
-                  return (
-                    <PaginationItem key={page}>
-                      <span className="px-4 py-2">...</span>
-                    </PaginationItem>
-                  )
-                }
-                return null
-              })}
-              
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
+      
+      {/* DataTable */}
+      <DataTable
+        columns={columns}
+        data={tasks}
+        rowId={(row) => row.id}
+        loading={isLoading}
+        error={isError}
+        errorMessage={error?.message || 'Failed to load tasks'}
+        emptyMessage={emptyMessage}
+        enableSelection={false}
+        mode="external"
+        paginationState={paginationState}
+        onPaginationChange={handlePaginationChange}
+        sorting={sorting}
+        onSortingChange={handleSortingChange}
+        manualSorting={true}
+        rowClassName={(row) => row.id === selectedTaskId ? 'bg-muted' : undefined}
+        onRowClick={onSelect}
+      />
     </div>
   )
 }
