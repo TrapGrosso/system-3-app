@@ -305,10 +305,14 @@ export const useAllTasks = () => {
 // Hook for getting a specific task by ID
 export const useTask = (task_id) => {
   const { user_id } = useTasks()
-  const { data, ...rest } = useGetAllTasksQuery({ userId: user_id, taskId: task_id })
+  const query = useGetAllTasksQuery({ userId: user_id, taskId: task_id })
+
+  const task =
+    query.data?.data?.[0] ??
+    (Array.isArray(query.data) ? query.data[0] : query.data)
 
   return {
-    data: Array.isArray(data) ? data[0] : data,
-    ...rest
+    ...query,
+    data: task,
   }
 }

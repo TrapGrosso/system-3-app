@@ -60,66 +60,86 @@ export const useGetAllTasksQuery = ({ userId, taskId, ...query }) => {
 
 
 /**
- * Fetches all tasks for a user.
+ * Fetches all tasks for a user with server-side filtering, sorting, and pagination.
  * 
  * Query Parameters:
  * - user_id (required): UUID of the user
- * - task_id (optional): UUID of a specific task to fetch; if provided overrides normal list
+ * - task_id (optional): UUID of a specific task to fetch; if provided overrides normal list and returns a single item or empty array in data.
+ * - page (optional): Page number, default 1
+ * - page_size (optional): Results per page, default 10, max 100
  * - title (optional): Filter by case-insensitive partial match on title
  * - description (optional): Filter by case-insensitive partial match on description
- * - status (optional): Filter by status enum (open, in_progress, done, canceled, overdue); invalid values ignored
+ * - status (optional): Filter by status enum (open, in_progress, done, canceled, overdue)
  * - due_date_from (optional): Filter tasks due on or after this date (YYYY-MM-DD)
  * - due_date_to (optional): Filter tasks due on or before this date (YYYY-MM-DD, inclusive)
  * - ended_at_from (optional): Filter tasks ended on or after this date (YYYY-MM-DD)
  * - ended_at_to (optional): Filter tasks ended on or before this date (YYYY-MM-DD, inclusive)
  * - sort_by (optional): Column to sort by (due_date, ended_at, created_at)
- * - sort_dir (optional): Sort direction asc|desc (default asc when sort_by present; legacy default created_at desc when sort_by omitted)
+ * - sort_dir (optional): Sort direction 'asc' or 'desc' (default 'asc' when sort_by present; legacy default 'created_at desc' when sort_by omitted)
  * 
  * Example Requests:
  * 
- * All tasks (legacy behavior):
- * GET /getAllTasks?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f
+ * Basic request (paginated):
+ * GET /getAllTasks?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&page=1&page_size=10
  * 
- * Single task (legacy behavior):
+ * Single task by ID:
  * GET /getAllTasks?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&task_id=5d3e2f36-8db3-49c2-93e6-96bf9f632d66
  * 
- * Filter by title:
- * GET /getAllTasks?user_id=...&title=review
+ * Filter by title and status:
+ * GET /getAllTasks?user_id=...&title=review&status=in_progress
  * 
- * Filter by due_date range:
- * GET /getAllTasks?user_id=...&due_date_from=2025-07-01&due_date_to=2025-07-31
- * 
- * Filter by ended_at range:
- * GET /getAllTasks?user_id=...&ended_at_from=2025-07-01&ended_at_to=2025-08-01
- * 
- * Sort by due_date asc:
- * GET /getAllTasks?user_id=...&sort_by=due_date&sort_dir=asc
- * 
- * Sort by created_at asc (explicit):
- * GET /getAllTasks?user_id=...&sort_by=created_at
+ * Filter by due_date range and sort:
+ * GET /getAllTasks?user_id=...&due_date_from=2025-07-01&due_date_to=2025-07-31&sort_by=due_date&sort_dir=asc
  * 
  * Example Success Response (200):
- * [
- *   {
- *     "id": "5d3e2f36-8db3-49c2-93e6-96bf9f632d66",
- *     "prospect_id": "john-doe-123",
- *     "title": "Follow up call",
- *     "description": "Call John to discuss the proposal",
- *     "due_date": "2025-07-10",
- *     "status": "open",
- *     "created_at": "2025-07-04T18:35:22.123456"
- *   },
- *   {
- *     "id": "0c52c1f7-1b77-4d6f-9e0e-3e75baff7461",
- *     "prospect_id": null,
- *     "title": "Review quarterly targets",
- *     "description": null,
- *     "due_date": "2025-07-15",
- *     "status": "in_progress",
- *     "created_at": "2025-07-03T10:02:11.987654"
- *   }
- * ]
+ * {
+ *   "data": [
+ *     {
+ *       "id": "5d3e2f36-8db3-49c2-93e6-96bf9f632d66",
+ *       "prospect_id": "john-doe-123",
+ *       "title": "Follow up call",
+ *       "description": "Call John to discuss the proposal",
+ *       "due_date": "2025-07-10",
+ *       "status": "open",
+ *       "created_at": "2025-07-04T18:35:22.123456",
+ *       "ended_at": null
+ *     },
+ *     {
+ *       "id": "0c52c1f7-1b77-4d6f-9e0e-3e75baff7461",
+ *       "prospect_id": null,
+ *       "title": "Review quarterly targets",
+ *       "description": null,
+ *       "due_date": "2025-07-15",
+ *       "status": "in_progress",
+ *       "created_at": "2025-07-03T10:02:11.987654",
+ *       "ended_at": null
+ *     }
+ *   ],
+ *   "total": 2,
+ *   "page": 1,
+ *   "page_size": 10
+ * }
+ * 
+ * Example Success Response (200) for single task by ID:
+ * {
+ *   "data": [
+ *     {
+ *       "id": "5d3e2f36-8db3-49c2-93e6-96bf9f632d66",
+ *       "prospect_id": "john-doe-123",
+ *       "title": "Follow up call",
+ *       "description": "Call John to discuss the proposal",
+ *       "due_date": "2025-07-10",
+ *       "status": "open",
+ *       "created_at": "2025-07-04T18:35:22.123456",
+ *       "ended_at": null
+ *     }
+ *   ],
+ *   "total": 1,
+ *   "page": 1,
+ *   "page_size": 1
+ * }
  * 
  * Example Error Response (400):
  * {"error": "Missing required query param: user_id"}
+ * {"error": "Parameter validation failed: Invalid date format \"2025-1-1\". Expected YYYY-MM-DD"}
  */
