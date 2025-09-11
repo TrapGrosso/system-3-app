@@ -23,10 +23,10 @@ const getUserSettings = async (user_id, settings) => {
   return result || []
 }
 
-export const useGetUserSettings = (userId, type) => {
+export const useGetUserSettings = (userId, settings) => {
   return useQuery({
-    queryKey: ['getUserSettings', userId, type],
-    queryFn: () => getUserSettings(userId, type),
+    queryKey: ['getUserSettings', userId, settings],
+    queryFn: () => getUserSettings(userId, settings),
     enabled: Boolean(userId), // Only run query if userId is defined
     staleTime: 30000,
     cacheTime: 300000,
@@ -42,7 +42,7 @@ export const useGetUserSettings = (userId, type) => {
  * 
  * Query Parameters:
  * - user_id (required): UUID of the user
- * - settings (optional): Comma-separated list of setting keys to return. 
+ * - settings (optional): A single setting key to return. 
  *   Can use alias keys (e.g., add_leads) or full column names (e.g., add_leads_default_options).
  *   If not provided, returns all settings columns.
  * 
@@ -59,13 +59,13 @@ export const useGetUserSettings = (userId, type) => {
  * Get all settings for a user:
  * GET /getUserSettings?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f
  * 
- * Get specific settings using aliases:
- * GET /getUserSettings?user_id=...&settings=add_leads,verify_emails_clearout
+ * Get a specific setting using an alias (returns only the JSON value):
+ * GET /getUserSettings?user_id=...&settings=add_leads
  * 
- * Get specific settings using full column names:
- * GET /getUserSettings?user_id=...&settings=add_leads_default_options,created_at
+ * Get a specific setting using a full column name (returns only the JSON value):
+ * GET /getUserSettings?user_id=...&settings=add_leads_default_options
  * 
- * Example Success Response (200):
+ * Example Success Response (200) when no settings param is provided:
  * {
  *   "id": "5d3e2f36-8db3-49c2-93e6-96bf9f632d66",
  *   "user_id": "bb370a65-08df-4ddc-8a0f-aa5c65fc568f",
@@ -80,10 +80,17 @@ export const useGetUserSettings = (userId, type) => {
  *   "updated_at": "2025-07-04T18:35:22.123456Z"
  * }
  * 
+ * Example Success Response (200) when settings=add_leads is provided:
+ * {
+ *   "source": "linkedin",
+ *   "limit": 10
+ * }
+ * 
  * Example Success Response (200) when no settings exist:
  * null
  * 
  * Example Error Response (400):
  * {"error": "Missing required query param: user_id"}
- * {"error": "Invalid setting key: \"unknown_key\". Valid aliases are: add_leads, create_variables_with_ai, ..."}
+ * {"error": "Provide exactly one setting via ?settings=..."}
+ * {"error": "Invalid setting key: \"created_at\". Valid aliases are: add_leads, create_variables_with_ai, find_emails_clearout, resolve_deep_search_queue, search_company_with_ai, verify_emails_clearout. You can also use full column names: add_leads_default_options, create_variables_with_ai_default_options, find_emails_clearout_default_options, resolve_deep_search_queue_default_options, search_company_with_ai_default_options, verify_emails_clearout_default_options."}
  */
