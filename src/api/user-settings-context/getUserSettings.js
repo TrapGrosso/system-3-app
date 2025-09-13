@@ -1,11 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
+import { toQueryString } from '../../utils/searchParams.js'
 
 const getUserSettings = async (user_id, settings) => {
   if (!user_id) {
     console.warn('getAllPrompts: user_id is not defined. Returning null.')
     return null
   }
-  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/getUserSettings?user_id=${user_id}&settings=${settings}`, {
+  
+  // Build query parameters using buildSearchParams utility
+  const queryParams = toQueryString({ user_id, settings }, { omitEmpty: true })
+  const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/getUserSettings?${queryParams}`
+  
+  const response = await fetch(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
