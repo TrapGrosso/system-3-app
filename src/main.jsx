@@ -13,7 +13,6 @@ import { VariableProvider } from './contexts/VariableContext'
 import { CompaniesProvider } from './contexts/CompaniesContext'
 import { CampaignsProvider } from './contexts/CampaignsContext'
 import { NotesProvider } from './contexts/NotesContext'
-import { OperationDefaultsProvider } from './contexts/OperationDefaultsContext'
 import { DialogsProvider } from './contexts/DialogsContext'
 import { UserSettingsProvider } from './contexts/UserSettingsContext'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
@@ -27,7 +26,6 @@ createRoot(document.getElementById('root')).render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
             <UserSettingsProvider>
-              <OperationDefaultsProvider>
               <PromptProvider>
                 <TaskProvider>
                   <VariableProvider>
@@ -49,7 +47,6 @@ createRoot(document.getElementById('root')).render(
                   </VariableProvider>
                 </TaskProvider>
               </PromptProvider>
-            </OperationDefaultsProvider>
             </UserSettingsProvider>
       </AuthProvider>
       <ReactQueryDevtools initialIsOpen={false} />
