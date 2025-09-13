@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useverifyProspectEmails } from "@/api/email/verifyProspectEmails"
 import CheckboxMatrix from "@/components/shared/dialog/CheckboxMatrix"
 import { SingleSelect } from "@/components/shared/filter/SingleSelect"
-import { useOperationDefault } from "@/contexts/OperationDefaultsContext"
+import { useUserSettings } from "@/contexts/UserSettingsContext"
 
 function VerifyProspectEmailsDialog({
   open,
@@ -24,7 +24,9 @@ function VerifyProspectEmailsDialog({
   const user_id = user?.id
   const queryClient = useQueryClient()
 
-  const { defaults, isLoading: isLoadingDefaults } = useOperationDefault("verify_emails_clearout")
+  const { getSetting, isLoading: isSettingsLoading } = useUserSettings()
+  const defaults = getSetting("verify_emails_clearout")
+  const isLoadingDefaults = isSettingsLoading && !defaults
 
   const [selectedOptions, setSelectedOptions] = React.useState([])
   const [verificationStatus, setVerificationStatus] = React.useState("all")
@@ -45,10 +47,8 @@ function VerifyProspectEmailsDialog({
 
   const mutation = useverifyProspectEmails({
     onSuccess: (data) => {
-      if (!newOpen) {
-        setSelectedOptions([])
-        setVerificationStatus("all")
-      }
+      setSelectedOptions([])
+      setVerificationStatus("all")
       toast.success(data.message || "Prospects processed successfully")
       queryClient.invalidateQueries()
       if (onSuccess) onSuccess(data)

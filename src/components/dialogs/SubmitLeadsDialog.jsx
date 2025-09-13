@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
 
 import { useGroups } from "@/contexts/GroupsContext"
-import { useOperationDefault } from "@/contexts/OperationDefaultsContext"
+import { useUserSettings } from "@/contexts/UserSettingsContext"
 import { Badge } from "../ui/badge"
 import PromptMultiSelect from "@/components/shared/dialog/PromptMultiSelect"
 import DialogWrapper from "@/components/shared/dialog/DialogWrapper"
@@ -45,7 +45,9 @@ function SubmitLeadsDialog({
   const { getGroupById } = useGroups()
 
   // Get operation defaults for "add_leads"
-  const { defaults, isLoading: isLoadingDefaults } = useOperationDefault("add_leads")
+  const { getSetting, isLoading: isSettingsLoading } = useUserSettings()
+  const defaults = getSetting("add_leads")
+  const isLoadingDefaults = isSettingsLoading && !defaults
 
   useEffect(() => {
     if (open && !didInitRef.current && !isLoadingDefaults && defaults) {

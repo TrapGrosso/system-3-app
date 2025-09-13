@@ -9,7 +9,7 @@ import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 import { useAuth } from "@/contexts/AuthContext"
 import { usefindProspectEmails } from "@/api/email/findProspectEmails"
 import CheckboxMatrix from "@/components/shared/dialog/CheckboxMatrix"
-import { useOperationDefaults } from "@/contexts/OperationDefaultsContext"
+import { useUserSettings } from "@/contexts/UserSettingsContext"
 
 function FindProspectEmailsDialog({
   open,
@@ -20,7 +20,7 @@ function FindProspectEmailsDialog({
   const { user } = useAuth()
   const user_id = user?.id
   const queryClient = useQueryClient()
-  const { getDefaults } = useOperationDefaults()
+  const { getSetting } = useUserSettings()
 
   const [selectedOptions, setSelectedOptions] = React.useState([])
 
@@ -37,10 +37,10 @@ function FindProspectEmailsDialog({
 
   React.useEffect(() => {
     if (open) {
-      const defaults = getDefaults("find_emails_clearout")
+      const defaults = getSetting("find_emails_clearout") || {}
       setSelectedOptions(toSelectedOptions(defaults))
     }
-  }, [open, getDefaults])
+  }, [open, getSetting])
 
   const mutation = usefindProspectEmails({
     onSuccess: (data) => {

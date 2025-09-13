@@ -4,7 +4,7 @@ import { Wand2, ArrowRight, ArrowLeft, Check } from "lucide-react"
 import { toast } from "sonner"
 import { Spinner } from "@/components/ui/spinner"
 import { useCreateVariables } from "@/api/variable-dialog/createVariables"
-import { useOperationDefaults } from "@/contexts/OperationDefaultsContext"
+import { useUserSettings } from "@/contexts/UserSettingsContext"
 
 import DialogWrapper from "@/components/shared/dialog/DialogWrapper"
 import { Button } from "@/components/ui/button"
@@ -46,19 +46,19 @@ function ProspectEnrichmentsDialog({
     sources: []
   })
 
-  const { getDefaults } = useOperationDefaults()
+  const { getSetting } = useUserSettings()
   const initializedRef = React.useRef(false)
 
   React.useEffect(() => {
     if (open && !initializedRef.current) {
-      const defaults = getDefaults("create_variables_with_ai")
+      const defaults = getSetting("create_variables_with_ai") || {}
       setSelectedOptions(defaults.flags ?? [])
       setAgentPrecision(defaults.agent_precision ?? "default")
       initializedRef.current = true
     } else if (!open) {
       initializedRef.current = false
     }
-  }, [open, getDefaults])
+  }, [open, getSetting])
 
   // Fetch enrichments data - now already flattened
   const { 

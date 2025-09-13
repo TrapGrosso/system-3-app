@@ -19,7 +19,7 @@ import ChangeCompanySubmitSection from "./ChangeCompanySubmitSection"
 import ChangeCompanyAiSearchSection from "./ChangeCompanyAiSearchSection"
 import { useAddLeads } from "@/api/add-leads/addLeads"
 import { useAiCompanySearch } from "@/api/change-company-dialog/aiCompanySearch"
-import { useOperationDefault } from "@/contexts/OperationDefaultsContext"
+import { useUserSettings } from "@/contexts/UserSettingsContext"
 
 function ChangeCompanyDialog({ 
   open,
@@ -38,7 +38,9 @@ function ChangeCompanyDialog({
   const [selectedFlags, setSelectedFlags] = useState([])
   
   // Fetch AI search defaults
-  const { defaults: aiSearchDefaults, isLoading: isLoadingAiSearchDefaults } = useOperationDefault("search_company_with_ai")
+  const { getSetting, isLoading: isSettingsLoading } = useUserSettings()
+  const aiSearchDefaults = getSetting("search_company_with_ai")
+  const isLoadingAiSearchDefaults = isSettingsLoading && !aiSearchDefaults
 
   // Hooks - all contexts and mutations in dialog
   const { user } = useAuth()
