@@ -125,6 +125,10 @@ export function DialogsProvider({ children }) {
     return open('resolveDeepSearchItem', { queueIds })
   }, [open])
 
+  const openN8nWarnings = useCallback(({ ignoreSignature = false } = {}) => {
+    return open('n8nWarnings', { ignoreSignature })
+  }, [open])
+
   const value = {
     activeDialog,
     open,
@@ -150,7 +154,8 @@ export function DialogsProvider({ children }) {
     openChangeCompany,
     openSubmitLeads,
     openPromptSelect,
-    openResolveDeepSearchItem
+    openResolveDeepSearchItem,
+    openN8nWarnings
   }
 
   return (

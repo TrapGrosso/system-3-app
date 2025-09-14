@@ -23,7 +23,8 @@ import {
   TaskFormDialog,
   UpdatePromptDialog,
   VerifyProspectEmailsDialog,
-  ChangeCompanyDialog
+  ChangeCompanyDialog,
+  N8nWarningsDialog
 } from '@/components/dialogs'
 
 const dialogsRegistry = {
@@ -239,6 +240,16 @@ const dialogsRegistry = {
     mapProps: ({}, resolve) => ({
       // TaskFormDialog manages its own state, so we just resolve when it closes
       // This would need the dialog to be refactored to accept controlled props
+    })
+  },
+
+  // N8n Warnings Dialog
+  n8nWarnings: {
+    component: N8nWarningsDialog,
+    mapProps: ({ ignoreSignature = false }, resolve) => ({
+      // DialogRenderer will pass open={true} and onOpenChange
+      ignoreSignature,
+      onSuccess: () => resolve(true)
     })
   }
 }

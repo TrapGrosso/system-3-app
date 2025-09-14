@@ -21,6 +21,7 @@ import { useAuth } from './contexts/AuthContext'
 import { RoundSpinner } from './components/ui/spinner'
 import { Toaster } from './components/ui/sonner'
 import Settings from './pages/Settings'
+import N8nWarningsSentinel from './components/N8nWarningsSentinel'
 
 function App() {
   const { user, loading } = useAuth()
@@ -35,6 +36,7 @@ function App() {
 
   return (
     <Router>
+      <N8nWarningsSentinel />
       <Toaster richColors position="bottom-right" />
       <Routes>
         <Route 

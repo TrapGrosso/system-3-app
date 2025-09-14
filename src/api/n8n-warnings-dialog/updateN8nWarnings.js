@@ -31,11 +31,9 @@ export const useUpdateN8nWarnings = (options = {}) => {
     },
   })
 }
+
 /**
  * Updates n8n execution warnings to mark them as seen.
- * 
- * Headers:
- * - X-ADMIN-KEY: Required admin key for authentication
  * 
  * Example Payload:
  * {
