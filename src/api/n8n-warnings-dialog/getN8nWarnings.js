@@ -24,11 +24,10 @@ const getN8nWarnings = async (include_seen = false) => {
     return result || []
 }
 
-export const usegetN8nWarnings = (include_seen) => {
+export const useGetN8nWarnings = (include_seen) => {
   return useQuery({
     queryKey: ['getN8nWarnings', include_seen],
     queryFn: () => getN8nWarnings(include_seen),
-    enabled: Boolean(include_seen), // Only run query if include_seen is defined
     staleTime: 30000, // 30 seconds - logs are relatively fresh data
     cacheTime: 300000, // 5 minutes cache
     refetchInterval: 60000, // Refetch every minute to get latest logs

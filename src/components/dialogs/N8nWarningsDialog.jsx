@@ -1,6 +1,6 @@
 import * as React from "react"
 import { forwardRef, useImperativeHandle, useEffect, useMemo, useRef, useState } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useQueryClient } from "@tanstack/react-query"
 import { AlertTriangle, Info, OctagonAlert } from "lucide-react"
 import { toast } from "sonner"
 
@@ -13,48 +13,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import DialogWrapper from "@/components/shared/dialog/DialogWrapper"
 import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 
-// Helper to fetch unseen warnings
-const fetchUnseenWarnings = async () => {
-  const params = new URLSearchParams({
-    include_seen: "false"
-  })
-
-  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/getN8nWarnings?${params.toString()}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch n8n warnings')
-  }
-
-  const result = await response.json()
-  return result || []
-}
-
-// Helper to update warnings as seen
-const updateN8nWarnings = async (payload) => {
-  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/updateN8nWarnings`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
-    },
-    body: JSON.stringify(payload),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error)
-  }
-
-  return response.json()
-}
+import { useGetN8nWarnings } from "@/api/n8n-warnings-dialog/getN8nWarnings"
+import { useUpdateN8nWarnings } from "@/api/n8n-warnings-dialog/updateN8nWarnings"
 
 // Helper to compute a signature for a list of warning IDs
 const computeSignature = (ids) => {
@@ -96,29 +56,20 @@ const N8nWarningsDialog = forwardRef(({
   const queryClient = useQueryClient()
   
   // Fetch unseen warnings
-  const { data: warnings = [], isLoading, isError, refetch } = useQuery({
-    queryKey: ['n8n-warnings', 'unseen'],
-    queryFn: fetchUnseenWarnings,
-    staleTime: 30000, // 30 seconds
-    cacheTime: 300000, // 5 minutes
-    refetchInterval: 60000, // Refetch every minute
-    refetchOnWindowFocus: true,
-    retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-  })
+  const { data: warnings = [], isLoading, isError, refetch } = useGetN8nWarnings(false)
 
   // Mutation to mark warnings as seen
-  const { mutate: markAsSeen, isPending: isMarkingAsSeen } = useMutation({
-    mutationFn: updateN8nWarnings,
+  const { mutate: markAsSeen, isPending: isMarkingAsSeen } = useUpdateN8nWarnings({
     onSuccess: (data) => {
       // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ['n8n-warnings', 'unseen'] })
+      queryClient.invalidateQueries({ queryKey: ['getN8nWarnings', false] })
       
       // Clear selection
       setSelected(new Set())
       
       // Show success message
       toast.success(`Marked ${data.data.updated_count} warning(s) as seen`)
+      onSuccess?.(data)
     },
     onError: (error) => {
       console.error('Error marking warnings as seen:', error)
