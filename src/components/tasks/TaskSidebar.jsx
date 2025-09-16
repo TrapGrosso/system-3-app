@@ -75,6 +75,10 @@ function TaskSidebar({ task, onTaskChange, className }) {
     TASK_STATUS,
   } = useTasks()
 
+  // Check if task has ended
+  const isEnded = React.useMemo(() => Boolean(task?.ended_at), [task])
+  const canModify = !isEnded
+
   // Update editing fields when task changes
   React.useEffect(() => {
     if (task) {
@@ -83,6 +87,13 @@ function TaskSidebar({ task, onTaskChange, className }) {
       setEditingDueDate(task.due_date || "")
     }
   }, [task])
+
+  // Cancel editing if task becomes ended while editing
+  React.useEffect(() => {
+    if (isEditing && isEnded) {
+      setIsEditing(false)
+    }
+  }, [isEnded, isEditing])
 
   const handleStartEdit = () => {
     if (!task) return
@@ -107,12 +118,14 @@ function TaskSidebar({ task, onTaskChange, className }) {
       updated_duedate: editingDueDate || undefined
     })
     setIsEditing(false)
+    onTaskChange?.(null)
   }
 
   const handleStatusUpdate = (newStatus) => {
     if (!task) return
     updateTaskStatus(task.id, newStatus)
     setStatusPopoverOpen(false)
+    onTaskChange?.(null)
   }
 
   const handleDelete = () => {
@@ -164,7 +177,9 @@ function TaskSidebar({ task, onTaskChange, className }) {
                   variant="ghost"
                   size="sm"
                   onClick={handleStartEdit}
-                  disabled={isUpdatingTask || isDeletingTask}
+                  disabled={!canModify || isUpdatingTask || isDeletingTask}
+                  aria-disabled={!canModify}
+                  className={canModify ? "" : "opacity-50 cursor-not-allowed"}
                 >
                   <Edit3 className="h-4 w-4" />
                   <span className="sr-only">Edit task</span>
@@ -173,7 +188,9 @@ function TaskSidebar({ task, onTaskChange, className }) {
                   variant="ghost"
                   size="sm"
                   onClick={handleDelete}
-                  disabled={isDeletingTask || isUpdatingTask}
+                  disabled={!canModify || isDeletingTask || isUpdatingTask}
+                  aria-disabled={!canModify}
+                  className={canModify ? "" : "opacity-50 cursor-not-allowed"}
                 >
                   {isDeletingTask ? (
                     <Spinner size="sm" />
@@ -198,7 +215,9 @@ function TaskSidebar({ task, onTaskChange, className }) {
                   variant="ghost"
                   size="sm"
                   onClick={handleSaveEdit}
-                  disabled={!editingTitle.trim() || isUpdatingTask}
+                  disabled={!canModify || !editingTitle.trim() || isUpdatingTask}
+                  aria-disabled={!canModify}
+                  className={canModify ? "" : "opacity-50 cursor-not-allowed"}
                 >
                   {isUpdatingTask ? (
                     <Spinner size="sm" />
@@ -219,37 +238,47 @@ function TaskSidebar({ task, onTaskChange, className }) {
         <div className="space-y-2">
           <Label className="text-sm font-medium">Status</Label>
           <div>
-            <Popover open={statusPopoverOpen} onOpenChange={setStatusPopoverOpen}>
-              <PopoverTrigger asChild>
-                <Badge 
-                  variant={getStatusVariant(task.status)} 
-                  className="cursor-pointer hover:opacity-80"
-                >
-                  {getStatusLabel(task.status)}
-                </Badge>
-              </PopoverTrigger>
-              <PopoverContent className="w-48 p-0" align="start">
-                <Command>
-                  <CommandInput placeholder="Search status..." />
-                  <CommandList>
-                    <CommandEmpty>No status found.</CommandEmpty>
-                    <CommandGroup>
-                      {TASK_STATUS.map((status) => (
-                        <CommandItem
-                          key={status}
-                          value={status}
-                          onSelect={() => handleStatusUpdate(status)}
-                          className="cursor-pointer"
-                        >
-                          <CheckSquare className="mr-2 h-4 w-4" />
-                          {getStatusLabel(status)}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            {canModify ? (
+              <Popover open={statusPopoverOpen} onOpenChange={setStatusPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Badge 
+                    variant={getStatusVariant(task.status)} 
+                    className="cursor-pointer hover:opacity-80"
+                  >
+                    {getStatusLabel(task.status)}
+                  </Badge>
+                </PopoverTrigger>
+                <PopoverContent className="w-48 p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search status..." />
+                    <CommandList>
+                      <CommandEmpty>No status found.</CommandEmpty>
+                      <CommandGroup>
+                        {TASK_STATUS.map((status) => (
+                          <CommandItem
+                            key={status}
+                            value={status}
+                            onSelect={() => handleStatusUpdate(status)}
+                            className="cursor-pointer"
+                          >
+                            <CheckSquare className="mr-2 h-4 w-4" />
+                            {getStatusLabel(status)}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <Badge 
+                variant={getStatusVariant(task.status)} 
+                className="opacity-80 cursor-not-allowed"
+                aria-disabled="true"
+              >
+                {getStatusLabel(task.status)}
+              </Badge>
+            )}
           </div>
         </div>
 
@@ -325,6 +354,16 @@ function TaskSidebar({ task, onTaskChange, className }) {
             </div>
           )}
         </div>
+
+        {/* Ended callout strip */}
+        {isEnded && (
+          <div className="flex gap-2 rounded-md border bg-muted/40 p-3">
+            <CheckSquare className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+            <span className="text-sm">
+              This task ended on {formatDate(task.ended_at)}. Editing and deletion are locked.
+            </span>
+          </div>
+        )}
 
         <Separator />
 
