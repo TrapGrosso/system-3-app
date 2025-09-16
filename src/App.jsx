@@ -21,7 +21,7 @@ import { useAuth } from './contexts/AuthContext'
 import { RoundSpinner } from './components/ui/spinner'
 import { Toaster } from './components/ui/sonner'
 import Settings from './pages/Settings'
-import N8nWarningsSentinel from './components/N8nWarningsSentinel'
+import { N8nWarningsDialog } from '@/components/dialogs'
 
 function App() {
   const { user, loading } = useAuth()
@@ -36,7 +36,7 @@ function App() {
 
   return (
     <Router>
-      <N8nWarningsSentinel />
+      <N8nWarningsDialog initialOpen storageKey="n8n-warnings:last-signature" />
       <Toaster richColors position="bottom-right" />
       <Routes>
         <Route 
