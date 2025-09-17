@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/command"
 
 import { useTasks } from "@/contexts/TaskContext"
+import { useDialogs } from "@/contexts/DialogsContext"
 
 // Helper functions copied from ProspectTasksDialog
 const formatDate = (dateString) => {
@@ -74,6 +75,8 @@ function TaskSidebar({ task, onTaskChange, className }) {
     isDeletingTask,
     TASK_STATUS,
   } = useTasks()
+
+  const { confirm } = useDialogs()
 
   // Check if task has ended
   const isEnded = React.useMemo(() => Boolean(task?.ended_at), [task])
@@ -128,9 +131,15 @@ function TaskSidebar({ task, onTaskChange, className }) {
     onTaskChange?.(null)
   }
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!task) return
-    if (window.confirm(`Are you sure you want to delete "${task.title}"?`)) {
+    const confirmed = await confirm({
+      title: "Delete task?",
+      description: `This will permanently delete "${task.title}".`,
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+    })
+    if (confirmed) {
       deleteTasks([task.id])
       onTaskChange?.(null) // Clear selection after delete
     }
