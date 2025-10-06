@@ -137,7 +137,7 @@ function PromptMultiSelect({
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 max-h-72 overflow-auto" align="start">
+          <PopoverContent sizeMode="fit" className="p-0 max-h-72 overflow-y-auto" align="start">
             <Command>
               <CommandInput placeholder="Search prompts..." />
               <CommandList>

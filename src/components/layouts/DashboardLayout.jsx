@@ -139,7 +139,7 @@ export function DashboardLayout({ children, headerText = "Dashboard" }) {
       },
       {
         title: "Get Help",
-        url: "#",
+        url: "/gethelp",
         icon: IconHelp,
       }
     ]
