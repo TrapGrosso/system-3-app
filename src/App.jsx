@@ -22,6 +22,7 @@ import { RoundSpinner } from './components/ui/spinner'
 import { Toaster } from './components/ui/sonner'
 import Settings from './pages/Settings'
 import { N8nWarningsDialog } from '@/components/dialogs'
+import { GetHelp } from './pages/GetHelp'
 
 function App() {
   const { user, loading } = useAuth()
@@ -165,7 +166,15 @@ function App() {
             <ProtectedRoute>
               <Settings/>
             </ProtectedRoute>
-          } 
+          }
+        />
+        <Route 
+          path="/gethelp" 
+          element={
+            <ProtectedRoute>
+              <GetHelp/>
+            </ProtectedRoute>
+          }
         />
         <Route 
           path="/" 
