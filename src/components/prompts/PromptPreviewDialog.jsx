@@ -9,18 +9,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
+import { formatAbsolute } from '@/utils/timeformat'
 
 function PromptPreviewDialog({ open, onOpenChange, prompt }) {
   if (!prompt) return null
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "Unknown"
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric"
-    })
-  }
 
   const formatAgentType = (type) => {
     if (!type) return null
@@ -55,7 +48,7 @@ function PromptPreviewDialog({ open, onOpenChange, prompt }) {
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
               <span className="font-medium">Created:</span>
-              <span>{formatDate(prompt.created_at)}</span>
+              <span>{formatAbsolute(prompt.created_at, { dateStyle: "short" })}</span>
             </div>
           </div>
 

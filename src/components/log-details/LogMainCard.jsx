@@ -3,18 +3,9 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ZapIcon, CalendarIcon, ClockIcon } from 'lucide-react'
 import AdvancedFiltersCollapsible from '@/components/shared/ui/AdvancedFiltersCollapsible'
+import { formatAbsolute } from '@/utils/timeformat'
 
 export default function LogMainCard({ log }) {
-  const formatDate = (dateString) => {
-    if (!dateString) return '—'
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
 
   const formatDuration = (durationMs) => {
     if (!durationMs) return '—'
@@ -100,7 +91,7 @@ const formatActionLabel = (action) => {
             <p className="text-sm font-medium text-muted-foreground">Start Time</p>
             <div className="flex items-center gap-2 text-sm">
               <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-              <span>{formatDate(log.start_time)}</span>
+              <span>{formatAbsolute(log.start_time, { dateStyle: "short", timeStyle: "short" })}</span>
             </div>
           </div>
 
@@ -109,7 +100,7 @@ const formatActionLabel = (action) => {
             <p className="text-sm font-medium text-muted-foreground">End Time</p>
             <div className="flex items-center gap-2 text-sm">
               <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-              <span>{formatDate(log.end_time)}</span>
+              <span>{formatAbsolute(log.end_time, { dateStyle: "short", timeStyle: "short" })}</span>
             </div>
           </div>
 

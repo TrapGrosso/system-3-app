@@ -337,20 +337,18 @@ export const formatNumber = (value) => {
   return value.toLocaleString()
 }
 
+// Import the new formatRelative function
+import { formatRelative } from "@/utils/timeformat"
+
+// Maintain backward compatibility with existing formatRelativeTime function
 export const formatRelativeTime = (dateString) => {
   if (!dateString) return ''
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffInMs = now - date
-  const diffInMinutes = Math.floor(diffInMs / (1000 * 60))
-  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
-  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24))
-
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes} min ago`
-  } else if (diffInHours < 24) {
-    return `${diffInHours} hrs ago`
-  } else {
-    return `${diffInDays} days ago`
-  }
+  return formatRelative(dateString, { 
+    style: "short", 
+    numeric: "auto",
+    thresholds: {
+      justNowSeconds: 0, // Disable "just now" to match original behavior
+      switchToAbsoluteHours: Infinity // Never switch to absolute time to match original behavior
+    }
+  })
 }

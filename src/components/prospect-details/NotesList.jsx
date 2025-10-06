@@ -5,6 +5,7 @@ import { MessageSquareIcon, PlusIcon, PencilIcon, TrashIcon } from 'lucide-react
 import { useNotes } from '@/contexts/NotesContext'
 import { DataTable } from '@/components/shared/table/DataTable'
 import { useDialogs } from '@/contexts/DialogsContext'
+import { formatAbsolute } from '@/utils/timeformat'
 
 export default function NotesList({ notes = [], onAddNote }) {
   const { 
@@ -81,15 +82,6 @@ export default function NotesList({ notes = [], onAddNote }) {
     }
   ]
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
 
   const columns = [
     {
@@ -108,7 +100,7 @@ export default function NotesList({ notes = [], onAddNote }) {
       enableSorting: false,
       cell: ({ row }) => (
         <div className="text-muted-foreground w-48">
-          {formatDate(row.original.created_at)}
+          {formatAbsolute(row.original.created_at, { dateStyle: "short", timeStyle: "short" })}
         </div>
       ),
     },

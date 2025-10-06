@@ -8,6 +8,7 @@ import MarkdownScrollBox from '@/components/shared/ui/MarkdownScrollBox'
 import { useAuth } from '@/contexts/AuthContext'
 import { useDialogs } from '@/contexts/DialogsContext'
 import { useDeleteEnrichments } from '@/api/prospect-details/deleteEnrichments'
+import { formatAbsolute } from '@/utils/timeformat'
 
 export default function EnrichmentAccordion({ enrichment = {}, onRefetch }) {
   const [expandedSections, setExpandedSections] = useState({})
@@ -35,15 +36,6 @@ export default function EnrichmentAccordion({ enrichment = {}, onRefetch }) {
     }))
   }
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
 
   const hasEnrichmentData = Object.keys(enrichment).some(key => 
     Array.isArray(enrichment[key]) && enrichment[key].length > 0
@@ -108,7 +100,7 @@ export default function EnrichmentAccordion({ enrichment = {}, onRefetch }) {
                             {item.source}
                           </Badge>
                           <span className="text-xs text-muted-foreground">
-                            {formatDate(item.created_at)}
+                            {formatAbsolute(item.created_at, { dateStyle: "short", timeStyle: "short" })}
                           </span>
                         </div>
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity">

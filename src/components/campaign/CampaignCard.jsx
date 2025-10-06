@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/collapsible"
 import { ActionDropdown } from "@/components/shared/ui/ActionDropdown"
 import ContentDisplay from "@/utils/ContentDisplay"
+import { formatAbsolute, formatHHmm } from "@/utils/timeformat"
 
 function statusToBadgeVariant(status) {
   const value = (status || "").toLowerCase()
@@ -66,24 +67,6 @@ function typeIcon(type) {
   return ListChecks
 }
 
-function formatDate(dateStr) {
-  if (!dateStr) return null
-  try {
-    return new Date(dateStr).toLocaleDateString()
-  } catch {
-    return null
-  }
-}
-
-function formatTime(hhmm) {
-  if (!hhmm || typeof hhmm !== "string") return ""
-  // Keep 24h HH:MM
-  const [h, m] = hhmm.split(":")
-  if (h === undefined || m === undefined) return hhmm
-  const hh = h.padStart(2, "0")
-  const mm = m.padStart(2, "0")
-  return `${hh}:${mm}`
-}
 
 const dayShort = {
   "1": "Mon",
@@ -118,8 +101,8 @@ function summarizeDays(daysObj) {
 
 function timeRange(timing) {
   if (!timing || (!timing.from && !timing.to)) return "Time N/A"
-  const from = formatTime(timing.from)
-  const to = formatTime(timing.to)
+  const from = formatHHmm(timing.from)
+  const to = formatHHmm(timing.to)
   if (from && to) return `${from}–${to}`
   return from || to || "Time N/A"
 }
@@ -186,7 +169,7 @@ export default function CampaignCard({ campaign, handleCampaignSelection }) {
             </div>
             <CardDescription className="flex flex-wrap items-center gap-1 text-[11px] sm:text-xs">
               <CalendarDays className="h-3.5 w-3.5" />
-              <span>Created {formatDate(created_at) || "N/A"}</span>
+              <span>Created {formatAbsolute(created_at, { mode: "date", dateStyle: "medium" }) || "N/A"}</span>
             </CardDescription>
           </div>
 

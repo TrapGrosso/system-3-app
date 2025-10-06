@@ -20,6 +20,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { TablePopoverCell } from '@/components/shared/table/TablePopoverCell'
 import { DataTable } from '@/components/shared/table/DataTable'
 import AdvancedFiltersCollapsible from '@/components/shared/ui/AdvancedFiltersCollapsible'
+import { formatTimestamp, formatAbsolute } from '@/utils/timeformat'
 
 const getStatusVariant = (status) => {
   switch (status?.toLowerCase()) {
@@ -155,11 +156,6 @@ export default function ProspectsTable({
           return <div className="text-center text-muted-foreground">—</div>;
         }
 
-        // Importing AdvancedFiltersCollapsible here would cause issues, so we'll define the collapsible content inline
-        const formatTimestamp = (timestamp) => {
-          if (!timestamp) return '—';
-          return new Date(timestamp).toLocaleString();
-        };
 
         return (
           <TablePopoverCell
@@ -214,7 +210,6 @@ export default function ProspectsTable({
         if (!rec) return <div>—</div>;
         const email = rec.email || "";
 
-        const formatDate = (ts) => ts ? new Date(ts).toLocaleString() : "—";
         const emailStatusVariant = (s) => ({ valid: "default", not_found: "destructive" }[s?.toLowerCase()] || "outline");
         const verificationStatusVariant = (s) => ({ valid: "default", invalid: "destructive" }[s?.toLowerCase()] || "secondary");
         const safeToSendVariant = (s) => s === "yes" ? "default" : s === "no" ? "destructive" : "outline";
@@ -246,7 +241,7 @@ export default function ProspectsTable({
                 {/* Status + Created */}
                 <div className="flex flex-wrap items-center gap-2">
                   {r.status && <Badge variant={emailStatusVariant(r.status)}>{r.status}</Badge>}
-                  <span className="text-xs text-muted-foreground">Created: {formatDate(r.created_at)}</span>
+                  <span className="text-xs text-muted-foreground">Created: {formatTimestamp(r.created_at)}</span>
                 </div>
 
                 {/* Single latest Verification */}
@@ -277,7 +272,7 @@ export default function ProspectsTable({
                                 )}
                                 {v.verified_on && (
                                   <span className="text-xs text-muted-foreground">
-                                    Verified: {formatDate(v.verified_on)}
+                                    Verified: {formatTimestamp(v.verified_on)}
                                   </span>
                                 )}
                               </div>
@@ -291,7 +286,7 @@ export default function ProspectsTable({
                                 .map(([key, val]) => {
                                   const displayVal = val === null || val === undefined || val === ''
                                     ? "—"
-                                    : (/_at$|_on$/.test(key) ? formatDate(val) : String(val));
+                                    : (/_at$|_on$/.test(key) ? formatTimestamp(val) : String(val));
                                   return (
                                     <React.Fragment key={key}>
                                       <span className="text-muted-foreground break-all">{key}:</span>
@@ -402,7 +397,7 @@ export default function ProspectsTable({
                 </div>
                 {task.due_date && (
                   <p className="text-xs text-muted-foreground mb-1">
-                    Due: {new Date(task.due_date).toLocaleDateString()}
+                    Due: {formatAbsolute(task.due_date, { mode: "date", dateStyle: "short" })}
                   </p>
                 )}
                 {task.description && (

@@ -2,18 +2,9 @@ import React from 'react'
 import { Badge } from '@/components/ui/badge'
 import { DataTable } from '@/components/shared/table/DataTable'
 import { UserIcon, CalendarIcon, BuildingIcon, TableIcon } from 'lucide-react'
+import { formatAbsolute } from '@/utils/timeformat'
 
 export default function ResultsTable({ results = [], onRowClick = () => {} }) {
-  const formatDate = (dateString) => {
-    if (!dateString) return '—'
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
 
   const columns = [
     {
@@ -66,7 +57,7 @@ export default function ResultsTable({ results = [], onRowClick = () => {} }) {
       cell: ({ row }) => (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <CalendarIcon className="h-4 w-4" />
-          {formatDate(row.original.created_at)}
+          {formatAbsolute(row.original.created_at, { dateStyle: "short", timeStyle: "short" })}
         </div>
       ),
     },

@@ -24,13 +24,7 @@ import {
 
 import { useTasks } from "@/contexts/TaskContext"
 import { useDialogs } from "@/contexts/DialogsContext"
-
-// Helper functions copied from ProspectTasksDialog
-const formatDate = (dateString) => {
-  if (!dateString) return null
-  const date = new Date(dateString)
-  return date.toLocaleDateString()
-}
+import { formatAbsolute } from "@/utils/timeformat"
 
 const getStatusVariant = (status) => {
   switch (status?.toLowerCase()) {
@@ -355,7 +349,7 @@ function TaskSidebar({ task, onTaskChange, className }) {
               {task.due_date ? (
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  {formatDate(task.due_date)}
+                  {formatAbsolute(task.due_date, { mode: "date", dateStyle: "short" })}
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">No due date set</p>
@@ -369,7 +363,7 @@ function TaskSidebar({ task, onTaskChange, className }) {
           <div className="flex gap-2 rounded-md border bg-muted/40 p-3">
             <CheckSquare className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
             <span className="text-sm">
-              This task ended on {formatDate(task.ended_at)}. Editing and deletion are locked.
+              This task ended on {formatAbsolute(task.ended_at, { mode: "date", dateStyle: "short" })}. Editing and deletion are locked.
             </span>
           </div>
         )}
@@ -380,7 +374,7 @@ function TaskSidebar({ task, onTaskChange, className }) {
         <div className="space-y-2">
           <Label className="text-sm font-medium">Created</Label>
           <p className="text-sm text-muted-foreground">
-            {formatDate(task.created_at)}
+            {formatAbsolute(task.created_at, { mode: "date", dateStyle: "short" })}
           </p>
         </div>
 

@@ -27,6 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { formatAbsolute } from '@/utils/timeformat'
 
 function PromptCard({ prompt, onEdit, onDuplicate, onCopy, onPreview, onAskDelete }) {
   const handleCopyPrompt = async () => {
@@ -39,14 +40,6 @@ function PromptCard({ prompt, onEdit, onDuplicate, onCopy, onPreview, onAskDelet
     }
   }
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "Unknown"
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric"
-    })
-  }
 
   const formatAgentType = (type) => {
     if (!type) return null
@@ -166,11 +159,11 @@ function PromptCard({ prompt, onEdit, onDuplicate, onCopy, onPreview, onAskDelet
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
               <Calendar className="h-3 w-3" />
-              Created {formatDate(prompt.created_at)}
+              Created {formatAbsolute(prompt.created_at, { dateStyle: "short" })}
             </div>
             {prompt.updated_at !== prompt.created_at && (
               <div>
-                Updated {formatDate(prompt.updated_at)}
+                Updated {formatAbsolute(prompt.updated_at, { dateStyle: "short" })}
               </div>
             )}
           </div>

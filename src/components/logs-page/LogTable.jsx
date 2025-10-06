@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { RotateCcw, AlertCircle, Loader2 } from 'lucide-react'
 import { DataTable } from '../shared/table/DataTable'
+import { formatAbsolute } from '@/utils/timeformat'
+
 
 // Helper function to format action labels
 const formatActionLabel = (action) => {
@@ -24,19 +26,6 @@ const getStatusBadge = (status) => {
     default:
       return <Badge variant="outline">{status}</Badge>
   }
-}
-
-const formatDateTime = (dateString) => {
-  if (!dateString) return '-'
-  const date = new Date(dateString)
-  return date.toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  })
 }
 
 const formatDuration = (durationMs) => {
@@ -89,7 +78,7 @@ export const LogTable = ({
       enableSorting: false,
       cell: ({ row }) => (
         <div className="font-mono text-xs">
-          {formatDateTime(row.original.start_time)}
+          {formatAbsolute(row.original.start_time, { dateStyle: "short", timeStyle: "medium", showSeconds: true })}
         </div>
       ),
     },
@@ -99,7 +88,7 @@ export const LogTable = ({
       enableSorting: false,
       cell: ({ row }) => (
         <div className="font-mono text-xs">
-          {formatDateTime(row.original.end_time)}
+          {formatAbsolute(row.original.end_time, { dateStyle: "short", timeStyle: "medium", showSeconds: true })}
         </div>
       ),
     },

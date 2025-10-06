@@ -23,13 +23,7 @@ import {
 } from "@/components/ui/pagination"
 
 import GroupFilters from "./GroupFilters"
-
-// Helper functions
-const formatDate = (dateString) => {
-  if (!dateString) return null
-  const date = new Date(dateString)
-  return date.toLocaleDateString()
-}
+import { formatAbsolute } from '@/utils/timeformat'
 
 function GroupTable({ 
   groups = [], 
@@ -216,7 +210,7 @@ function GroupTable({
                   </Badge>
                 </TableCell>
                 <TableCell className="text-xs text-muted-foreground">
-                  {formatDate(group.created_at)}
+                  {formatAbsolute(group.created_at, { mode: "date", dateStyle: "short" })}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">

@@ -26,6 +26,7 @@ import FormField from "@/components/shared/ui/FormField"
 import EditableListItem from "@/components/shared/ui/EditableListItem"
 
 import { useTasks, useProspectTasks } from "@/contexts/TaskContext"
+import { formatAbsolute } from '@/utils/timeformat'
 
 const TASK_FIELDS = [
   { name: "title", label: "Title", required: true, maxLength: 100 },
@@ -111,11 +112,6 @@ function ProspectTasksDialog({
     }
   }
 
-  const formatDate = (dateString) => {
-    if (!dateString) return null
-    const date = new Date(dateString)
-    return date.toLocaleDateString()
-  }
 
   const getStatusVariant = (status) => {
     switch (status?.toLowerCase()) {
@@ -271,12 +267,12 @@ function ProspectTasksDialog({
                       <div className="flex justify-between items-start flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
                           <span className="text-xs text-muted-foreground">
-                            {formatDate(item.created_at)}
+                            {formatAbsolute(item.created_at, { mode: "date", dateStyle: "short" })}
                           </span>
                           {item.due_date && (
                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Calendar className="h-3 w-3" />
-                              <span>Due: {formatDate(item.due_date)}</span>
+                              <span>Due: {formatAbsolute(item.due_date, { mode: "date", dateStyle: "short" })}</span>
                             </div>
                           )}
                         </div>

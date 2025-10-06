@@ -14,6 +14,7 @@ import EditableListItem from "@/components/shared/ui/EditableListItem"
 import VariableMetaBadges from "@/components/dialogs/prospect-variables/VariableMetaBadges"
 
 import { useVariables, useProspectVariables } from "@/contexts/VariableContext"
+import { formatAbsolute } from '@/utils/timeformat'
 
 const VARIABLE_FIELDS = [
   { name: "name", label: "Name", required: true, maxLength: 100 },
@@ -84,11 +85,6 @@ function ProspectVariablesDialog({
     }
   }
 
-  const formatDate = (dateString) => {
-    if (!dateString) return null
-    const date = new Date(dateString)
-    return date.toLocaleDateString()
-  }
 
   // Sort variables by creation date (newest first)
   const sortedVariables = [...prospectVariables].sort((a, b) => 
@@ -207,9 +203,9 @@ function ProspectVariablesDialog({
                       <div className="flex justify-between items-start flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
                           <span className="text-xs text-muted-foreground">
-                            {formatDate(item.created_at)}
+                            {formatAbsolute(item.created_at, { mode: "date", dateStyle: "short" })}
                           </span>
-                          <VariableMetaBadges variable={item} formatDate={formatDate} />
+                          <VariableMetaBadges variable={item} formatDate={(dateString) => formatAbsolute(dateString, { mode: "date", dateStyle: "short" })} />
                         </div>
                       </div>
                     )}

@@ -6,16 +6,9 @@ import { Button } from '@/components/ui/button'
 import { CalendarIcon, TargetIcon, Trash2, PlusIcon } from 'lucide-react'
 import { DataTable } from '@/components/shared/table/DataTable'
 import { useNavigate } from 'react-router-dom'
+import { formatAbsolute } from '@/utils/timeformat'
 
 export default function CampaignsTable({ campaigns = [], prospect, onOpenRemoveFromCampaign, onAddToCampaign }) {
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
-
   const getCampaignStatus = (campaign) => {
     const now = new Date()
     const startDate = campaign.start_at ? new Date(campaign.start_at) : null
@@ -83,7 +76,7 @@ export default function CampaignsTable({ campaigns = [], prospect, onOpenRemoveF
         row.original.start_at ? (
           <div className="flex items-center gap-1 text-muted-foreground">
             <CalendarIcon className="h-3 w-3" />
-            {formatDate(row.original.start_at)}
+            {formatAbsolute(row.original.start_at, { mode: "date", dateStyle: "short" })}
           </div>
         ) : <div>—</div>
       )
@@ -95,7 +88,7 @@ export default function CampaignsTable({ campaigns = [], prospect, onOpenRemoveF
         row.original.end_at ? (
           <div className="flex items-center gap-1 text-muted-foreground">
             <CalendarIcon className="h-3 w-3" />
-            {formatDate(row.original.end_at)}
+            {formatAbsolute(row.original.end_at, { mode: "date", dateStyle: "short" })}
           </div>
         ) : <div>—</div>
       )
@@ -103,7 +96,7 @@ export default function CampaignsTable({ campaigns = [], prospect, onOpenRemoveF
     {
       accessorKey: 'added_at',
       header: 'Added At',
-      cell: ({ row }) => formatDate(row.original.added_at)
+      cell: ({ row }) => formatAbsolute(row.original.added_at, { mode: "date", dateStyle: "short" })
     }
   ], [])
 

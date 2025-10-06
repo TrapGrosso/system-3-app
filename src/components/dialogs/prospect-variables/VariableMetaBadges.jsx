@@ -2,6 +2,7 @@ import * as React from "react"
 import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { Separator } from "@/components/ui/separator"
+import { formatAbsolute } from '@/utils/timeformat'
 
 function VariableMetaBadges({ variable, formatDate }) {
   const prompt = variable?.prompt || null
@@ -11,15 +12,11 @@ function VariableMetaBadges({ variable, formatDate }) {
 
   if (!hasPrompt && !hasEnrichments) return null
 
+  // Use formatDate prop if provided, otherwise default to formatAbsolute (directly from utility file)
   const fmtDate = (dateString) => {
-    if (!dateString) return null
-    try {
-      return typeof formatDate === "function"
-        ? formatDate(dateString)
-        : new Date(dateString).toLocaleDateString()
-    } catch {
-      return null
-    }
+    return formatDate && typeof formatDate === "function"
+      ? formatDate(dateString)
+      : formatAbsolute(dateString, { mode: "date", dateStyle: "short" })
   }
 
   return (

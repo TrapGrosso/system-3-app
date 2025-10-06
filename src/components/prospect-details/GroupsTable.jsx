@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 import { DataTable } from '@/components/shared/table/DataTable'
 import { useDialogs } from '@/contexts/DialogsContext'
+import { formatAbsolute } from '@/utils/timeformat'
 
 export default function GroupsTable({ groups = [], prospect, onAddToGroup }) {
   const { user } = useAuth()
@@ -47,13 +48,6 @@ export default function GroupsTable({ groups = [], prospect, onAddToGroup }) {
     }
   }
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
 
   const columns = [
     {
@@ -81,8 +75,8 @@ export default function GroupsTable({ groups = [], prospect, onAddToGroup }) {
       accessorKey: 'created_at',
       enableSorting: false,
       cell: ({ row }) => (
-        <div className="text-muted-foreground">
-          {formatDate(row.original.created_at)}
+          <div className="text-muted-foreground">
+          {formatAbsolute(row.original.created_at, { dateStyle: "short" })}
         </div>
       ),
     },

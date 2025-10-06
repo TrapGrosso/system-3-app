@@ -23,13 +23,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 import ProspectFilters from "./ProspectFilters"
-
-// Helper functions
-const formatDate = (dateString) => {
-  if (!dateString) return null
-  const date = new Date(dateString)
-  return date.toLocaleDateString()
-}
+import { formatAbsolute } from '@/utils/timeformat'
 
 function GroupProspectsTable({ 
   group,
@@ -242,7 +236,7 @@ function GroupProspectsTable({
                     </div>
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
-                    {formatDate(prospect.added_at || prospect.created_at)}
+                    {formatAbsolute(prospect.added_at || prospect.created_at, { mode: "date", dateStyle: "short" })}
                   </TableCell>
                   <TableCell>
                     <Button

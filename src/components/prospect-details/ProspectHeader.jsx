@@ -33,9 +33,9 @@ import { toast } from 'sonner'
 import { useProspects } from '@/contexts/ProspectsContext'
 import { useDeepSearchQueue } from '@/contexts/DeepSearchQueueContext'
 import { useDialogs } from '@/contexts/DialogsContext'
+import { formatTimestamp } from '@/utils/timeformat'
 
 // Utility functions
-const formatDate = (ts) => ts ? new Date(ts).toLocaleString() : "—"
 
 const getEmailStatusConfig = (status) => {
   const normalized = status?.toLowerCase()
@@ -338,7 +338,7 @@ export default function ProspectHeader({
                   {latestVerification && (
                     <div className="space-y-3">
                       <p className="text-sm text-muted-foreground">
-                        Last verified: {formatDate(latestVerification.verified_on)}
+                        Last verified: {formatTimestamp(latestVerification.verified_on)}
                       </p>
                       
                       {Array.isArray(email.verifications) && email.verifications.length > 0 && (
@@ -384,7 +384,7 @@ export default function ProspectHeader({
                                             </Badge>
                                           </TableCell>
                                           <TableCell className="text-sm">
-                                            {formatDate(verification.verified_on)}
+                                            {formatTimestamp(verification.verified_on)}
                                           </TableCell>
                                           <TableCell>
                                             <div className="flex flex-wrap gap-1">

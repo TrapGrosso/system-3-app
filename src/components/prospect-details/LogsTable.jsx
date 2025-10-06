@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { FileTextIcon, ZapIcon, X, CheckIcon, CalendarIcon } from 'lucide-react'
 import { DataTable } from '@/components/shared/table/DataTable'
+import { formatAbsolute } from '@/utils/timeformat'
 
 // Sidebar component to display log details
-function LogSidebar({ log, onClear, formatDate }) {
+function LogSidebar({ log, onClear }) {
   if (!log) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -53,7 +54,7 @@ function LogSidebar({ log, onClear, formatDate }) {
             <div className="flex items-center gap-2 text-sm">
               <CalendarIcon className="h-4 w-4 text-muted-foreground" />
               <span className="text-muted-foreground">Created:</span>
-              <span>{formatDate(prospect_created_at)}</span>
+              <span>{formatAbsolute(prospect_created_at, { dateStyle: "short", timeStyle: "short" })}</span>
             </div>
           )}
 
@@ -78,16 +79,6 @@ function LogSidebar({ log, onClear, formatDate }) {
 
 export default function LogsTable({ logs = [] }) {
   const [selectedLog, setSelectedLog] = useState(null)
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
 
   const formatDuration = (durationMs) => {
     if (!durationMs) return '—'
@@ -149,7 +140,7 @@ export default function LogsTable({ logs = [] }) {
       enableSorting: true,
       cell: ({ row }) => (
         <div className="text-muted-foreground text-sm">
-          {formatDate(row.original.start_time)}
+          {formatAbsolute(row.original.start_time, { dateStyle: "short", timeStyle: "short" })}
         </div>
       ),
     },
@@ -159,7 +150,7 @@ export default function LogsTable({ logs = [] }) {
       enableSorting: true,
       cell: ({ row }) => (
         <div className="text-muted-foreground text-sm">
-          {row.original.end_time ? formatDate(row.original.end_time) : '—'}
+          {row.original.end_time ? formatAbsolute(row.original.end_time, { dateStyle: "short", timeStyle: "short" }) : '—'}
         </div>
       ),
     },
@@ -225,7 +216,6 @@ export default function LogsTable({ logs = [] }) {
             <LogSidebar 
               log={selectedLog} 
               onClear={() => setSelectedLog(null)}
-              formatDate={formatDate}
             />
           </div>
         </div>

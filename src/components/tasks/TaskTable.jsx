@@ -7,13 +7,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { DataTable } from "@/components/shared/table/DataTable"
 import TaskFilters from "./TaskFilters"
 import { useAllTasks } from "@/contexts/TaskContext"
-
-// Helper functions copied from ProspectTasksDialog
-const formatDate = (dateString) => {
-  if (!dateString) return null
-  const date = new Date(dateString)
-  return date.toLocaleDateString()
-}
+import { formatAbsolute } from "@/utils/timeformat"
 
 const getStatusVariant = (status) => {
   switch (status?.toLowerCase()) {
@@ -99,7 +93,7 @@ function TaskTable({ onSelect, selectedTaskId, className }) {
         return dueDate ? (
           <div className="flex items-center gap-1 text-xs">
             <Calendar className="h-3 w-3" />
-            {formatDate(dueDate)}
+            {formatAbsolute(dueDate, { mode: "date", dateStyle: "short" })}
           </div>
         ) : (
           <span className="text-muted-foreground text-xs">No due date</span>
@@ -134,7 +128,7 @@ function TaskTable({ onSelect, selectedTaskId, className }) {
         return createdAt ? (
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Clock className="h-3 w-3" />
-            {formatDate(createdAt)}
+            {formatAbsolute(createdAt, { mode: "date", dateStyle: "short" })}
           </div>
         ) : (
           <span className="text-muted-foreground text-xs">—</span>
@@ -149,7 +143,7 @@ function TaskTable({ onSelect, selectedTaskId, className }) {
         return endedAt ? (
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <CheckSquare className="h-3 w-3" />
-            {formatDate(endedAt)}
+            {formatAbsolute(endedAt, { mode: "date", dateStyle: "short" })}
           </div>
         ) : (
           <span className="text-muted-foreground text-xs">—</span>

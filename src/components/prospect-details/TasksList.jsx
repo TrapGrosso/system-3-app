@@ -7,6 +7,7 @@ import { useTasks } from '@/contexts/TaskContext'
 import { DataTable } from '@/components/shared/table/DataTable'
 import { useDialogs } from '@/contexts/DialogsContext'
 import { useState, useEffect } from 'react'
+import { formatAbsolute } from '@/utils/timeformat'
 
 export default function TasksList({ tasks = [], onAddTask }) {
   const { 
@@ -22,13 +23,6 @@ export default function TasksList({ tasks = [], onAddTask }) {
     setLocalTasks(tasks)
   }, [tasks])
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
 
   const handleAddTask = () => {
     if (onAddTask) {
@@ -147,7 +141,7 @@ export default function TasksList({ tasks = [], onAddTask }) {
       cell: ({ row }) => (
         <div className="text-muted-foreground flex items-center gap-1 w-32">
           <CalendarIcon className="h-3 w-3" />
-          {formatDate(row.original.due_date)}
+          {formatAbsolute(row.original.due_date, { dateStyle: "short" })}
         </div>
       ),
     },

@@ -12,6 +12,7 @@ import DialogWrapper from "@/components/shared/dialog/DialogWrapper"
 import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 import FormField from "@/components/shared/ui/FormField"
 import EditableListItem from "@/components/shared/ui/EditableListItem"
+import { formatAbsolute } from '@/utils/timeformat'
 
 function ProspectNotesDialog({ 
   prospect_id,
@@ -63,13 +64,6 @@ function ProspectNotesDialog({
     }
   }
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    })
-  }
 
   // Sort notes by creation date (newest first)
   const sortedNotes = [...prospectNotes].sort((a, b) => 
@@ -171,7 +165,7 @@ function ProspectNotesDialog({
                     onDelete={() => deleteNotes([note.id]).then(onSuccess)}
                     renderMeta={({item}) => (
                       <span className="text-xs text-muted-foreground">
-                        {formatDate(item.created_at)}
+                        {formatAbsolute(item.created_at, { dateStyle: "short", timeStyle: "short" })}
                       </span>
                     )}
                     renderView={({item}) => (
