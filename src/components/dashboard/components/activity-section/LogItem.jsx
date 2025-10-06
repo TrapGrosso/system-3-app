@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { formatRelativeTime } from "@/components/shared/ui/ChartKit"
 import { ActionDropdown } from "@/components/shared/ui/ActionDropdown"
 import { useNavigate } from "react-router-dom"
+import { formatDuration } from "@/utils/durationFormat"
 
 /**
  * LogItem - Individual log entry card
@@ -43,8 +44,8 @@ export function LogItem({ log }) {
   }
 
   const StatusIcon = getStatusIcon(log.status)
-  const duration = log.start_time && log.end_time 
-    ? Math.round((new Date(log.end_time) - new Date(log.start_time)) / 1000)
+  const durationMs = log.start_time && log.end_time 
+    ? new Date(log.end_time) - new Date(log.start_time)
     : null
 
   return (
@@ -59,9 +60,9 @@ export function LogItem({ log }) {
                   <StatusIcon className="h-3 w-3" />
                   {log.action?.replace(/_/g, " ") || "Unknown"}
                 </Badge>
-                {duration && (
+                {durationMs && (
                   <span className="text-xs text-muted-foreground">
-                    {duration}s
+                    {formatDuration(durationMs)}
                   </span>
                 )}
               </div>
