@@ -5,6 +5,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 import { RotateCcw, AlertCircle, Loader2 } from 'lucide-react'
 import { DataTable } from '../shared/table/DataTable'
 import { formatAbsolute } from '@/utils/timeformat'
+import { formatDuration } from '@/utils/durationFormat'
 
 
 // Helper function to format action labels
@@ -25,20 +26,6 @@ const getStatusBadge = (status) => {
       return <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800">In Progress</Badge>
     default:
       return <Badge variant="outline">{status}</Badge>
-  }
-}
-
-const formatDuration = (durationMs) => {
-  if (!durationMs) return '-'
-  
-  if (durationMs < 1000) {
-    return `${durationMs}ms`
-  } else if (durationMs < 60000) {
-    return `${(durationMs / 1000).toFixed(1)}s`
-  } else {
-    const minutes = Math.floor(durationMs / 60000)
-    const seconds = ((durationMs % 60000) / 1000).toFixed(1)
-    return `${minutes}m ${seconds}s`
   }
 }
 
