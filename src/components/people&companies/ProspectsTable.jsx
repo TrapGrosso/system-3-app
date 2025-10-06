@@ -21,6 +21,7 @@ import { TablePopoverCell } from '@/components/shared/table/TablePopoverCell'
 import { DataTable } from '@/components/shared/table/DataTable'
 import AdvancedFiltersCollapsible from '@/components/shared/ui/AdvancedFiltersCollapsible'
 import { formatTimestamp, formatAbsolute } from '@/utils/timeformat'
+import { formatDuration } from '@/utils/durationFormat'
 
 const getStatusVariant = (status) => {
   switch (status?.toLowerCase()) {
@@ -186,7 +187,7 @@ export default function ProspectsTable({
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Duration:</span>
-                      <span>{log.duration_ms ? `${log.duration_ms}ms` : '—'}</span>
+                      <span>{log.duration_ms ? formatDuration(log.duration_ms) : '—'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Created:</span>
