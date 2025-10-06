@@ -28,6 +28,7 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible"
 import { ActionDropdown } from "@/components/shared/ui/ActionDropdown"
+import ContentDisplay from "@/utils/ContentDisplay"
 
 function statusToBadgeVariant(status) {
   const value = (status || "").toLowerCase()
@@ -257,23 +258,29 @@ export default function CampaignCard({ campaign, handleCampaignSelection }) {
                           </div>
                         </div>
 
-                        {isEmail && (
-                          <div className="mt-2 space-y-1">
-                            {subject && (
-                              <p className="text-xs text-muted-foreground">
-                                Subject: <span className="text-foreground">{subject}</span>
-                              </p>
-                            )}
-                            {body && (
-                              <p className="text-xs text-muted-foreground line-clamp-3">
-                                {body}
-                              </p>
-                            )}
-                            {!subject && !body && (
-                              <p className="text-xs text-muted-foreground">No email content.</p>
-                            )}
-                          </div>
-                        )}
+{isEmail && (
+  <div className="mt-2 space-y-1">
+    {subject && (
+      <p className="text-xs text-muted-foreground">
+        Subject: <span className="text-foreground">{subject}</span>
+      </p>
+    )}
+    {body && (
+      <ContentDisplay
+        content={body}
+        mode="auto"
+        sanitize={true}
+        maxChars={200}
+        preserveWords
+        lineClamp={3}
+        className="text-xs text-muted-foreground"
+      />
+    )}
+    {!subject && !body && (
+      <p className="text-xs text-muted-foreground">No email content.</p>
+    )}
+  </div>
+)}
                       </div>
                     )
                   })}

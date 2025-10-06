@@ -22,11 +22,7 @@ import {
   FileText,
   Calendar
 } from "lucide-react"
-
-const isHtml = (body) => {
-  if (typeof body !== "string") return false
-  return /<[^>]+>/.test(body)
-}
+import ContentDisplay, { isLikelyHtml } from "@/utils/ContentDisplay"
 
 const formatNumber = (v) => (typeof v === "number" ? v.toLocaleString() : v ?? "-")
 
@@ -108,7 +104,7 @@ function SectionLabel({ children, icon: Icon }) {
 }
 
 function ContentPreview({ subject, body }) {
-  const html = isHtml(body)
+  const isHtmlContent = isLikelyHtml(body)
   return (
     <div className="space-y-4">
       {subject ? (
@@ -131,19 +127,20 @@ function ContentPreview({ subject, body }) {
                 <div className="w-2 h-2 rounded-full bg-red-500"></div>
               </div>
               <Badge variant="secondary" className="text-xs">
-                {html ? "HTML" : "Plain Text"}
+                {isHtmlContent ? "HTML" : "Plain Text"}
               </Badge>
             </div>
           </div>
           <div className="p-4 h-[320px] overflow-auto">
-            {html ? (
-              <div
-                className="text-sm leading-6 prose prose-sm max-w-none dark:prose-invert"
-                // Note: HTML originates from trusted templates in this app. Review before enabling external input.
-                dangerouslySetInnerHTML={{ __html: body }} />
-            ) : (
-              <pre className="text-sm whitespace-pre-wrap leading-6 text-foreground">{body || "No content available"}</pre>
-            )}
+            <ContentDisplay
+              content={body}
+              mode="auto"
+              sanitize={true}
+              prose
+              preWrap
+              containerClassName="text-sm leading-6"
+              className="h-full"
+            />
           </div>
         </div>
       </div>
