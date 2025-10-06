@@ -54,6 +54,7 @@ export const LogTable = ({
   isRetryPending = false,
   onRowClick = () => {}
 }) => {
+  console.log(data)
   // Column definitions for DataTable
   const columns = React.useMemo(() => [
     {
@@ -78,7 +79,7 @@ export const LogTable = ({
       enableSorting: false,
       cell: ({ row }) => (
         <div className="font-mono text-xs">
-          {formatAbsolute(row.original.start_time, { dateStyle: "short", timeStyle: "medium", showSeconds: true })}
+          {formatAbsolute(row.original.start_time, { dateStyle: "short", timeStyle: "medium", showSeconds: true, assumeUTC: true })}
         </div>
       ),
     },
@@ -88,7 +89,7 @@ export const LogTable = ({
       enableSorting: false,
       cell: ({ row }) => (
         <div className="font-mono text-xs">
-          {formatAbsolute(row.original.end_time, { dateStyle: "short", timeStyle: "medium", showSeconds: true })}
+          {formatAbsolute(row.original.end_time, { dateStyle: "short", timeStyle: "medium", showSeconds: true, assumeUTC: true })}
         </div>
       ),
     },

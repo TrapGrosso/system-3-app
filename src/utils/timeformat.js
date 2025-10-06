@@ -25,9 +25,16 @@ export function parseInput(value, { epochUnit = "ms", assumeUTC = false } = {}) 
     date = new Date(timestamp)
   } else if (typeof value === "string") {
     // Handle date strings
-    if (assumeUTC && !value.endsWith("Z") && !value.includes("T")) {
-      // If we're assuming UTC for date-only strings, append UTC indicator
-      date = new Date(value + "T00:00:00Z")
+    if (assumeUTC) {
+      // Check if the string already has a timezone designator
+      const hasTimezone = /[zZ]|[+\-]\d{2}[:.]?\d{2}$/.test(value)
+      if (!hasTimezone) {
+        // Append 'Z' to indicate UTC if no timezone is present
+        const normalized = value.includes("T") ? value + "Z" : value + "T00:00:00Z"
+        date = new Date(normalized)
+      } else {
+        date = new Date(value)
+      }
     } else {
       date = new Date(value)
     }
@@ -60,53 +67,27 @@ export function formatAbsolute(value, {
   showSeconds = false,
   locale,
   timeZone,
+  assumeUTC = false,
   fallback = DEFAULT_FALLBACK
 } = {}) {
-  const date = parseInput(value)
+  const date = parseInput(value, { assumeUTC })
   if (!date) return fallback
   
   // Build options for Intl.DateTimeFormat
-  const options = {
-    locale,
-    timeZone
-  }
+  const options = {}
+  if (timeZone) options.timeZone = timeZone
   
   if (mode === "date" || mode === "datetime") {
     options.dateStyle = dateStyle
   }
   
   if (mode === "time" || mode === "datetime") {
-    options.timeStyle = timeStyle
+    // Use medium time style when showing seconds, as it includes seconds
+    options.timeStyle = showSeconds && timeStyle === "short" ? "medium" : timeStyle
     if (hour12 !== undefined) options.hour12 = hour12
-    if (showSeconds) {
-      // We need to customize the time format further if showing seconds
-      // This requires a different approach since timeStyle doesn't directly support seconds control
-      if (timeStyle === "short") {
-        // For short style with seconds, we'll use medium
-        options.timeStyle = "medium"
-      }
-    }
   }
   
   try {
-    // If we need to show seconds and have control over the format
-    if ((mode === "time" || mode === "datetime") && showSeconds) {
-      // Build custom options for more control
-      const parts = new Intl.DateTimeFormat(locale, {
-        ...(mode !== "time" && { dateStyle }),
-        ...(mode !== "date" && { 
-          hour: "numeric",
-          minute: "numeric",
-          second: "numeric",
-          hour12,
-          timeZone
-        }),
-        timeZone
-      }).formatToParts(date)
-      
-      return parts.map(part => part.value).join('')
-    }
-    
     return new Intl.DateTimeFormat(locale, options).format(date)
   } catch (error) {
     console.warn("Failed to format date:", error)
@@ -322,10 +303,6 @@ export function formatHHmm(hhmm, {
       hour: "numeric",
       minute: "2-digit",
       hour12: true
-    }
-    
-    if (locale) {
-      options.locale = locale
     }
     
     return new Intl.DateTimeFormat(locale, options).format(date)
