@@ -1,29 +1,12 @@
 import * as React from "react"
-import { Users, Trash2 } from "lucide-react"
-import { IconTrashX as TrashX } from "@tabler/icons-react"
+import { Users } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
-
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import GroupFilters from "./GroupFilters"
 import { formatAbsolute } from '@/utils/timeformat'
+import { DataTable } from '@/components/shared/table/DataTable'
 
 function GroupTable({ 
   groups = [], 
@@ -38,9 +21,7 @@ function GroupTable({
   isDeletingGroup,
   className 
 }) {
-  const [currentPage, setCurrentPage] = React.useState(1)
   const [filter, setFilter] = React.useState(null)
-  const perPage = 10
 
   // Apply filtering
   const filteredGroups = React.useMemo(() => {
@@ -60,15 +41,10 @@ function GroupTable({
     })
   }, [groups, filter])
 
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredGroups.length / perPage)
-  const startIndex = (currentPage - 1) * perPage
-  const endIndex = startIndex + perPage
-  const paginatedGroups = filteredGroups.slice(startIndex, endIndex)
-
   // Reset to page 1 when filter changes
   React.useEffect(() => {
-    setCurrentPage(1)
+    // This effect is kept for consistency with the original implementation
+    // DataTable handles pagination internally
   }, [filter])
 
   const handleFilterApply = (filterData) => {
@@ -79,52 +55,110 @@ function GroupTable({
     setFilter(null)
   }
 
-  const handleRowClick = (group) => {
+  // Column definitions for DataTable
+  const columns = React.useMemo(() => [
+    {
+      accessorKey: "name",
+      header: "Name",
+      cell: ({ row }) => {
+        const name = row.original.name || "";
+        return (
+          <div className="font-medium max-w-xs truncate" title={name}>
+            {name}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "description",
+      header: "Description",
+      cell: ({ row }) => {
+        const description = row.original.description || "No description";
+        return (
+          <div className="max-w-sm">
+            <Popover>
+              <PopoverTrigger asChild>
+                <div className="truncate text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors" title={description}>
+                  {description}
+                </div>
+              </PopoverTrigger>
+              <PopoverContent 
+                align="start" 
+                sideOffset={4}
+                className="max-w-xs text-sm p-3"
+              >
+                <div className="whitespace-normal break-words">
+                  {description}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "prospect_count",
+      header: "Prospects",
+      meta: { align: 'right' },
+      cell: ({ row }) => (
+        <div className="flex justify-end">
+          <Badge variant="secondary">
+            {row.original.prospect_count || 0}
+          </Badge>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "created_at",
+      header: "Created",
+      meta: { align: 'center' },
+      cell: ({ row }) => (
+        <div className="text-xs text-muted-foreground text-center">
+          {formatAbsolute(row.original.created_at, { mode: "date", dateStyle: "short" })}
+        </div>
+      ),
+    },
+  ], [])
+
+  // Row actions for DataTable
+  const rowActions = React.useCallback((group) => [
+    {
+      label: "Empty group",
+      onSelect: () => {
+        if (!isEmptyingGroup && !isDeletingGroup) {
+          onEmpty(group)
+        }
+      },
+      disabled: isEmptyingGroup || isDeletingGroup
+    },
+    "separator",
+    {
+      label: "Delete group",
+      variant: "destructive",
+      onSelect: () => {
+        if (!isEmptyingGroup && !isDeletingGroup) {
+          onDelete(group)
+        }
+      },
+      disabled: isEmptyingGroup || isDeletingGroup
+    }
+  ], [isEmptyingGroup, isDeletingGroup, onEmpty, onDelete])
+
+  // Handle row click
+  const handleRowClick = React.useCallback((group) => {
     onSelect(group)
-  }
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page)
-  }
-
-  const handleEmptyGroup = (e, group) => {
-    e.stopPropagation() // Prevent row selection
-    onEmpty(group)
-  }
-
-  const handleDeleteGroup = (e, group) => {
-    e.stopPropagation() // Prevent row selection
-    onDelete(group)
-  }
+  }, [onSelect])
 
   if (isLoading) {
     return (
       <div className={`space-y-4 ${className}`}>
         <GroupFilters onApply={handleFilterApply} onClear={handleFilterClear} />
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Prospects</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="w-24">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {[...Array(5)].map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-                  <TableCell><Skeleton className="h-6 w-16" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-8 w-16" /></TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <DataTable
+          columns={columns}
+          data={[]}
+          loading={true}
+          enableSelection={false}
+        />
       </div>
     )
   }
@@ -165,136 +199,18 @@ function GroupTable({
       {/* Filters */}
       <GroupFilters onApply={handleFilterApply} onClear={handleFilterClear} />
 
-      {/* Results info */}
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <span>
-          Showing {startIndex + 1}-{Math.min(endIndex, filteredGroups.length)} of {filteredGroups.length} groups
-          {filter && ` (filtered from ${groups.length} total)`}
-        </span>
-      </div>
-
-      {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Prospects</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="w-24">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedGroups.map((group) => (
-              <TableRow
-                key={group.id}
-                onClick={() => handleRowClick(group)}
-                className={`cursor-pointer hover:bg-muted/50 ${
-                  selectedGroupId === group.id ? 'bg-muted' : ''
-                }`}
-              >
-                <TableCell className="font-medium max-w-xs">
-                  <div className="truncate" title={group.name}>
-                    {group.name}
-                  </div>
-                </TableCell>
-                <TableCell className="max-w-sm">
-                  <div className="truncate text-sm text-muted-foreground" title={group.description}>
-                    {group.description || 'No description'}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="secondary">
-                    {group.prospect_count || 0}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-xs text-muted-foreground">
-                  {formatAbsolute(group.created_at, { mode: "date", dateStyle: "short" })}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={(e) => handleEmptyGroup(e, group)}
-                      title="Empty group"
-                      disabled={isEmptyingGroup || isDeletingGroup}
-                    >
-                      <TrashX className="h-4 w-4" />
-                      <span className="sr-only">Empty group</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive"
-                      onClick={(e) => handleDeleteGroup(e, group)}
-                      title="Delete group"
-                      disabled={isEmptyingGroup || isDeletingGroup}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span className="sr-only">Delete group</span>
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                />
-              </PaginationItem>
-              
-              {[...Array(totalPages)].map((_, i) => {
-                const page = i + 1
-                if (
-                  page === 1 ||
-                  page === totalPages ||
-                  (page >= currentPage - 1 && page <= currentPage + 1)
-                ) {
-                  return (
-                    <PaginationItem key={page}>
-                      <PaginationLink
-                        onClick={() => handlePageChange(page)}
-                        isActive={page === currentPage}
-                        className="cursor-pointer"
-                      >
-                        {page}
-                      </PaginationLink>
-                    </PaginationItem>
-                  )
-                }
-                if (page === currentPage - 2 || page === currentPage + 2) {
-                  return (
-                    <PaginationItem key={page}>
-                      <span className="px-4 py-2">...</span>
-                    </PaginationItem>
-                  )
-                }
-                return null
-              })}
-              
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
+      {/* Table using DataTable */}
+      <DataTable
+        key={`groups-${filter?.field || 'all'}-${filter?.value || ''}`} // Reset pagination when filter changes
+        columns={columns}
+        data={filteredGroups}
+        rowId={(group) => group.id}
+        enableSelection={false}
+        rowActions={rowActions}
+        onRowClick={handleRowClick}
+        rowClassName={(group) => selectedGroupId === group.id ? "bg-muted" : ""}
+        emptyMessage={filter ? 'No groups match your filter' : 'No groups found'}
+      />
     </div>
   )
 }
