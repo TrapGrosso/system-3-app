@@ -25,6 +25,8 @@ function GroupsContent() {
         isRemovingFromGroup,
     } = useGroups()
 
+    const { confirm, openHandleGroups } = useDialogs()
+
     // Fetch prospects for selected group
     const {
         data: prospects = [],
@@ -38,6 +40,17 @@ function GroupsContent() {
     }
 
     const handleEmptyGroup = async (group) => {
+        const confirmed = await confirm({
+            title: 'Empty group',
+            description: `Are you sure you want to remove all prospects from "${group.name}"?`,
+            confirmLabel: 'Empty',
+            cancelLabel: 'Cancel'
+        })
+
+        if (!confirmed) {
+            return
+        }
+
         try {
             await emptyGroup(group.id)
             // If the emptied group is currently selected, clear selection since it has no prospects
@@ -51,6 +64,17 @@ function GroupsContent() {
     }
 
     const handleDeleteGroup = async (group) => {
+        const confirmed = await confirm({
+            title: 'Delete group',
+            description: `This will permanently delete the group "${group.name}". This action cannot be undone.`,
+            confirmLabel: 'Delete',
+            cancelLabel: 'Cancel'
+        })
+
+        if (!confirmed) {
+            return
+        }
+
         try {
             await deleteGroup(group.id)
             // If the deleted group is currently selected, clear selection
@@ -78,7 +102,6 @@ function GroupsContent() {
         }
     }
 
-    const { openHandleGroups } = useDialogs()
     const handleOpenManageGroups = async () => {
       await openHandleGroups({
         user_id: user?.id,
