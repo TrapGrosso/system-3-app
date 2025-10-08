@@ -20,13 +20,7 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { ActionDropdown } from "@/components/shared/ui/ActionDropdown"
 import { formatAbsolute } from '@/utils/timeformat'
 
 function PromptCard({ prompt, onEdit, onDuplicate, onCopy, onPreview, onAskDelete }) {
@@ -66,43 +60,42 @@ function PromptCard({ prompt, onEdit, onDuplicate, onCopy, onPreview, onAskDelet
             )}
           </div>
           
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => onPreview(prompt)}>
-                <Eye className="h-4 w-4 mr-2" />
-                Preview
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onEdit(prompt)}>
-                <Edit3 className="h-4 w-4 mr-2" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleCopyPrompt}>
-                <Copy className="h-4 w-4 mr-2" />
-                Copy text
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onDuplicate(prompt)}>
-                <Copy className="h-4 w-4 mr-2" />
-                Duplicate
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                onClick={() => onAskDelete(prompt)}
-                variant="destructive"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <ActionDropdown
+            items={[
+              { 
+                label: "Preview", 
+                icon: Eye, 
+                onSelect: () => onPreview(prompt) 
+              },
+              { 
+                label: "Edit", 
+                icon: Edit3, 
+                onSelect: () => onEdit(prompt) 
+              },
+              { 
+                label: "Copy text", 
+                icon: Copy, 
+                onSelect: handleCopyPrompt 
+              },
+              { 
+                label: "Duplicate", 
+                icon: Copy, 
+                onSelect: () => onDuplicate(prompt) 
+              },
+              "separator",
+              { 
+                label: "Delete", 
+                icon: Trash2, 
+                onSelect: () => onAskDelete(prompt),
+                variant: "destructive"
+              }
+            ]}
+            triggerProps={{
+              variant: "ghost",
+              size: "sm",
+              className: "opacity-0 group-hover:opacity-100 transition-opacity"
+            }}
+          />
         </div>
       </CardHeader>
 
