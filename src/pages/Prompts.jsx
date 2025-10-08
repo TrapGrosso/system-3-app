@@ -9,18 +9,12 @@ import { PromptProvider, useAllPrompts, usePrompts } from "@/contexts/PromptCont
 import { useFilteredPrompts } from "@/hooks/use-filtered-prompts"
 import PromptFilters from "@/components/prompts/PromptFilters"
 import PromptsGrid from "@/components/prompts/PromptsGrid"
-import CreatePromptDialog from "@/components/dialogs/CreatePromptDialog"
-import UpdatePromptDialog from "@/components/dialogs/UpdatePromptDialog"
-import { PromptPreviewDialog } from "@/components/prompts"
-import DeleteDialog from "@/components/dialogs/DeleteDialog"
+import { useDialogs } from "@/contexts/DialogsContext"
 
 function PromptsContent() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedTags, setSelectedTags] = useState([])
   const [selectedAgentType, setSelectedAgentType] = useState("")
-
-  const [dialogType, setDialogType] = useState(null) // 'create' | 'preview' | 'edit' | 'delete'
-  const [activePrompt, setActivePrompt] = useState(null) // currently selected prompt
 
   // Get prompts data
   const { data: prompts = [], isLoading, error } = useAllPrompts()
@@ -32,6 +26,9 @@ function PromptsContent() {
     isDeletingPrompt,
   } = usePrompts()
 
+  // Get dialog functions from DialogsContext
+  const { openCreatePrompt, openUpdatePrompt, openPromptPreview, confirm } = useDialogs()
+
   // Filter prompts based on search and filters
   const filteredPrompts = useFilteredPrompts(
     prompts,
@@ -40,41 +37,34 @@ function PromptsContent() {
     selectedAgentType
   )
 
-  const openCreate = useCallback(() => {
-    setActivePrompt(null)
-    setDialogType("create")
-  }, [])
+  const openCreate = useCallback(async () => {
+    await openCreatePrompt()
+  }, [openCreatePrompt])
 
   const openPreview = useCallback((prompt) => {
-    setActivePrompt(prompt)
-    setDialogType("preview")
-  }, [])
+    openPromptPreview({ prompt })
+  }, [openPromptPreview])
 
   const openEdit = useCallback((prompt) => {
-    setActivePrompt(prompt)
-    setDialogType("edit")
-  }, [])
+    openUpdatePrompt({ prompt })
+  }, [openUpdatePrompt])
 
-  const openAskDelete = useCallback((prompt) => {
-    setActivePrompt(prompt)
-    setDialogType("delete")
-  }, [])
-
-  const closeDialog = useCallback(() => {
-    setDialogType(null)
-    setActivePrompt(null)
-  }, [])
+  const openAskDelete = useCallback(async (prompt) => {
+    const result = await confirm({
+      title: "Delete Prompt",
+      description: `Are you sure you want to delete the prompt "${prompt.name}"? This action cannot be undone.`,
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel"
+    })
+    
+    if (result) {
+      await deletePrompt(prompt.id)
+    }
+  }, [confirm, deletePrompt])
 
   const handleDuplicate = useCallback((prompt) => {
     duplicatePrompt(prompt.id)
   }, [duplicatePrompt])
-
-  const handleDeleteConfirmed = useCallback(async () => {
-    if (activePrompt) {
-      await deletePrompt(activePrompt.id)
-      closeDialog()
-    }
-  }, [activePrompt, deletePrompt, closeDialog])
 
   return (
     <DashboardLayout headerText="Prompts">
@@ -131,35 +121,6 @@ function PromptsContent() {
           onCreatePrompt={openCreate}
         />
       </div>
-
-      {/* Dialogs */}
-      <PromptPreviewDialog
-        open={dialogType === "preview"}
-        onOpenChange={closeDialog}
-        prompt={activePrompt}
-      />
-
-      <CreatePromptDialog
-        open={dialogType === "create"}
-        onOpenChange={closeDialog}
-        onSuccess={closeDialog}
-      />
-
-      <UpdatePromptDialog
-        open={dialogType === "edit"}
-        onOpenChange={closeDialog}
-        prompt={activePrompt}
-        onSuccess={closeDialog}
-      />
-
-      <DeleteDialog
-        open={dialogType === "delete"}
-        onOpenChange={closeDialog}
-        itemName={activePrompt?.name}
-        title="Delete Prompt"
-        onConfirm={handleDeleteConfirmed}
-        isLoading={isDeletingPrompt}
-      />
     </DashboardLayout>
   )
 }
