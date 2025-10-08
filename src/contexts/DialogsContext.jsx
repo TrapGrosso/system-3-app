@@ -129,6 +129,10 @@ export function DialogsProvider({ children }) {
     return open('n8nWarnings', { ignoreSignature })
   }, [open])
 
+  const openPromptPreview = useCallback(({ prompt }) => {
+    return open('promptPreview', { prompt })
+  }, [open])
+
   const value = {
     activeDialog,
     open,
@@ -155,7 +159,8 @@ export function DialogsProvider({ children }) {
     openSubmitLeads,
     openPromptSelect,
     openResolveDeepSearchItem,
-    openN8nWarnings
+    openN8nWarnings,
+    openPromptPreview
   }
 
   return (

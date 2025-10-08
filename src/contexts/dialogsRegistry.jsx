@@ -27,6 +27,8 @@ import {
   N8nWarningsDialog
 } from '@/components/dialogs'
 
+import { PromptPreviewDialog } from '@/components/prompts'
+
 const dialogsRegistry = {
   // Submit Leads Dialog
   submitLeads: {
@@ -250,6 +252,17 @@ const dialogsRegistry = {
       // DialogRenderer will pass open={true} and onOpenChange
       ignoreSignature,
       onSuccess: () => resolve(true)
+    })
+  },
+
+  // Prompt Preview Dialog
+  promptPreview: {
+    component: PromptPreviewDialog,
+    mapProps: ({ prompt }, resolve) => ({
+      prompt,
+      onOpenChange: (open) => {
+        if (!open) resolve(null);
+      }
     })
   }
 }
