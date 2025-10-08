@@ -19,10 +19,41 @@ function DeleteDialog({
   icon = <Trash2 className="h-5 w-5" />,
   size = "sm",
   children,
+  closeDelayRange = [400, 600], // Optional enhancement: custom delay range
 }) {
   const defaultDescription = itemName
     ? `Are you sure you want to delete "${itemName}"? This action cannot be undone.`
     : null
+
+  const handleConfirm = async () => {
+    try {
+      // Call the onConfirm callback and wait for it to complete if it returns a promise
+      const result = onConfirm?.()
+      if (result && typeof result.then === 'function') {
+        await result
+      }
+      
+      // Calculate random delay within the specified range
+      const [minDelay, maxDelay] = closeDelayRange
+      const delay = minDelay + Math.floor(Math.random() * (maxDelay - minDelay + 1))
+      
+      // Close the dialog after the delay
+      setTimeout(() => {
+        onOpenChange(false)
+      }, delay)
+    } catch (error) {
+      // If there's an error, we still want to close the dialog after the delay
+      const [minDelay, maxDelay] = closeDelayRange
+      const delay = minDelay + Math.floor(Math.random() * (maxDelay - minDelay + 1))
+      
+      setTimeout(() => {
+        onOpenChange(false)
+      }, delay)
+      
+      // Re-throw the error for the caller to handle
+      throw error
+    }
+  }
 
   return (
     <DialogWrapper
@@ -47,7 +78,7 @@ function DeleteDialog({
         <SpinnerButton
           loading={isLoading}
           variant={confirmVariant}
-          onClick={onConfirm}
+          onClick={handleConfirm}
           disabled={isLoading}
         >
           {confirmLabel}
