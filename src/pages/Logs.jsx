@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLogsQueryController } from '@/api/log/getLogsByAction'
+import { useRetryLog } from '@/api/log/retryLog'
+import { useDialogs } from '@/contexts/DialogsContext'
 import { DashboardLayout } from "@/components/layouts/DashboardLayout"
 import { LogTable } from '@/components/logs-page/LogTable'
 import LogTableFilterBar from '@/components/logs-page/LogTableFilterBar'
@@ -10,6 +12,7 @@ import { toast } from 'sonner'
 export default function Logs() {
     const navigate = useNavigate()
     const { user } = useAuth()
+    const { confirm } = useDialogs()
 
     // Fetch logs using the controller
     const {
@@ -27,6 +30,16 @@ export default function Logs() {
         userId: user.id
     })
 
+    const { mutate: retryLogMutate, isPending: isRetryPending } = useRetryLog({
+        onSuccess: () => {
+            toast.success('Retry triggered successfully')
+            refetchLogs()
+        },
+        onError: (error) => {
+            toast.error(error.message || 'Failed to retry log')
+        }
+    })
+
     const handleApplyFilters = (filters) => {
         setLogsQuery({ ...filters, page: 1 })
     }
@@ -35,8 +48,17 @@ export default function Logs() {
         resetLogsFilters()
     }
 
-    const handleRetry = (logId) => {
-        toast.info('Retry functionality not yet implemented')
+    const handleRetry = async (logId) => {
+        const result = await confirm({
+            title: 'Retry Log',
+            description: 'Are you sure you want to retry this log? This action cannot be undone.',
+            confirmLabel: 'Retry',
+            cancelLabel: 'Cancel'
+        })
+        
+        if (result) {
+            retryLogMutate({ user_id: user.id, log_id: logId })
+        }
     }
 
     const handleRowClick = (log) => {
@@ -61,7 +83,7 @@ export default function Logs() {
                     isError={isErrorLogs}
                     error={logsError}
                     onRetry={handleRetry}
-                    isRetryPending={false}
+                    isRetryPending={isRetryPending}
                     onRowClick={handleRowClick}
                 />
             </div>
