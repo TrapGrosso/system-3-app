@@ -21,6 +21,31 @@ import { cn } from "@/lib/utils"
 /**
  * Reusable table pagination component that works with TanStack Table
  * Supports both server-side (manual) and client-side pagination
+ * 
+ * @typedef {Object} PageSizeOption
+ * @property {number|string} value - The value for the page size ('all' for showing all items)
+ * @property {string} [label] - The label to display for this option
+ */
+
+/**
+ * Reusable table pagination component that works with TanStack Table
+ * Supports both server-side (manual) and client-side pagination
+ * 
+ * @param {Object} props
+ * @param {Object} props.table - TanStack table instance
+ * @param {number} [props.totalRows] - Total number of rows
+ * @param {number} [props.selectedCount=0] - Number of selected rows
+ * @param {Array<number|PageSizeOption|string>} [props.pageSizes=[10, 20, 30, 50]] - Available page sizes
+ * @param {boolean} [props.enableSelection] - Whether selection is enabled
+ * @param {string} [props.className] - Additional CSS classes
+ * @param {'internal'|'external'} [props.mode='internal'] - Pagination mode
+ * @param {Object} [props.paginationState] - External pagination state
+ * @param {number} props.paginationState.pageIndex - Current page index
+ * @param {number|string} props.paginationState.pageSize - Current page size
+ * @param {number} props.paginationState.pageCount - Total number of pages
+ * @param {function(number): void} [props.onPageIndexChange] - External page index change handler
+ * @param {function(number|string): void} [props.onPageSizeChange] - External page size change handler
+ * @param {string|number} [props.allValueForExternal='all'] - Value to send to backend when 'All' is selected in external mode
  */
 export function TablePagination({
   table,
@@ -34,8 +59,26 @@ export function TablePagination({
   paginationState,
   onPageIndexChange,
   onPageSizeChange,
+  // New prop for external mode 'All' value
+  allValueForExternal = 'all',
   ...props
 }) {
+  // Normalize pageSizes to array of objects with value and label
+  const normalizedPageSizes = React.useMemo(() => {
+    return pageSizes.map(size => {
+      if (typeof size === 'object' && size !== null) {
+        return {
+          value: size.value,
+          label: size.label || (size.value === 'all' ? 'All' : String(size.value))
+        }
+      }
+      if (size === 'all') {
+        return { value: 'all', label: 'All' }
+      }
+      return { value: size, label: String(size) }
+    })
+  }, [pageSizes])
+
   // Determine pagination values based on mode
   const isExternal = mode === 'external'
   
@@ -120,18 +163,39 @@ export function TablePagination({
               Rows per page:
             </Label>
             <Select
-              value={`${pageSize}`}
+              value={typeof pageSize === 'string' ? pageSize : `${pageSize}`}
               onValueChange={(value) => {
-                setPageSize(Number(value))
+                // Handle 'all' option differently
+                if (value === 'all') {
+                  if (isExternal) {
+                    // For external mode, send the configured allValueForExternal
+                    onPageSizeChange?.(allValueForExternal)
+                    // Reset to first page when changing to 'all'
+                    onPageIndexChange?.(0)
+                  } else {
+                    // For internal mode, set page size to total rows
+                    table.setPageSize(total)
+                    table.setPageIndex(0)
+                  }
+                } else {
+                  const numericValue = Number(value)
+                  setPageSize(numericValue)
+                  // Reset to first page when changing page size
+                  if (isExternal) {
+                    onPageIndexChange?.(0)
+                  } else {
+                    table.setPageIndex(0)
+                  }
+                }
               }}
             >
               <SelectTrigger className="w-20" id="page-size">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {pageSizes.map((size) => (
-                  <SelectItem key={size} value={`${size}`}>
-                    {size}
+                {normalizedPageSizes.map((size) => (
+                  <SelectItem key={size.value} value={String(size.value)}>
+                    {size.label}
                   </SelectItem>
                 ))}
               </SelectContent>

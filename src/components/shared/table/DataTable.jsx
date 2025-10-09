@@ -72,6 +72,10 @@ import { SortIcon } from './SortIcon'
  * @param {{ pageIndex: number, pageSize: number, pageCount?: number, totalElements?: number }} [props.paginationState] - External pagination state
  * @param {function(Object): void} [props.onPaginationChange] - External pagination update handler: e.g. ({ pageIndex }) or ({ pageSize })
  * @param {Array<number>} [props.pageSizes=[10, 20, 30, 50]] - Available page sizes
+ * @param {Object} [props.paginationAllOption] - Configuration for 'All' page size option
+ * @param {boolean} [props.paginationAllOption.enabled=false] - Whether to enable the 'All' option
+ * @param {string} [props.paginationAllOption.label='All'] - Label for the 'All' option
+ * @param {string|number} [props.paginationAllOption.externalValue='all'] - Value to send to backend in external mode
  * @param {Array<Object>} [props.sorting] - External sorting state for TanStack table
  * @param {function(Function|Array<Object>): void} [props.onSortingChange] - External sorting handler
  * @param {boolean} [props.manualSorting=false] - Enable manual sorting (for server-driven sort)
@@ -232,6 +236,7 @@ export function DataTable({
   paginationState,
   onPaginationChange,
   pageSizes = [10, 20, 30, 50],
+  paginationAllOption,
   
   // Sorting
   sorting,
@@ -522,7 +527,10 @@ export function DataTable({
         paginationState={paginationState}
         onPageIndexChange={isExternal ? (index) => onPaginationChange?.({ pageIndex: index }) : undefined}
         onPageSizeChange={isExternal ? (size) => onPaginationChange?.({ pageSize: size }) : undefined}
-        pageSizes={pageSizes}
+        pageSizes={paginationAllOption?.enabled 
+          ? [...pageSizes, { value: 'all', label: paginationAllOption.label || 'All' }] 
+          : pageSizes}
+        allValueForExternal={paginationAllOption?.externalValue || 'all'}
       />
     </div>
   )

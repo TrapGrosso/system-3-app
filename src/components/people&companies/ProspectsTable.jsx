@@ -516,7 +516,7 @@ export default function ProspectsTable({
   const paginationState = React.useMemo(() => ({
     pageIndex: query.page - 1,
     pageSize: query.page_size,
-    pageCount: Math.ceil(total / query.page_size),
+    pageCount: query.page_size === 'all' ? 1 : Math.ceil(total / query.page_size),
     totalElements: total || null
   }), [query.page, query.page_size, total])
 
@@ -747,6 +747,8 @@ export default function ProspectsTable({
       bulkActions={bulkActions}
       rowActions={rowActions}
       onRowClick={handleRowClick}
+      pageSizes={[10, 20, 30, 50]}
+      paginationAllOption={{ enabled: true, label: 'All', externalValue: 'all' }}
     />
   )
 }
