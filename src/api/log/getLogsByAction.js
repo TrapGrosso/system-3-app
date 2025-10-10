@@ -191,28 +191,34 @@ export const useLogsQueryController = ({ userId, action }) => {
  * {
  *   "data": [
  *     {
- *       "id": "91be-...",
+ *       "id": "48b4e062-8f53-4fbd-91d1-3eca0684d678",
+ *       "action": "add_leads",
  *       "status": "success",
- *       "start_time": "2025-07-14T10:00:21.123Z",
- *       "end_time": "2025-07-14T10:00:22.456Z",
- *       "duration_ms": 1333,
- *       "message": "Added 25 leads successfully",
- *       "created_at": "2025-07-14T10:00:21.123Z",
- *       "updated_at": "2025-07-14T10:00:22.456Z",
+ *       "start_time": "2025-10-09T21:02:05.535",
+ *       "end_time": "2025-10-09T21:19:37.294",
+ *       "duration_ms": 1051759,
+ *       "message": "═══════════════════════════════════════\n         PROCESSING SUMMARY\n═══════════════════════════════════════\nStatus: SUCCESS | Success Rate: 100%\nProspects: 1 ✓ | 0 ✗ | 0 duplicates\nCompanies: 0 ✓ | 0 ✗ | 0 duplicates\nCompany found rate: 100% (1 from prospects)\nIssues: 0 incomplete | 0 errors recovered\n═══════════════════════════════════════",
+ *       "created_at": "2025-10-09T19:02:05.628074",
+ *       "updated_at": "2025-10-09T19:02:05.628074",
  *       "retry_eligible": false,
- *       "prospect_count": 25
+ *       "is_retry": true,
+ *       "retried_at": null,
+ *       "prospect_count": 1
  *     },
  *     {
- *       "id": "82cf-...",
+ *       "id": "b6d71a62-d223-4c8b-9ad7-2fd2ec1b1493",
+ *       "action": "add_leads",
  *       "status": "failed",
- *       "start_time": "2025-07-14T09:30:15.789Z",
- *       "end_time": "2025-07-14T09:30:20.123Z",
- *       "duration_ms": 4334,
- *       "message": "Failed to add leads: validation error",
- *       "created_at": "2025-07-14T09:30:15.789Z",
- *       "updated_at": "2025-07-14T09:30:20.123Z",
- *       "retry_eligible": true,
- *       "prospect_count": 0
+ *       "start_time": "2025-10-09T19:06:00.183",
+ *       "end_time": "2025-10-09T20:22:35.765",
+ *       "duration_ms": 4595582,
+ *       "message": "═══════════════════════════════════════\n         PROCESSING SUMMARY\n═══════════════════════════════════════\nStatus: FAILED | Success Rate: 50%\nProspects: 1 ✓ | 1 ✗ | 0 duplicates\nCompanies: 0 ✓ | 0 ✗ | 0 duplicates\nCompany found rate: 100% (1 from prospects)\nIssues: 1 incomplete | 0 errors recovered\n═══════════════════════════════════════",
+ *       "created_at": "2025-10-09T17:06:00.303831",
+ *       "updated_at": "2025-10-09T17:06:00.303831",
+ *       "retry_eligible": false,
+ *       "is_retry": false,
+ *       "retried_at": "2025-10-09T18:59:49.846",
+ *       "prospect_count": 2
  *     }
  *   ],
  *   "total": 2,

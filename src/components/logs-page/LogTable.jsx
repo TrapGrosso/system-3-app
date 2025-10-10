@@ -2,7 +2,8 @@ import * as React from "react"
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { RotateCcw, AlertCircle, Loader2 } from 'lucide-react'
+import { RotateCcw, AlertCircle, Loader2, Clock } from 'lucide-react'
+import { TimeText } from '@/utils/TimeText'
 import { DataTable } from '../shared/table/DataTable'
 import { formatAbsolute } from '@/utils/timeformat'
 import { formatDuration } from '@/utils/durationFormat'
@@ -54,11 +55,60 @@ export const LogTable = ({
       accessorKey: "action",
       header: "Action",
       enableSorting: false,
-      cell: ({ row }) => (
-        <Badge variant="secondary" className="text-xs font-medium">
-          {formatActionLabel(row.original.action)}
-        </Badge>
-      ),
+      cell: ({ row }) => {
+        const log = row.original;
+        return (
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-xs font-medium">
+              {formatActionLabel(log.action)}
+            </Badge>
+            {log.is_retry && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge 
+                    variant="outline" 
+                    className="h-5 px-1.5 py-0 text-[10px] leading-none text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50"
+                  >
+                    <RotateCcw className="h-2.5 w-2.5 mr-1" />
+                    Retry
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p className="text-xs">This run is a retry of a previous log</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+            {log.retried_at && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge 
+                    variant="outline" 
+                    className="h-5 px-1.5 py-0 text-[10px] leading-none text-sky-700 dark:text-sky-400 border-sky-200 dark:border-sky-800/50"
+                  >
+                    <Clock className="h-2.5 w-2.5 mr-1" />
+                    Retried
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p className="text-xs">This log was retried at</p>
+                  <p className="text-xs font-medium">
+                    <TimeText 
+                      value={log.retried_at} 
+                      variant="absolute" 
+                      absoluteOptions={{ 
+                        dateStyle: "short", 
+                        timeStyle: "medium", 
+                        showSeconds: true, 
+                        assumeUTC: true 
+                      }} 
+                    />
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "start_time",
