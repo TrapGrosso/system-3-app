@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useCallback } from 'react'
-import dialogsRegistry from './dialogsRegistry'
 
 const DialogsContext = createContext(null)
 
@@ -182,12 +181,21 @@ export function useDialogs() {
 // Dialog renderer component
 function DialogRenderer() {
   const { activeDialog, close } = useDialogs()
+  const [registry, setRegistry] = React.useState(null)
 
-  if (!activeDialog) return null
+  React.useEffect(() => {
+    let mounted = true
+    import('./dialogsRegistry').then(m => {
+      if (mounted) setRegistry(m.default)
+    })
+    return () => { mounted = false }
+  }, [])
+
+  if (!activeDialog || !registry) return null
 
   const { type, payload, resolve } = activeDialog
 
-  const dialogConfig = dialogsRegistry[type]
+  const dialogConfig = registry[type]
   if (!dialogConfig) {
     console.error(`Dialog type "${type}" not found in registry`)
     return null
