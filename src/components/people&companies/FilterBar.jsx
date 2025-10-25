@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useGroups } from '@/contexts/GroupsContext'
-import { useFetchCampaigns } from '@/api/campaign-context/fetchCampaigns'
 import { useAllPrompts } from "@/contexts/PromptContext"
 import { useAuth } from '@/contexts/AuthContext'
 import { MultiSelectChipPicker } from "../shared/filter/MultiSelectChipPicker"
@@ -45,7 +44,6 @@ const SEARCH_FIELD_OPTIONS = [
   { value: 'task_titles', label: 'Task Titles' },
   { value: 'task_descriptions', label: 'Task Descriptions' },
   { value: 'group_names', label: 'Group Names' },
-  { value: 'campaign_names', label: 'Campaign Names' },
   { value: 'variable_name', label: 'Variable Name' },
   { value: 'enrichment_types', label: 'Enrichment Types' },
   { value: 'enrichment_prompt_names', label: 'Enrichment Prompt Names' },
@@ -54,7 +52,6 @@ const SEARCH_FIELD_OPTIONS = [
 export default function FilterBar({ query, onApplyFilters, onResetFilters, loading }) {
   const { user } = useAuth()
   const { groups = [] } = useGroups()
-  const { data: campaigns = [] } = useFetchCampaigns(user?.id)
   const { data: prompts = [] } = useAllPrompts('deep_research')
 
   const schema = React.useMemo(() => ({
@@ -62,11 +59,9 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
     search_fields: { kind: "multiCsv" },
     status: { kind: "singleSelect" },
     in_group: { kind: "singleSelect" },
-    in_campaign: { kind: "singleSelect" },
     has_bd_scrape: { kind: "singleSelect" },
     has_deep_search: { kind: "singleSelect" },
     group_names: { kind: "multiCsv" },
-    campaign_names: { kind: "multiCsv" },
     prompt_names: { kind: "multiCsv" },
   }), [])
 
@@ -177,17 +172,6 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
                     />
                   </div>
 
-                  {/* Campaign Membership */}
-                  <div className="space-y-2">
-                    <Label className="text-[13px] font-medium text-muted-foreground">In Campaign</Label>
-                    <SingleSelect
-                      value={staged.in_campaign.value}
-                      onValueChange={staged.in_campaign.set}
-                      options={BOOLEAN_OPTIONS}
-                      placeholder="All"
-                    />
-                  </div>
-
                   {/* BD Enrichment */}
                   <div className="space-y-2">
                     <Label className="text-[13px] font-medium text-muted-foreground">BD Enrichment</Label>
@@ -223,19 +207,6 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
                       value={staged.group_names.value}
                       onValueChange={staged.group_names.set}
                       placeholder={groups.length ? "Choose groups..." : "No groups available"}
-                    />
-                  </div>
-
-                  {/* Campaigns Multi-select */}
-                  <div className="space-y-2">
-                    <Label className="text-[13px] font-medium text-muted-foreground">
-                      Campaign Names (select multiple)
-                    </Label>
-                    <MultiSelectChipPicker
-                      options={campaigns.map(campaign => ({ id: campaign.id,value: campaign.name, label: campaign.name }))}
-                      value={staged.campaign_names.value}
-                      onValueChange={staged.campaign_names.set}
-                      placeholder={campaigns.length ? "Choose campaigns..." : "No campaigns available"}
                     />
                   </div>
 

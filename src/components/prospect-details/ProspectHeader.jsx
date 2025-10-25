@@ -88,8 +88,7 @@ export default function ProspectHeader({
   onUpdateQueuePrompt, 
   onResolveDeepSearchItem,
   onAddNote, 
-  onCreateTask, 
-  onAddToCampaign, 
+  onCreateTask,
   onAddToDeepResearch, 
   onAddToGroup,
   onCreateVariables,
@@ -185,12 +184,6 @@ export default function ProspectHeader({
       label: 'Create task',
       icon: CheckSquareIcon,
       onSelect: onCreateTask
-    },
-    {
-      id: 'add-to-campaign',
-      label: 'Add to campaign',
-      icon: TargetIcon,
-      onSelect: onAddToCampaign
     },
     {
       id: 'add-to-deep-research',

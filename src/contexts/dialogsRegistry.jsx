@@ -14,8 +14,6 @@ import {
   UpdateProspectDialog,
   PromptSelectDialog,
   ResolveDeepSearchItem,
-  AddToCampaignDialog,
-  RemoveFromCampaignDialog,
   UpdateTaskDialog,
   CreatePromptDialog,
   FindProspectEmailsDialog,
@@ -149,25 +147,6 @@ const dialogsRegistry = {
     component: ResolveDeepSearchItem,
     mapProps: ({ queueIds = [] }, resolve) => ({
       queueIds,
-      onSuccess: () => resolve(true)
-    })
-  },
-
-  // Add to Campaign Dialog
-  addToCampaign: {
-    component: AddToCampaignDialog,
-    mapProps: ({ prospect_ids = [] }, resolve) => ({
-      prospect_ids,
-      onSuccess: (data) => resolve(data)
-    })
-  },
-
-  // Remove from Campaign Dialog
-  removeFromCampaign: {
-    component: RemoveFromCampaignDialog,
-    mapProps: ({ prospect }, resolve) => ({
-      prospect_id: prospect.linkedin_id,
-      prospect_name: `${prospect.first_name} ${prospect.last_name}`.trim(),
       onSuccess: () => resolve(true)
     })
   },

@@ -116,7 +116,7 @@ function CreatePromptDialog({
       onOpenChange={onOpenChange}
       icon={<Plus className="h-5 w-5" />}
       title="Create New Prompt"
-      description="Create a new AI prompt template for your campaigns."
+      description="Create a new AI prompt template for your agents."
       size="lg"
     >
       {trigger && <DialogWrapper.Trigger asChild>{trigger}</DialogWrapper.Trigger>}

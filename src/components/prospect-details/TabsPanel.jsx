@@ -3,7 +3,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import NotesList from './NotesList'
 import TasksList from './TasksList'
 import EnrichmentAccordion from './EnrichmentAccordion'
-import CampaignsTable from './CampaignsTable'
 import GroupsTable from './GroupsTable'
 import VariablesTable from './VariablesTable'
 import LogsTable from './LogsTable'
@@ -12,8 +11,7 @@ export default function TabsPanel(
   { 
     notes, 
     tasks, 
-    enrichment, 
-    campaigns, 
+    enrichment,
     groups, 
     variables, 
     logs,
@@ -22,15 +20,13 @@ export default function TabsPanel(
     onAddTask, 
     onAddVariable,
     onAddToGroup,
-    onOpenRemoveFromCampaign,
-    onAddToCampaign,
     onRefetch
   }) {
   const totalEnrichments = Object.values(enrichment || {}).flat().length
   return (
     <div className="px-4 lg:px-6 pb-6">
       <Tabs defaultValue="notes" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
           <TabsTrigger value="notes">
             Notes {notes?.length ? `(${notes.length})` : ''}
           </TabsTrigger>
@@ -39,9 +35,6 @@ export default function TabsPanel(
           </TabsTrigger>
           <TabsTrigger value="enrichment">
             Enrichment{totalEnrichments ? ` (${totalEnrichments})` : ''}
-          </TabsTrigger>
-          <TabsTrigger value="campaigns">
-            Campaigns {campaigns?.length ? `(${campaigns.length})` : ''}
           </TabsTrigger>
           <TabsTrigger value="groups">
             Groups {groups?.length ? `(${groups.length})` : ''}
@@ -72,15 +65,6 @@ export default function TabsPanel(
           <EnrichmentAccordion 
             enrichment={enrichment} 
             onRefetch={onRefetch}
-          />
-        </TabsContent>
-        
-        <TabsContent value="campaigns" className="mt-6">
-          <CampaignsTable 
-            campaigns={campaigns} 
-            prospect={prospect}
-            onOpenRemoveFromCampaign={onOpenRemoveFromCampaign}
-            onAddToCampaign={onAddToCampaign}
           />
         </TabsContent>
         

@@ -74,7 +74,7 @@ function PromptsContent() {
           <div>
             <h2 className="text-2xl font-bold">Prompt Management</h2>
             <p className="text-muted-foreground">
-              Create and manage AI prompts for your campaigns
+              Create and manage AI prompts
             </p>
           </div>
           

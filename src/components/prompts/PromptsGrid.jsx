@@ -51,7 +51,7 @@ function PromptsGrid({
         </div>
         <h3 className="text-lg font-semibold mb-2">No prompts found</h3>
         <p className="text-muted-foreground mb-4 max-w-md">
-          You haven't created any prompts yet. Create your first prompt to get started with AI-powered campaigns.
+          You haven't created any prompts yet. Create your first prompt to get started.
         </p>
         <Button onClick={onCreatePrompt}>
           <Plus className="h-4 w-4 mr-2" />

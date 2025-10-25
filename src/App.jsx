@@ -5,7 +5,6 @@ import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import AddLeads from './pages/AddLeads'
 import Marketing from './pages/Marketing'
-import Campaigns from './pages/Campaigns'
 import Tasks from './pages/Tasks'
 import Prompts from './pages/Prompts'
 import CustomActions from './pages/CustomActions'
@@ -15,7 +14,6 @@ import Groups from './pages/Groups'
 import Logs from './pages/Logs'
 import PeopleCompanies from './pages/People&Companies'
 import LogDetails from './pages/LogDetails'
-import CampaignDetails from './pages/CampaignDetails'
 import { useAuth } from './contexts/AuthContext'
 import { RoundSpinner } from './components/ui/spinner'
 import { Toaster } from './components/ui/sonner'
@@ -80,14 +78,6 @@ function App() {
           } 
         />
         <Route 
-          path="/campaigns" 
-          element={
-            <ProtectedRoute>
-              <Campaigns />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
           path="/tasks" 
           element={
             <ProtectedRoute>
@@ -132,14 +122,6 @@ function App() {
           element={
             <ProtectedRoute>
               <LogDetails />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/campaigns/:campaignId" 
-          element={
-            <ProtectedRoute>
-              <CampaignDetails />
             </ProtectedRoute>
           } 
         />

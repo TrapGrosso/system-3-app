@@ -48,15 +48,12 @@ export default function ProspectsTable({
   onAddNote,
   onCreateTask,
   onAddToGroup,
-  onAddToCampaign,
   onAddToDeepSearch,
   onBulkAddToGroup,
-  onBulkAddToCampaign,
   onBulkAddToDeepSearch,
   onCreateVariables,
   onBulkCreateVariables,
   onRemoveFromGroup,
-  onRemoveFromCampaign,
   onUpdate,
   onDelete,
   onBulkDelete,
@@ -488,28 +485,7 @@ export default function ProspectsTable({
           />
         )
       },
-    },
-    {
-      accessorKey: "campaigns",
-      header: "Campaigns",
-      enableSorting: false,
-      cell: ({ row }) => {
-        const campaigns = row.original.campaigns || []
-        return (
-          <TablePopoverCell
-            items={campaigns}
-            icon={<FlagIcon />}
-            triggerVariant="slate"
-            title="Campaigns"
-            renderItem={(campaign) => (
-              <div className="p-2 border rounded-md text-sm">
-                <p className="text-foreground">{campaign.name}</p>
-              </div>
-            )}
-          />
-        )
-      },
-    },
+    }
   ], [])
 
   // External pagination state
@@ -554,17 +530,6 @@ export default function ProspectsTable({
           onBulkAddToGroup(selectedIds)
         } else {
           alert(`Add ${selectedIds.length} prospects to group`)
-        }
-      }
-    },
-    {
-      label: "Add to Campaign", 
-      value: "addToCampaign",
-      onSelect: (selectedIds) => {
-        if (onBulkAddToCampaign) {
-          onBulkAddToCampaign(selectedIds)
-        } else {
-          alert(`Add ${selectedIds.length} prospects to campaign`)
         }
       }
     },
@@ -638,7 +603,7 @@ export default function ProspectsTable({
         }
       }
     },
-  ], [onBulkAddToGroup, onBulkAddToCampaign, onBulkAddToDeepSearch, onBulkCreateVariables, onBulkDelete, onBulkFindEmails, onBulkVerifyEmails])
+  ], [onBulkAddToGroup, onBulkAddToDeepSearch, onBulkCreateVariables, onBulkDelete, onBulkFindEmails, onBulkVerifyEmails])
 
   // Row actions function
   const rowActions = React.useCallback((ctx) => [
@@ -681,12 +646,6 @@ export default function ProspectsTable({
         : alert(`Add ${ctx.first_name} ${ctx.last_name} to group`)
     },
     {
-      label: "Add to Campaign",
-      onSelect: () => onAddToCampaign
-        ? onAddToCampaign(ctx.linkedin_id)
-        : alert(`Add ${ctx.first_name} ${ctx.last_name} to campaign`)
-    },
-    {
       label: "Add to Deep Search Queue",
       onSelect: () => onAddToDeepSearch?.(ctx.linkedin_id)
     },
@@ -705,20 +664,13 @@ export default function ProspectsTable({
         : alert(`Remove ${ctx.first_name} ${ctx.last_name} from group`)
     },
     {
-      label: "Remove from Campaign",
-      variant: "destructive",
-      onSelect: () => onRemoveFromCampaign
-        ? onRemoveFromCampaign(ctx.linkedin_id, ctx)
-        : alert(`Remove ${ctx.first_name} ${ctx.last_name} from campaign`)
-    },
-    {
       label: "Delete",
       variant: "destructive",
       onSelect: () => onDelete
         ? onDelete(ctx)
         : alert(`Delete ${ctx.first_name} ${ctx.last_name}`)
     }
-  ], [onUpdate, onDelete, onAddNote, onCreateTask, onAddToGroup, onAddToCampaign, onAddToDeepSearch, onCreateVariables, onRemoveFromGroup, onRemoveFromCampaign])
+  ], [onUpdate, onDelete, onAddNote, onCreateTask, onAddToGroup, onAddToDeepSearch, onCreateVariables, onRemoveFromGroup])
 
   // Row click handler
   const handleRowClick = React.useCallback((prospect) => {

@@ -60,13 +60,6 @@ export function DialogsProvider({ children }) {
     return open('prospectVariables', { prospect })
   }, [open])
 
-  const openAddToCampaign = useCallback(({ prospect_ids }) => {
-    return open('addToCampaign', { prospect_ids })
-  }, [open])
-
-  const openRemoveFromCampaign = useCallback(({ prospect }) => {
-    return open('removeFromCampaign', { prospect })
-  }, [open])
 
   const openDeepSearchQueue = useCallback(({ prospect_ids }) => {
     return open('deepSearchQueue', { prospect_ids })
@@ -142,8 +135,6 @@ export function DialogsProvider({ children }) {
     openProspectNotes,
     openProspectTasks,
     openProspectVariables,
-    openAddToCampaign,
-    openRemoveFromCampaign,
     openDeepSearchQueue,
     openProspectEnrichments,
     openFindProspectEmails,

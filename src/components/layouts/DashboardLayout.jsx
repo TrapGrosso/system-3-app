@@ -1,13 +1,10 @@
 import {
   IconChartBar,
-  IconDashboard,
   IconHelp,
   IconListDetails,
   IconSettings,
-  IconMailSpark,
   IconChecklist,
   IconMessageCircle,
-  IconBolt,
   IconUsersGroup,
   IconLogs,
   IconListSearch
@@ -73,11 +70,6 @@ export function DashboardLayout({ children, headerText = "Dashboard" }) {
         title: "Marketing",
         url: "/marketing",
         icon: IconChartBar,
-      },
-      {
-        title: "Campaigns",
-        url: "/campaigns",
-        icon: IconMailSpark,
       }
     ],
     navPrimary: [

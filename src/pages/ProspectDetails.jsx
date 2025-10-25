@@ -12,8 +12,7 @@ import { useDialogs } from '@/contexts/DialogsContext'
 import {
   ProspectHeader,
   CompanyCard,
-  TabsPanel,
-  ProspectStatsGrid,
+  TabsPanel
 } from '@/components/prospect-details'
 
 export default function ProspectDetails() {
@@ -35,8 +34,6 @@ export default function ProspectDetails() {
     openPromptSelect,
     openResolveDeepSearchItem,
     openProspectEnrichments,
-    openRemoveFromCampaign,
-    openAddToCampaign,
     confirm
   } = useDialogs()
 
@@ -93,18 +90,6 @@ export default function ProspectDetails() {
       await openResolveDeepSearchItem({ queueIds: [data.deep_search.queue_id] })
       refetch()
     }
-  }
-
-  // RemoveFromCampaign dialog handlers
-  const handleOpenRemoveFromCampaignDialog = async () => {
-    await openRemoveFromCampaign({ prospect: data.prospect })
-    refetch()
-  }
-
-  // AddToCampaign dialog handlers
-  const handleOpenAddToCampaignDialog = async () => {
-    await openAddToCampaign({ prospect_ids: [data.prospect.linkedin_id] })
-    refetch()
   }
 
   // Enrichments dialog handlers
@@ -173,12 +158,11 @@ export default function ProspectDetails() {
               onCreateTask={handleOpenTasksDialog}
               onAddToDeepResearch={handleOpenDeepSearchDialog}
               onAddToGroup={handleOpenGroupsDialog}
-              onAddToCampaign={handleOpenAddToCampaignDialog}
               onCreateVariables={handleOpenEnrichmentsDialog}
               onRefetch={refetch}
             />
           
-          <div className="grid gap-6 px-4 lg:px-6 lg:grid-cols-3 mb-6">
+          <div className="px-6">
             <CompanyCard 
               company={data.company} 
               prospect={data.prospect}
@@ -186,23 +170,12 @@ export default function ProspectDetails() {
               onEditCompany={handleOpenUpdateCompanyDialog}
               refetchProspectDetails={refetch}
             />
-            
-            <ProspectStatsGrid
-              notes={data.notes}
-              tasks={data.tasks}
-              campaigns={data.campaigns}
-              groups={data.groups}
-              variables={data.variables}
-              enrichment={data.enrichment}
-              deepSearch={data.deep_search}
-            />
           </div>
 
           <TabsPanel
             notes={data.notes}
             tasks={data.tasks}
             enrichment={data.enrichment}
-            campaigns={data.campaigns}
             groups={data.groups}
             variables={data.variables}
             logs={data.logs}
@@ -211,8 +184,6 @@ export default function ProspectDetails() {
             onAddTask={handleOpenTasksDialog}
             onAddVariable={handleOpenVariablesDialog}
             onAddToGroup={handleOpenGroupsDialog}
-            onOpenRemoveFromCampaign={handleOpenRemoveFromCampaignDialog}
-            onAddToCampaign={handleOpenAddToCampaignDialog}
             onRefetch={refetch}
           />
     </DashboardLayout>

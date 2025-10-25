@@ -52,11 +52,6 @@ function PeopleCompanies() {
         refetch()
     }
 
-    const handleAddToCampaign = async (linkedinId) => {
-        await open('addToCampaign', { prospect_ids: [linkedinId] })
-        refetch()
-    }
-
     const handleAddToDeepSearch = async (linkedinId) => {
         await open('deepSearchQueue', { prospect_ids: [linkedinId] })
         refetch()
@@ -105,12 +100,6 @@ function PeopleCompanies() {
         refetch()
     }
 
-    const handleBulkAddToCampaign = async (linkedinIds) => {
-        if (!linkedinIds.length) return
-        await open('addToCampaign', { prospect_ids: linkedinIds })
-        refetch()
-    }
-
     const handleBulkAddToDeepSearch = async (linkedinIds) => {
         if (!linkedinIds.length) return
         await open('deepSearchQueue', { prospect_ids: linkedinIds })
@@ -132,12 +121,6 @@ function PeopleCompanies() {
     // Remove from group handler
     const handleRemoveFromGroup = async (linkedinId, prospect) => {
         await open('removeFromGroup', { prospect })
-        refetch()
-    }
-
-    // Remove from campaign handler (single only)
-    const handleRemoveFromCampaign = async (linkedinId, prospect) => {
-        await open('removeFromCampaign', { prospect })
         refetch()
     }
 
@@ -232,15 +215,12 @@ function PeopleCompanies() {
           onAddNote={handleAddNote}
           onCreateTask={handleCreateTask}
           onAddToGroup={handleAddToGroup}
-          onAddToCampaign={handleAddToCampaign}
           onAddToDeepSearch={handleAddToDeepSearch}
           onBulkAddToGroup={handleBulkAddToGroup}
-          onBulkAddToCampaign={handleBulkAddToCampaign}
           onBulkAddToDeepSearch={handleBulkAddToDeepSearch}
           onCreateVariables={handleCreateVariables}
           onBulkCreateVariables={handleBulkCreateVariables}
           onRemoveFromGroup={handleRemoveFromGroup}
-          onRemoveFromCampaign={handleRemoveFromCampaign}
           onUpdate={handleUpdateProspect}
           onDelete={handleDeleteProspect}
           onBulkDelete={handleBulkDeleteProspects}
