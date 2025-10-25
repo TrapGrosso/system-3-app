@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './pages/Login'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
-import Dashboard from './pages/Dashboard'
 import AddLeads from './pages/AddLeads'
 import Marketing from './pages/Marketing'
 import Campaigns from './pages/Campaigns'
@@ -42,25 +41,17 @@ function App() {
       <Routes>
         <Route 
           path="/login" 
-          element={user ? <Navigate to="/dashboard" replace /> : <Login />} 
+          element={user ? <Navigate to="/people&companies" replace /> : <Login />} 
         />
         <Route 
           path="/forgot-password" 
-          element={user ? <Navigate to="/dashboard" replace /> : <ForgotPassword />} 
+          element={user ? <Navigate to="/people&companies" replace /> : <ForgotPassword />} 
         />
         <Route 
           path="/reset-password" 
           element={
             <ProtectedRoute>
               <ResetPassword />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute>
-              <Dashboard />
             </ProtectedRoute>
           } 
         />
@@ -178,7 +169,7 @@ function App() {
         />
         <Route 
           path="/" 
-          element={<Navigate to={user ? "/dashboard" : "/login"} replace />} 
+          element={<Navigate to={user ? "/people&companies" : "/login"} replace />} 
         />
       </Routes>
     </Router>

@@ -60,11 +60,6 @@ export function DashboardLayout({ children, headerText = "Dashboard" }) {
     },
     navMain: [
       {
-        title: "Dashboard",
-        url: "/dashboard",
-        icon: IconDashboard
-      },
-      {
         title: "People & Companies",
         url: "/people&companies",
         icon: IconListSearch
