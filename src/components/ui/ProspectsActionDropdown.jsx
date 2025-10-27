@@ -12,6 +12,8 @@ import { useGetCustomActionAll } from "@/api/custom-actions/get/all"
 import { useDialogs } from "@/contexts/DialogsContext"
 import { useAuth } from "@/contexts/AuthContext"
 import { toast } from "sonner"
+import { useDeleteProspects } from "@/api/prospect-context/deleteProspects"
+import { useQueryClient } from '@tanstack/react-query'
 
 /**
  * Central hub for all prospect actions with customizable trigger and automatic custom action fetching
@@ -60,7 +62,6 @@ import { toast } from "sonner"
  * @param {Function} [props.onSendEmailBulk] - Override send email handler (bulk)
  * @param {Function} [props.onExportSelected] - Override export selected handler (bulk)
  * @param {Function} [props.onExecuteCustomAction] - Handler for custom action execution
- * @param {Function} [props.onActionFallback] - Fallback for unhandled actions
  */
 export function ProspectsActionDropdown({
   mode,
@@ -93,10 +94,10 @@ export function ProspectsActionDropdown({
   onVerifyEmailsBulk,
   onCreateVariablesBulk,
   onExecuteCustomAction,
-  onActionFallback,
 }) {
   const { user } = useAuth()
   const userId = user?.id
+  const queryClient = useQueryClient()
   const { data: customActionsData } = useGetCustomActionAll(userId)
   const {
     openHandleGroups,
@@ -108,8 +109,17 @@ export function ProspectsActionDropdown({
     openVerifyProspectEmails,
     openRemoveFromGroup,
     openUpdateProspect,
+    openProspectEnrichments,
     confirm
   } = useDialogs()
+
+  const { mutate: deleteProspectsMutate, isPending: isDeleting } = useDeleteProspects({
+    onSuccess: (res) => {
+      toast.success(res?.message || "Prospect(s) deleted")
+      queryClient.invalidateQueries({ queryKey: ['prospects', userId] })
+    },
+    onError: (err) => toast.error(err.message || "Failed to delete prospect(s)")
+  })
 
   // Build default single actions
   const defaultSingleActions = React.useMemo(() => {
@@ -202,7 +212,7 @@ export function ProspectsActionDropdown({
           if (onCreateVariablesSingle) {
             onCreateVariablesSingle(prospect.linkedin_id)
           } else {
-            openProspectVariables({ prospect })
+            openProspectEnrichments({ user_id: userId, prospectIds: [prospect.linkedin_id] })
           }
         }
       },
@@ -223,6 +233,7 @@ export function ProspectsActionDropdown({
         id: 'delete-prospect',
         label: 'Delete',
         variant: 'destructive',
+        disabled: isDeleting,
         onSelect: async () => {
           if (onDeleteProspect) {
             onDeleteProspect(prospect)
@@ -233,7 +244,7 @@ export function ProspectsActionDropdown({
               confirmLabel: 'Delete'
             })
             if (ok) {
-              onActionFallback?.('deleteProspect', prospect)
+              deleteProspectsMutate({ user_id: userId, prospect_ids: [prospect.linkedin_id] })
             }
           }
         }
@@ -242,9 +253,10 @@ export function ProspectsActionDropdown({
   }, [
     mode, prospect, userId, onUpdateProspect, onDeleteProspect, onAddNote, onCreateTask,
     onAddToGroupSingle, onAddToDeepSearchSingle, onCreateVariablesSingle, onRemoveFromGroup,
-    onFindEmailSingle, onVerifyEmailSingle, onActionFallback, confirm, openHandleGroups,
+    onFindEmailSingle, onVerifyEmailSingle, confirm, openHandleGroups,
     openProspectNotes, openProspectTasks, openProspectVariables, openDeepSearchQueue,
-    openFindProspectEmails, openVerifyProspectEmails, openRemoveFromGroup, openUpdateProspect
+    openFindProspectEmails, openVerifyProspectEmails, openRemoveFromGroup, openUpdateProspect,
+    isDeleting, deleteProspectsMutate
   ])
 
   // Build default bulk actions
@@ -292,8 +304,7 @@ export function ProspectsActionDropdown({
           if (onCreateVariablesBulk) {
             onCreateVariablesBulk(selectedIds)
           } else {
-            toast.info('Bulk create variables not yet implemented')
-            // openProspectVariables for bulk would need a different dialog
+            openProspectEnrichments({ user_id: userId, prospectIds: selectedIds })
           }
         }
       },
@@ -313,6 +324,7 @@ export function ProspectsActionDropdown({
         id: 'delete-selected',
         label: 'Delete Selected',
         variant: 'destructive',
+        disabled: isDeleting,
         onSelect: async (selectedIds) => {
           if (onDeleteProspectsBulk) {
             onDeleteProspectsBulk(selectedIds)
@@ -323,7 +335,7 @@ export function ProspectsActionDropdown({
               confirmLabel: 'Delete'
             })
             if (ok) {
-              onActionFallback?.('deleteProspectsBulk', selectedIds)
+              deleteProspectsMutate({ user_id: userId, prospect_ids: selectedIds })
             }
           }
         }
@@ -331,8 +343,9 @@ export function ProspectsActionDropdown({
     ]
   }, [
     mode, userId, onAddToGroupBulk, onAddToDeepSearchBulk, onFindEmailsBulk, onCreateVariablesBulk,
-    onVerifyEmailsBulk, onDeleteProspectsBulk, onActionFallback,
-    confirm, openHandleGroups, openDeepSearchQueue, openFindProspectEmails, openVerifyProspectEmails
+    onVerifyEmailsBulk, onDeleteProspectsBulk,
+    confirm, openHandleGroups, openDeepSearchQueue, openFindProspectEmails, openVerifyProspectEmails,
+    isDeleting, deleteProspectsMutate
   ])
 
   // Filter and map custom actions
