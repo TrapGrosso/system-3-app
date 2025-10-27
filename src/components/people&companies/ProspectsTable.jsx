@@ -533,10 +533,7 @@ export default function ProspectsTable({
       pageSizes={[10, 20, 30, 50]}
       paginationAllOption={{ enabled: true, label: 'All', externalValue: 'all' }}
       autoProspectActions={{
-        enabled: true,
-        handlers: {
-          onActionFallback: onProspectActionFallback
-        }
+        enabled: true
       }}
     />
   )

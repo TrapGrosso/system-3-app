@@ -490,16 +490,18 @@ export function ProspectsActionDropdown({
       )
     } else {
       return (
-        <Button
-          variant={variant}
-          size={size}
-          disabled={disabled}
-          className={className}
-          {...restProps}
-        >
-          {children || `Selected (${selectedIds.length})`}
-          <TriggerIcon className="ml-2 h-4 w-4" />
-        </Button>
+        <div className="flex justify-end">
+          <Button
+            variant={variant}
+            size={size}
+            disabled={disabled}
+            className={className}
+            {...restProps}
+          >
+            {children || `Selected (${selectedIds.length})`}
+            <TriggerIcon className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
       )
     }
   }
