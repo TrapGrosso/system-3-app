@@ -46,84 +46,6 @@ function PeopleCompanies() {
         navigate(`/prospects/${linkedinId}`)
     }
 
-    // Individual prospect action handlers using dialogs context
-    const handleAddToGroup = async (linkedinId) => {
-        await open('handleGroups', { user_id: user?.id, prospect_ids: [linkedinId] })
-        refetch()
-    }
-
-    const handleAddToDeepSearch = async (linkedinId) => {
-        await open('deepSearchQueue', { prospect_ids: [linkedinId] })
-        refetch()
-    }
-
-    // Notes handler
-    const handleAddNote = async (linkedinId, prospect) => {
-        await open('prospectNotes', { prospect })
-        refetch()
-    }
-
-    // Tasks handler
-    const handleCreateTask = async (linkedinId, prospect) => {
-        await open('prospectTasks', { prospect })
-        refetch()
-    }
-
-    // Find Prospect Emails handlers
-    const handleFindEmails = async (linkedinId) => {
-        await open('findProspectEmails', { prospect_ids: [linkedinId] })
-        refetch()
-    }
-
-    const handleBulkFindEmails = async (linkedinIds) => {
-        if (!linkedinIds.length) return
-        await open('findProspectEmails', { prospect_ids: linkedinIds })
-        refetch()
-    }
-
-    // Verify Prospect Emails handlers
-    const handleVerifyEmails = async (linkedinId) => {
-        await open('verifyProspectEmails', { prospect_ids: [linkedinId] })
-        refetch()
-    }
-
-    const handleBulkVerifyEmails = async (linkedinIds) => {
-        if (!linkedinIds.length) return
-        await open('verifyProspectEmails', { prospect_ids: linkedinIds })
-        refetch()
-    }
-
-    // Bulk action handlers
-    const handleBulkAddToGroup = async (linkedinIds) => {
-        if (!linkedinIds.length) return
-        await open('handleGroups', { user_id: user?.id, prospect_ids: linkedinIds })
-        refetch()
-    }
-
-    const handleBulkAddToDeepSearch = async (linkedinIds) => {
-        if (!linkedinIds.length) return
-        await open('deepSearchQueue', { prospect_ids: linkedinIds })
-        refetch()
-    }
-
-    // Create Variables handlers
-    const handleCreateVariables = async (linkedinId) => {
-        await open('prospectEnrichments', { user_id: user?.id, prospectIds: [linkedinId] })
-        refetch()
-    }
-
-    const handleBulkCreateVariables = async (linkedinIds) => {
-        if (!linkedinIds.length) return
-        await open('prospectEnrichments', { user_id: user?.id, prospectIds: linkedinIds })
-        refetch()
-    }
-
-    // Remove from group handler
-    const handleRemoveFromGroup = async (linkedinId, prospect) => {
-        await open('removeFromGroup', { prospect })
-        refetch()
-    }
-
     // Companies query handlers
     const handleCompaniesQueryChange = (queryUpdate) => {
         setCompaniesQuery(queryUpdate)
@@ -159,33 +81,19 @@ function PeopleCompanies() {
         refetchCompanies()
     }
 
-    // Prospect action handlers using dialogs context
-    const handleUpdateProspect = async (prospect) => {
-        await open('updateProspect', { prospect })
-        refetch()
-    }
-
-    const handleBulkDeleteProspects = async (ids) => {
-        if (!ids.length) return
-        if (await confirm({ 
-            title: 'Delete Prospects', 
-            description: `Are you sure you want to delete ${ids.length} prospects? This action cannot be undone.`,
-            confirmLabel: `Delete ${ids.length}`,
-            size: 'md'
-        })) {
-            await deleteProspect(ids)
-            refetch()
-        }
-    }
-
-    const handleDeleteProspect = async (prospect) => {
-        if (await confirm({ 
-            title: 'Delete Prospect', 
-            description: `Are you sure you want to delete "${prospect.first_name} ${prospect.last_name}"? This action cannot be undone.`,
-            confirmLabel: 'Delete'
-        })) {
-            await deleteProspect([prospect.linkedin_id])
-            refetch()
+    // Prospect action fallback handler for backend effects (e.g., after confirmed delete)
+    const handleProspectActionFallback = async (action, payload) => {
+        switch (action) {
+            case 'deleteProspect':
+                await deleteProspect([payload.linkedin_id])
+                refetch()
+                break
+            case 'deleteProspectsBulk':
+                await deleteProspect(payload) // payload is array of selectedIds
+                refetch()
+                break
+            default:
+                console.warn(`Unhandled prospect action fallback: ${action}`, payload)
         }
     }
 
@@ -212,22 +120,7 @@ function PeopleCompanies() {
           onRowClick={handleRowClick}
           error={ProspectIsError}
           errorMessage={'Error fetching prospects'}
-          onAddNote={handleAddNote}
-          onCreateTask={handleCreateTask}
-          onAddToGroup={handleAddToGroup}
-          onAddToDeepSearch={handleAddToDeepSearch}
-          onBulkAddToGroup={handleBulkAddToGroup}
-          onBulkAddToDeepSearch={handleBulkAddToDeepSearch}
-          onCreateVariables={handleCreateVariables}
-          onBulkCreateVariables={handleBulkCreateVariables}
-          onRemoveFromGroup={handleRemoveFromGroup}
-          onUpdate={handleUpdateProspect}
-          onDelete={handleDeleteProspect}
-          onBulkDelete={handleBulkDeleteProspects}
-          onFindEmails={handleFindEmails}
-          onBulkFindEmails={handleBulkFindEmails}
-          onVerifyEmails={handleVerifyEmails}
-          onBulkVerifyEmails={handleBulkVerifyEmails}
+          onProspectActionFallback={handleProspectActionFallback}
         />
 
         {/* Companies Section */}

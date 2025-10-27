@@ -45,22 +45,7 @@ export default function ProspectsTable({
   error,
   errorMessage,
   onRowClick,
-  onAddNote,
-  onCreateTask,
-  onAddToGroup,
-  onAddToDeepSearch,
-  onBulkAddToGroup,
-  onBulkAddToDeepSearch,
-  onCreateVariables,
-  onBulkCreateVariables,
-  onRemoveFromGroup,
-  onUpdate,
-  onDelete,
-  onBulkDelete,
-  onBulkFindEmails,
-  onFindEmails,
-  onVerifyEmails,
-  onBulkVerifyEmails
+  onProspectActionFallback
 }) {
 
   // Column definitions (without select and actions - DataTable handles these)
@@ -520,158 +505,6 @@ export default function ProspectsTable({
     })
   }, [onQueryChange, sorting])
 
-  // Bulk actions array
-  const bulkActions = React.useMemo(() => [
-    {
-      label: "Add to Group",
-      value: "addToGroup",
-      onSelect: (selectedIds) => {
-        if (onBulkAddToGroup) {
-          onBulkAddToGroup(selectedIds)
-        } else {
-          alert(`Add ${selectedIds.length} prospects to group`)
-        }
-      }
-    },
-    {
-      label: "Add to Deep Search Queue",
-      value: "addToDeepSearch",
-      onSelect: (selectedIds) => {
-        if (onBulkAddToDeepSearch) {
-          onBulkAddToDeepSearch(selectedIds)
-        }
-      }
-    },
-    {
-      label: "Find Emails",
-      value: "findEmails",
-      onSelect: (selectedIds) => {
-        if (onBulkFindEmails) {
-          onBulkFindEmails(selectedIds)
-        } else {
-          alert(`Find emails for ${selectedIds.length} prospects`)
-        }
-      }
-    },
-    {
-      label: "Create Variables With AI",
-      value: "createVariables",
-      onSelect: (selectedIds) => {
-        if (onBulkCreateVariables) {
-          onBulkCreateVariables(selectedIds)
-        } else {
-          alert(`Create variables for ${selectedIds.length} prospects`)
-        }
-      }
-    },
-    {
-      label: "Verify Emails",
-      value: "verifyEmails",
-      onSelect: (selectedIds) => {
-        if (onBulkVerifyEmails) {
-          onBulkVerifyEmails(selectedIds)
-        } else {
-          alert(`Verify emails for ${selectedIds.length} prospects`)
-        }
-      }
-    },
-    "separator",
-    {
-      label: "Send Email",
-      value: "email",
-      onSelect: (selectedIds) => {
-        alert(`Send email to ${selectedIds.length} prospects`)
-      }
-    },
-    {
-      label: "Export Selected",
-      value: "export",
-      onSelect: (selectedIds) => {
-        alert(`Export ${selectedIds.length} prospects`)
-      }
-    },
-    "separator",
-    {
-      label: "Delete Selected",
-      value: "delete",
-      variant: "destructive",
-      onSelect: (selectedIds) => {
-        if (onBulkDelete) {
-          onBulkDelete(selectedIds)
-        } else {
-          alert(`Delete ${selectedIds.length} prospects`)
-        }
-      }
-    },
-  ], [onBulkAddToGroup, onBulkAddToDeepSearch, onBulkCreateVariables, onBulkDelete, onBulkFindEmails, onBulkVerifyEmails])
-
-  // Row actions function
-  const rowActions = React.useCallback((ctx) => [
-    {
-      label: "Update",
-      onSelect: () => onUpdate
-        ? onUpdate(ctx)
-        : alert(`Update prospect ${ctx.first_name} ${ctx.last_name}`)
-    },
-    "separator",
-    {
-      label: "Add Note",
-      onSelect: () => onAddNote
-        ? onAddNote(ctx.linkedin_id, ctx)
-        : alert(`Add note for ${ctx.first_name} ${ctx.last_name}`)
-    },
-    {
-      label: "Find Email",
-      onSelect: () => onFindEmails
-        ? onFindEmails(Array.isArray(ctx.linkedin_id) ? ctx.linkedin_id : [ctx.linkedin_id])
-        : alert(`Find emails for ${ctx.first_name} ${ctx.last_name}`)
-    },
-    {
-      label: "Create Task",
-      onSelect: () => onCreateTask
-        ? onCreateTask(ctx.linkedin_id, ctx)
-        : alert(`Create task for ${ctx.first_name} ${ctx.last_name}`)
-    },
-    {
-      label: "Verify Email",
-      onSelect: () => onVerifyEmails
-        ? onVerifyEmails(ctx.linkedin_id)
-        : alert(`Verify email for ${ctx.first_name} ${ctx.last_name}`)
-    },
-    "separator",
-    {
-      label: "Add to Group",
-      onSelect: () => onAddToGroup
-        ? onAddToGroup(ctx.linkedin_id)
-        : alert(`Add ${ctx.first_name} ${ctx.last_name} to group`)
-    },
-    {
-      label: "Add to Deep Search Queue",
-      onSelect: () => onAddToDeepSearch?.(ctx.linkedin_id)
-    },
-    {
-      label: "Create Variables With AI",
-      onSelect: () => onCreateVariables
-        ? onCreateVariables(ctx.linkedin_id)
-        : alert(`Create variables for ${ctx.first_name} ${ctx.last_name}`)
-    },
-    "separator",
-    {
-      label: "Remove from Group",
-      variant: "destructive",
-      onSelect: () => onRemoveFromGroup
-        ? onRemoveFromGroup(ctx.linkedin_id, ctx)
-        : alert(`Remove ${ctx.first_name} ${ctx.last_name} from group`)
-    },
-    {
-      label: "Delete",
-      variant: "destructive",
-      onSelect: () => onDelete
-        ? onDelete(ctx)
-        : alert(`Delete ${ctx.first_name} ${ctx.last_name}`)
-    }
-  ], [onUpdate, onDelete, onAddNote, onCreateTask, onAddToGroup, onAddToDeepSearch, onCreateVariables, onRemoveFromGroup])
-
   // Row click handler
   const handleRowClick = React.useCallback((prospect) => {
     if (onRowClick) {
@@ -696,11 +529,15 @@ export default function ProspectsTable({
       sorting={sorting}
       onSortingChange={handleSortingChange}
       manualSorting={true}
-      bulkActions={bulkActions}
-      rowActions={rowActions}
       onRowClick={handleRowClick}
       pageSizes={[10, 20, 30, 50]}
       paginationAllOption={{ enabled: true, label: 'All', externalValue: 'all' }}
+      autoProspectActions={{
+        enabled: true,
+        handlers: {
+          onActionFallback: onProspectActionFallback
+        }
+      }}
     />
   )
 }

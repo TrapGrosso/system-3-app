@@ -14,6 +14,7 @@ import { TableSkeleton } from './TableSkeleton'
 import { TablePagination } from './TablePagination'
 import { TableActionsDropdown } from './TableActionsDropdown'
 import { SortIcon } from './SortIcon'
+import { ProspectsActionDropdown } from '@/components/ui/ProspectsActionDropdown'
 
 /**
  * Generic reusable data table component that handles common table functionality.
@@ -231,6 +232,9 @@ export function DataTable({
   rowActions,
   onRowClick,
   
+  // Auto prospect actions
+  autoProspectActions,
+  
   // Pagination
   mode = "internal",
   paginationState,
@@ -293,8 +297,32 @@ export function DataTable({
       })
     }
     
-    // Add actions column if rowActions provided
-    if (rowActions) {
+    // Add actions column - either custom rowActions or autoProspectActions
+    const shouldUseAutoProspectActions = autoProspectActions?.enabled;
+    
+    if (shouldUseAutoProspectActions) {
+      cols.push({
+        id: "actions",
+        header: "",
+        cell: ({ row }) => (
+          <ProspectsActionDropdown
+            mode="single"
+            prospect={row.original}
+            includeTypes={autoProspectActions.includeTypes}
+            groupVisibility={autoProspectActions.groupVisibility}
+            hideByName={autoProspectActions.hideByName}
+            hideById={autoProspectActions.hideById}
+            onlyNames={autoProspectActions.onlyNames}
+            order={autoProspectActions.order}
+            additionalActions={autoProspectActions.additionalRowActions}
+            triggerProps={autoProspectActions.triggerPropsRow}
+            {...autoProspectActions.handlers}
+          />
+        ),
+        enableSorting: false,
+        enableHiding: false,
+      })
+    } else if (rowActions) {
       cols.push({
         id: "actions",
         header: "",
@@ -313,7 +341,7 @@ export function DataTable({
     }
     
     return cols
-  }, [columns, enableSelection, rowActions])
+  }, [columns, enableSelection, rowActions, autoProspectActions])
 
   // Determine table configuration based on mode
   const isExternal = mode === 'external'
@@ -389,7 +417,23 @@ export function DataTable({
   if (loading) {
     return (
       <div className="space-y-4">
-        <TableBulkActions actions={bulkActions} selectedIds={[]} />
+        {autoProspectActions?.enabled ? (
+          <ProspectsActionDropdown
+            mode="bulk"
+            selectedIds={[]}
+            includeTypes={autoProspectActions.includeTypes}
+            groupVisibility={autoProspectActions.groupVisibility}
+            hideByName={autoProspectActions.hideByName}
+            hideById={autoProspectActions.hideById}
+            onlyNames={autoProspectActions.onlyNames}
+            order={autoProspectActions.order}
+            additionalActions={autoProspectActions.additionalBulkActions}
+            triggerProps={autoProspectActions.triggerPropsBulk}
+            {...autoProspectActions.handlers}
+          />
+        ) : (
+          <TableBulkActions actions={bulkActions} selectedIds={[]} />
+        )}
         <TableSkeleton
           headers={skeletonHeaders}
           rowCount={10}
@@ -411,7 +455,23 @@ export function DataTable({
   if (error) {
     return (
       <div className="space-y-4">
-        <TableBulkActions actions={bulkActions} selectedIds={[]} />
+        {autoProspectActions?.enabled ? (
+          <ProspectsActionDropdown
+            mode="bulk"
+            selectedIds={[]}
+            includeTypes={autoProspectActions.includeTypes}
+            groupVisibility={autoProspectActions.groupVisibility}
+            hideByName={autoProspectActions.hideByName}
+            hideById={autoProspectActions.hideById}
+            onlyNames={autoProspectActions.onlyNames}
+            order={autoProspectActions.order}
+            additionalActions={autoProspectActions.additionalBulkActions}
+            triggerProps={autoProspectActions.triggerPropsBulk}
+            {...autoProspectActions.handlers}
+          />
+        ) : (
+          <TableBulkActions actions={bulkActions} selectedIds={[]} />
+        )}
         <div role="alert" aria-live="polite" className="text-center py-8 text-destructive">
           {errorMessage}
         </div>
@@ -440,7 +500,21 @@ export function DataTable({
   return (
     <div className={`space-y-4 ${className || ''}`} {...props}>
       {/* Bulk Actions */}
-      {enableSelection && (
+      {enableSelection && autoProspectActions?.enabled ? (
+        <ProspectsActionDropdown
+          mode="bulk"
+          selectedIds={selectedIds}
+          includeTypes={autoProspectActions.includeTypes}
+          groupVisibility={autoProspectActions.groupVisibility}
+          hideByName={autoProspectActions.hideByName}
+          hideById={autoProspectActions.hideById}
+          onlyNames={autoProspectActions.onlyNames}
+          order={autoProspectActions.order}
+          additionalActions={autoProspectActions.additionalBulkActions}
+          triggerProps={autoProspectActions.triggerPropsBulk}
+          {...autoProspectActions.handlers}
+        />
+      ) : enableSelection && (
         <TableBulkActions
           actions={bulkActions}
           selectedIds={selectedIds}
