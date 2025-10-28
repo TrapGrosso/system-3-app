@@ -53,16 +53,8 @@ export const useGetCustomActionAll = (userId) => {
  *       "id": "c8b9b1ab-...-...",
  *       "name": "Send to Webhook",
  *       "description": "Push prospect to webhook",
- *       "endpoint_url": "https://example.com/hook",
- *       "auth_type": "bearer",
- *       "auth_config": { ... },
- *       "include_data": { "prospect": true, ... },
- *       "require_data": { "variables": false, ... },
  *       "execution_mode": "single",
- *       "filters": [],
  *       "warning_message": null,
- *       "created_at": "2025-07-04T18:35:22.123456",
- *       "updated_at": "2025-07-04T18:35:22.123456",
  *       "is_active": true
  *     }
  *   ]
@@ -70,7 +62,6 @@ export const useGetCustomActionAll = (userId) => {
  * Error Responses:
  *   - 400: {"error": "Missing required query param: user_id"}
  *   - 400: {"error": "Invalid user_id format. Must be a valid UUID"}
- *   - 500: {"error": "Server configuration error"}
  *   - 500: {"error": "Database error: <detail>"}
  *
  * Example Requests:
