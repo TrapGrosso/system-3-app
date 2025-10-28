@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 
-const executeCustomAction = async (action_id, payload) => {
-  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/custom-action/${action_id}/execute`, {
+const executeCustomAction = async ({ action_id, payload }) => {
+  const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/custom-actions/${action_id}/execute`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
