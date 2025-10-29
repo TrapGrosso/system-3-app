@@ -123,11 +123,31 @@ export default function ProspectsTable({
     {
       accessorKey: "status",
       header: "Status",
-      cell: ({ row }) => (
-        <Badge variant={getStatusVariant(row.original.status)}>
-          {row.original.status || 'Unknown'}
-        </Badge>
-      ),
+      cell: ({ row }) => {
+        const statusObj = row.original.status;
+        const label = statusObj?.status || '—';
+        const description = statusObj?.description || label;
+        const color = statusObj?.color;
+        const textColor = statusObj?.text_color || '#FFFFFF'
+        const fallbackColor = '#c5d1e4ff';
+        const colorToUse = color || fallbackColor;
+
+        return (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Badge 
+                variant="secondary" 
+                style={{ backgroundColor: colorToUse, borderColor: colorToUse, color: textColor }}
+              >
+                {label}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              {description}
+            </TooltipContent>
+          </Tooltip>
+        );
+      },
     },
     {
       accessorKey: "last_log",

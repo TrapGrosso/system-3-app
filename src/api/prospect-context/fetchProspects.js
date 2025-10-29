@@ -59,18 +59,17 @@ export const useProspectsQuery = ({ userId, ...query }) => {
 *   Available fields:
 *   - Prospect fields: first_name, last_name, headline, location, title
 *   - Company fields: company_name, company_website, company_industry, company_size, company_location
-*   - Related data: notes, task_titles, task_descriptions, group_names, campaign_names, variable_name, enrichment_types, enrichment_prompt_names
+*   - Related data: notes, task_titles, task_descriptions, group_names, variable_name, enrichment_types, enrichment_prompt_names
 *   Default: all fields if q is provided
-* - status (optional): Filter by prospect status
+* - status (optional): Filter by prospect status ID (UUID)
 * - in_group (optional): 'yes' or 'no' to filter by group membership
 * - group_name (optional): Filter by specific group name (deprecated, use group_names)
 * - group_names (optional): Comma-separated list of group names to filter by
-* - in_campaign (optional): 'yes' or 'no' to filter by campaign membership
-* - campaign_name (optional): Filter by specific campaign name (deprecated, use campaign_names)
-* - campaign_names (optional): Comma-separated list of campaign names to filter by
 * - prompt_names (optional): Comma-separated list of prompt names to filter by enrichments (matches prompts used on prospect OR company enrichments)
 * - has_bd_scrape (optional): Filter by BD scrape enrichment flag
 * - has_deep_search (optional): Filter by deep search enrichment flag
+* 
+* Note: When sort_by=status, results are sorted alphabetically by status name.
 * 
 * Example Requests:
 * 
@@ -96,10 +95,10 @@ export const useProspectsQuery = ({ userId, ...query }) => {
 * GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&q=initial&search_fields=enrichment_prompt_names
 * 
 * Combined filters:
-* GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&q=manager&search_fields=title,headline&status=new&sort_by=created_at&sort_dir=desc
+* GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&q=manager&search_fields=title,headline&status=caf4f8a7-a4a0-4e56-a236-1c3a57df3f88&sort_by=created_at&sort_dir=desc
 * 
 * Multi-value filters:
-* GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&group_names=VCs,Angels&campaign_names=Q1%20Outreach,Q2%20Follow-up
+* GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&group_names=VCs,Angels
 * 
 * Prompt-based filtering:
 * GET /getAllProspects?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&prompt_names=Initial%20Pitch,Follow-up%20Research
@@ -113,7 +112,13 @@ export const useProspectsQuery = ({ userId, ...query }) => {
 *       "last_name": "Sheshka",
 *       "headline": "IT Innovations Manager | FTECH",
 *       "title": "IT Innovation Manager",
-*       "status": "new",
+*       "status": {
+*         "id": "caf4f8a7-a4a0-4e56-a236-1c3a57df3f88",
+*         "status": "New Lead",
+*         "description": "Recently acquired lead",
+*         "color": "#007bff",
+*         "text_color": #FFFFFF  
+*       },
 *       "location": "Poland",
 *       "email": {
 *         "id": "e1d2c3b4-f5a6-7890-1234-567890abcdef",
@@ -162,7 +167,6 @@ export const useProspectsQuery = ({ userId, ...query }) => {
 *           "name": "test group"
 *         }
 *       ],
-*       "campaigns": [],
 *       "variables": [
 *         {
 *           "id": "d4508141-7727-418a-87a3-a10339bcbfa7",
@@ -210,7 +214,7 @@ export const useProspectsQuery = ({ userId, ...query }) => {
 * {"error": "Missing required query param: user_id"}
 * 
 * Invalid search field (400):
-* {"error": "Parameter validation failed: Invalid search field \"invalid_field\". Must be one of: first_name, last_name, headline, location, title, company_name, company_website, company_industry, company_size, company_location, notes, task_titles, task_descriptions, group_names, campaign_names, variable_name, enrichment_types, enrichment_prompt_names"}
+* {"error": "Parameter validation failed: Invalid search field \"invalid_field\". Must be one of: first_name, last_name, headline, location, title, company_name, company_website, company_industry, company_size, company_location, notes, task_titles, task_descriptions, group_names, variable_name, enrichment_types, enrichment_prompt_names"}
 * 
 * Invalid page size (400):
 * {"error": "Parameter validation failed: Value 150 exceeds maximum of 100"}
