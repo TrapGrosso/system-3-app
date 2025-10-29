@@ -1,13 +1,17 @@
 import * as React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useContext } from "react"
+import { useQueryClient } from '@tanstack/react-query'
 import { Edit3 } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import DialogWrapper from "@/components/shared/dialog/DialogWrapper"
 import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 import FormField from "@/components/shared/ui/FormField"
+import { StatusSelect } from "@/components/ui/StatusSelect"
 
-import { useProspects } from "@/contexts/ProspectsContext"
+import { useAuth } from "@/contexts/AuthContext"
+import { useUpdateProspect } from "@/api/prospects/patch/update"
 
 // Default values to ensure controlled inputs
 const DEFAULT_PROSPECT_VALUES = {
@@ -15,17 +19,8 @@ const DEFAULT_PROSPECT_VALUES = {
   last_name: "",
   title: "",
   location: "",
-  status: "",
+  status_id: null,
 }
-
-// Status options for the select field
-const PROSPECT_STATUSES = [
-  { label: "New", value: "new" },
-  { label: "Queued", value: "queued" },
-  { label: "Researching", value: "researching" },
-  { label: "Ready", value: "ready" },
-  { label: "Archived", value: "archived" },
-]
 
 function UpdateProspectDialog({ 
   open,
@@ -38,8 +33,24 @@ function UpdateProspectDialog({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState(DEFAULT_PROSPECT_VALUES)
 
-  // Get prospects context
-  const { updateProspect, isUpdatingProspect } = useProspects()
+  // Get user ID from AuthContext
+  const { user } = useAuth()
+  const userId = user?.id
+
+  // Setup query client and mutation
+  const queryClient = useQueryClient()
+  const { mutateAsync, isPending } = useUpdateProspect({
+    onSuccess: async (data) => {
+      toast.success(data?.message || "Prospect updated successfully")
+      await queryClient.invalidateQueries({ queryKey: ["prospects", userId] })
+      onSuccess?.()
+      onOpenChange(false)
+    },
+    onError: (error) => {
+      toast.error(error?.message || "Failed to update prospect")
+      console.error('Failed to update prospect:', error)
+    }
+  })
 
   // Initialize form data when prospect changes
   useEffect(() => {
@@ -49,7 +60,7 @@ function UpdateProspectDialog({
         last_name: prospect.last_name || "",
         title: prospect.title || "",
         location: prospect.location || "",
-        status: prospect.status || "",
+        status_id: prospect.status?.id || null,
       })
     }
   }, [prospect])
@@ -64,46 +75,48 @@ function UpdateProspectDialog({
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!formData.first_name.trim() || !formData.last_name.trim() || !prospect) {
+    if (!formData.first_name.trim() || !formData.last_name.trim() || !prospect || !userId) {
       return
     }
 
-    // Build diff payload - only include changed fields
-    const updates = {}
+    // Build updated_fields payload - only include changed fields
+    const updated_fields = {}
     
     if (formData.first_name.trim() !== (prospect.first_name || "")) {
-      updates.updated_first_name = formData.first_name.trim()
+      updated_fields.first_name = formData.first_name.trim()
     }
     
     if (formData.last_name.trim() !== (prospect.last_name || "")) {
-      updates.updated_last_name = formData.last_name.trim()
+      updated_fields.last_name = formData.last_name.trim()
     }
     
     if (formData.title.trim() !== (prospect.title || "")) {
-      updates.updated_title = formData.title.trim() || undefined
+      updated_fields.title = formData.title.trim() || null
     }
     
     if (formData.location.trim() !== (prospect.location || "")) {
-      updates.updated_location = formData.location.trim() || undefined
+      updated_fields.location = formData.location.trim() || null
     }
     
-    if (formData.status !== (prospect.status || "")) {
-      updates.updated_status = formData.status || undefined
+    if (formData.status_id !== (prospect.status?.id || null)) {
+      updated_fields.status_id = formData.status_id || null
     }
 
     // If no changes detected, just close the dialog
-    if (Object.keys(updates).length === 0) {
+    if (Object.keys(updated_fields).length === 0) {
       handleClose()
       return
     }
 
     try {
       setIsSubmitting(true)
-      await updateProspect(prospect.linkedin_id, updates)
-      handleClose()
-      onSuccess?.()
+      await mutateAsync({
+        user_id: userId,
+        prospect_ids: [prospect.linkedin_id],
+        updated_fields
+      })
+      // onSuccess callback will handle closing and invalidating queries
     } catch (error) {
-      // Error handling is done in the context layer via toast
       console.error('Failed to update prospect:', error)
     } finally {
       setIsSubmitting(false)
@@ -121,8 +134,8 @@ function UpdateProspectDialog({
     }
   }, [open])
 
-  const isFormValid = formData.first_name.trim().length > 0 && formData.last_name.trim().length > 0
-  const isLoading = isSubmitting || isUpdatingProspect
+  const isFormValid = formData.first_name.trim().length > 0 && formData.last_name.trim().length > 0 && userId
+  const isLoading = isSubmitting || isPending
 
   return (
     <DialogWrapper
@@ -188,17 +201,21 @@ function UpdateProspectDialog({
         />
 
         {/* Status Field */}
-        <FormField
-          id="prospect-status"
-          label="Status"
-          type="select"
-          value={formData.status}
-          onChange={(v) => handleInputChange("status", v)}
-          placeholder="Select status..."
-          options={PROSPECT_STATUSES}
-          helper="The current status of the prospect"
-          disabled={isLoading}
-        />
+        <div className="space-y-2">
+          <label htmlFor="prospect-status" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            Status
+          </label>
+          <StatusSelect
+            selectedId={formData.status_id}
+            currentStatus={prospect?.status}
+            onChange={(statusObj) => handleInputChange("status_id", statusObj?.id ?? null)}
+            placeholder="Select status"
+            disabled={isLoading}
+          />
+          <p className="text-sm text-muted-foreground">
+            The current status of the prospect
+          </p>
+        </div>
       </form>
 
       <DialogWrapper.Footer className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
