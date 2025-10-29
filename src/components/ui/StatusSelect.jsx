@@ -1,6 +1,6 @@
 import * as React from "react"
-import { useContext, useState, useMemo } from "react"
-import { AuthContext } from "@/contexts/AuthContext"
+import { useState, useMemo } from "react"
+import { useAuth } from "@/contexts/AuthContext"
 import { useGetStatusAll } from "@/api/status/get/all"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -91,7 +91,7 @@ function StatusSelect({
   ...props
 }) {
   // Get user ID from AuthContext
-  const { user } = useContext(AuthContext)
+  const { user } = useAuth()
   const effectiveUserId = user?.id
 
   // Fetch all statuses
@@ -160,17 +160,17 @@ function StatusSelect({
       </SelectTrigger>
       <SelectContent>
         {allowClear && (
-          <SelectItem value="">
+          <SelectItem value={null}>
             <span className="text-muted-foreground">None</span>
           </SelectItem>
         )}
         {data.length === 0 && !isLoading && !isFetching ? (
-          <SelectItem value="" disabled>
+          <SelectItem value={null} disabled>
             <span className="text-muted-foreground">No statuses</span>
           </SelectItem>
         ) : (
           data.map((status) => (
-            <SelectItem key={status.id} value={status.id}>
+            <SelectItem key={status.id} value={status.id || `${new Date().toString + String(Math.random)}`}>
               <div className="flex items-center gap-2">
                 <ColorBadge color={status.color} />
                 <span>{status.status}</span>
