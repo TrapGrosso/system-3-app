@@ -117,7 +117,7 @@ export const useProspectsQuery = ({ userId, ...query }) => {
 *         "status": "New Lead",
 *         "description": "Recently acquired lead",
 *         "color": "#007bff",
-*         "text_color": #FFFFFF  
+*         "text_color": "#FFFFFF"
 *       },
 *       "location": "Poland",
 *       "email": {

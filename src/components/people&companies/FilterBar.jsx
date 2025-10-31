@@ -10,18 +10,11 @@ import { useAllPrompts } from "@/contexts/PromptContext"
 import { useAuth } from '@/contexts/AuthContext'
 import { MultiSelectChipPicker } from "../shared/filter/MultiSelectChipPicker"
 import { SingleSelect } from "../shared/filter/SingleSelect"
+import { StatusSelect } from "@/components/ui/StatusSelect"
 import AdvancedFiltersCollapsible from "../shared/ui/AdvancedFiltersCollapsible"
 import { makeStagedBindings } from "@/utils/filterBindings"
 import { countActiveFilters } from "@/utils/activeFilters"
 
-const STATUS_OPTIONS = [
-  { value: null, label: 'All Statuses' },
-  { value: 'new', label: 'New' },
-  { value: 'queued', label: 'Queued' },
-  { value: 'researching', label: 'Researching' },
-  { value: 'ready', label: 'Ready' },
-  { value: 'archived', label: 'Archived' },
-]
 
 const BOOLEAN_OPTIONS = [
   { value: null, label: 'All' },
@@ -153,11 +146,12 @@ export default function FilterBar({ query, onApplyFilters, onResetFilters, loadi
                   {/* Status Filter */}
                   <div className="space-y-2">
                     <Label className="text-[13px] font-medium text-muted-foreground">Status</Label>
-                    <SingleSelect
-                      value={staged.status.value}
-                      onValueChange={staged.status.set}
-                      options={STATUS_OPTIONS}
+                    <StatusSelect
+                      selectedId={staged.status.value || undefined}
+                      onChange={(status) => staged.status.set(status?.id ?? null)}
+                      allowClear
                       placeholder="All Statuses"
+                      className="h-9 w-full"
                     />
                   </div>
 
