@@ -39,7 +39,7 @@ export const usegetProspectDetails = (userId, prospect_id) => {
 }
 
 /**
- * Fetches detailed information for a specific prospect, including associated company, variables, enrichments, notes, tasks, campaigns, groups, and deep search queue status.
+ * Fetches detailed information for a specific prospect, including associated company, variables, enrichments, notes, tasks, groups, and deep search queue status.
  * 
  * Example Request:
  * GET /getProspectDetails?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f&prospect_id=annvanino
@@ -54,7 +54,15 @@ export const usegetProspectDetails = (userId, prospect_id) => {
  *     "last_name": "Deleon",
  *     "headline": "Helping New Leaders Transition with Confidence Ranked among San Antonio's Top 15…",
  *     "location": "San Antonio",
- *     "status": "new",
+ *     "status": {
+ *       "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+ *       "status": "new",
+ *       "description": "New prospect",
+ *       "color": "#007bff",
+ *       "text_color": "#ffffff",
+ *       "created_at": "2025-06-14T19:39:55.513832",
+ *       "updated_at": "2025-06-14T19:39:55.513832"
+ *     },
  *     "email": {
  *       "id": "some-uuid-for-email",
  *       "email": "carlos@example.com",
@@ -163,18 +171,6 @@ export const usegetProspectDetails = (userId, prospect_id) => {
  *       "due_date": "2025-07-01",
  *       "status": "open",
  *       "created_at": "2025-06-29T15:16:48.706565"
- *     }
- *   ],
- *   "campaigns": [
- *     {
- *       "added_at": "2025-06-29T17:18:07",
- *       "campaign": {
- *         "id": "fb42de3f-68f3-4295-8e5a-befd1053bcd2",
- *         "name": "some name",
- *         "end_at": null,
- *         "start_at": "2025-07-01",
- *         "created_at": "2025-06-29T15:17:34.198751"
- *       }
  *     }
  *   ],
  *   "groups": [

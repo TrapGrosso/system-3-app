@@ -7,13 +7,11 @@ import { AlertTriangle, Search } from 'lucide-react'
 import { LoadingScreen } from '@/components/shared/ui/LoadingScreen'
 import { useAuth } from '@/contexts/AuthContext'
 import { usegetProspectDetails } from '@/api/prospect-details/useGetProspectsDetails'
-import { toast } from 'sonner'
 import { useDialogs } from '@/contexts/DialogsContext'
 import {
-  ProspectHeader,
-  CompanyCard,
   TabsPanel
 } from '@/components/prospect-details'
+import ProspectInfo from '@/components/prospect-details/ProspectInfo'
 
 export default function ProspectDetails() {
   const { user } = useAuth()
@@ -26,15 +24,9 @@ export default function ProspectDetails() {
     openProspectNotes,
     openProspectTasks,
     openProspectVariables,
-    openDeepSearchQueue,
     openHandleGroups,
     openChangeCompany,
-    openUpdateCompany,
-    openUpdateProspect,
-    openPromptSelect,
-    openResolveDeepSearchItem,
-    openProspectEnrichments,
-    confirm
+    openUpdateCompany
   } = useDialogs()
 
   const handleOpenNotesDialog = async () => {
@@ -44,11 +36,6 @@ export default function ProspectDetails() {
 
   const handleOpenTasksDialog = async () => {
     await openProspectTasks({ prospect: data.prospect })
-    refetch()
-  }
-
-  const handleOpenDeepSearchDialog = async () => {
-    await openDeepSearchQueue({ prospect_ids: [data.prospect.linkedin_id] })
     refetch()
   }
 
@@ -69,32 +56,6 @@ export default function ProspectDetails() {
 
   const handleOpenUpdateCompanyDialog = async () => {
     await openUpdateCompany({ company: data.company })
-    refetch()
-  }
-
-  // New prospect action handlers
-  const handleOpenUpdateProspectDialog = async () => {
-    await openUpdateProspect({ prospect: data.prospect })
-    refetch()
-  }
-
-  const handleOpenPromptSelectDialog = async () => {
-    if (data.deep_search?.is_in_queue) {
-      await openPromptSelect({ queueItemIds: [data.deep_search.queue_id], selectedCount: 1 })
-      refetch()
-    }
-  }
-
-  const handleOpenResolveDialog = async () => {
-    if (data.deep_search?.is_in_queue) {
-      await openResolveDeepSearchItem({ queueIds: [data.deep_search.queue_id] })
-      refetch()
-    }
-  }
-
-  // Enrichments dialog handlers
-  const handleOpenEnrichmentsDialog = async () => {
-    await openProspectEnrichments({ user_id: user.id, prospectIds: [data.prospect.linkedin_id] })
     refetch()
   }
 
@@ -148,31 +109,16 @@ export default function ProspectDetails() {
 
   return (
     <DashboardLayout headerText="Prospect Details">
-            <ProspectHeader 
-              prospect={data.prospect} 
-              deepSearch={data.deep_search}
-              onUpdateProspect={handleOpenUpdateProspectDialog}
-              onUpdateQueuePrompt={handleOpenPromptSelectDialog}
-              onResolveDeepSearchItem={handleOpenResolveDialog}
-              onAddNote={handleOpenNotesDialog}
-              onCreateTask={handleOpenTasksDialog}
-              onAddToDeepResearch={handleOpenDeepSearchDialog}
-              onAddToGroup={handleOpenGroupsDialog}
-              onCreateVariables={handleOpenEnrichmentsDialog}
-              onRefetch={refetch}
-            />
-          
-          <div className="px-6">
-            <CompanyCard 
-              company={data.company} 
-              prospect={data.prospect}
-              onAddCompany={handleOpenChangeCompanyDialog}
-              onEditCompany={handleOpenUpdateCompanyDialog}
-              refetchProspectDetails={refetch}
-            />
-          </div>
+      <ProspectInfo
+        prospect={data.prospect}
+        company={data.company}
+        deepSearch={data.deep_search}
+        onRefetch={refetch}
+        onAddCompany={handleOpenChangeCompanyDialog}
+        onEditCompany={handleOpenUpdateCompanyDialog}
+      />
 
-          <TabsPanel
+      <TabsPanel
             notes={data.notes}
             tasks={data.tasks}
             enrichment={data.enrichment}
