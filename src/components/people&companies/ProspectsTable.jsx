@@ -22,20 +22,6 @@ import { DataTable } from '@/components/shared/table/DataTable'
 import AdvancedFiltersCollapsible from '@/components/shared/ui/AdvancedFiltersCollapsible'
 import { formatTimestamp, formatAbsolute } from '@/utils/timeformat'
 import { formatDuration } from '@/utils/durationFormat'
-import { generateRandomHex } from "@/utils/generateRandomHex"
-
-const getStatusVariant = (status) => {
-  switch (status?.toLowerCase()) {
-    case 'new':
-      return 'secondary'
-    case 'contacted':
-      return 'default'
-    case 'qualified':
-      return 'default'
-    default:
-      return 'outline'
-  }
-}
 
 export default function ProspectsTable({ 
   data = [],
@@ -128,11 +114,10 @@ export default function ProspectsTable({
         const statusObj = row.original.status;
         const { 
           status: label = '—',
-          description = 'No description provided',
-          color: originalColor = null,
-          text_color: originalTextColor = null,
+          description = statusObj.label ?? 'No description provided',
+          color,
+          text_color,
          } = statusObj
-         const { text_color, color } = generateRandomHex({ text_color: originalTextColor, color: originalColor })
 
         return (
           <Tooltip>
