@@ -22,6 +22,7 @@ import { DataTable } from '@/components/shared/table/DataTable'
 import AdvancedFiltersCollapsible from '@/components/shared/ui/AdvancedFiltersCollapsible'
 import { formatTimestamp, formatAbsolute } from '@/utils/timeformat'
 import { formatDuration } from '@/utils/durationFormat'
+import { generateRandomHex } from "@/utils/generateRandomHex"
 
 const getStatusVariant = (status) => {
   switch (status?.toLowerCase()) {
@@ -125,19 +126,20 @@ export default function ProspectsTable({
       header: "Status",
       cell: ({ row }) => {
         const statusObj = row.original.status;
-        const label = statusObj?.status || '—';
-        const description = statusObj?.description || label;
-        const color = statusObj?.color;
-        const textColor = statusObj?.text_color || '#FFFFFF'
-        const fallbackColor = '#c5d1e4ff';
-        const colorToUse = color || fallbackColor;
+        const { 
+          status: label = '—',
+          description = 'No description provided',
+          color: originalColor = null,
+          text_color: originalTextColor = null,
+         } = statusObj
+         const { text_color, color } = generateRandomHex({ text_color: originalTextColor, color: originalColor })
 
         return (
           <Tooltip>
             <TooltipTrigger asChild>
               <Badge 
                 variant="secondary" 
-                style={{ backgroundColor: colorToUse, borderColor: colorToUse, color: textColor }}
+                style={{ backgroundColor: color, borderColor: null, color: text_color }}
               >
                 {label}
               </Badge>
