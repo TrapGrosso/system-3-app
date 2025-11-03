@@ -14,17 +14,18 @@ import DialogWrapper from "@/components/shared/dialog/DialogWrapper"
 import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 import GroupSingleSelect from "@/components/shared/dialog/GroupSingleSelect"
 import CheckboxMatrix from "@/components/shared/dialog/CheckboxMatrix"
+import { StatusSelect } from "@/components/ui/StatusSelect"
 
 // Multi-select options for lead processing
 const MULTI_OPTIONS = [
   { value: "send_notification", label: "Send email notification when finished" },
   { value: "find_emails", label: "find emails" },
-  { value: "ignore_prospect_companies", label: "Ignore prospect's companies" },
   { value: "ignore_all_companies", label: "Ignore all companies" },
   { value: "add_to_ds_queue", label: "Add prospects to deep search queue" },
-  { value: "ignore_other_companies", label: "Ignore provided companies" },
-  { value: "output_prospect_with_companies", label: "Output only propsects with companies" },
-  { value: "search_companies_with_ai", label: "Search prospects's companies with AI" },
+  { value: "ignore_other_companies", label: "Ignore linkedin company urls provided" },
+  { value: "output_prospect_with_companies", label: "Output only prospects with their company" },
+  { value: "search_companies_with_ai", label: "Search prospects's companies with AI if company wasn't found" },
+  { value: "update_status", label: "Update status on completion" },
 ]
 
 function SubmitLeadsDialog({ 
@@ -39,6 +40,7 @@ function SubmitLeadsDialog({
   const [selectedGroupId, setSelectedGroupId] = useState("")
   const [selectedOptions, setSelectedOptions] = useState([])
   const [selectedPromptIds, setSelectedPromptIds] = useState([])
+  const [selectedStatusId, setSelectedStatusId] = useState(null)
   const didInitRef = useRef(false)
 
   // Get groups context
@@ -58,6 +60,12 @@ function SubmitLeadsDialog({
       } else {
         setSelectedGroupId("")
       }
+      // Preload status_id if update_status flag is enabled
+      if (defaults.flags?.includes("update_status") && defaults.status_id) {
+        setSelectedStatusId(defaults.status_id)
+      } else {
+        setSelectedStatusId(null)
+      }
       didInitRef.current = true
     }
   }, [open, defaults, isLoadingDefaults])
@@ -70,6 +78,9 @@ function SubmitLeadsDialog({
       flags: selectedOptions,
       ...(selectedOptions.includes('add_to_ds_queue') && {
         prompt_ids: selectedPromptIds
+      }),
+      ...(selectedOptions.includes('update_status') && selectedStatusId && {
+        status_id: selectedStatusId
       })
     }
     
@@ -85,6 +96,7 @@ function SubmitLeadsDialog({
       setSelectedGroupId("")
       setSelectedOptions([])
       setSelectedPromptIds([])
+      setSelectedStatusId(null)
       didInitRef.current = false // Reset ref for next open
     }
   }
@@ -133,6 +145,24 @@ function SubmitLeadsDialog({
           onChange={setSelectedOptions}
           disabled={isPending}
         />
+
+        {/* Update Status Selection */}
+        {selectedOptions.includes('update_status') && (
+          <>
+            <Separator />
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">
+                Status to set on completion
+              </Label>
+              <StatusSelect
+                selectedId={selectedStatusId}
+                onChange={(status) => setSelectedStatusId(status?.id ?? null)}
+                placeholder="Select status to set on completion"
+                disabled={isPending}
+              />
+            </div>
+          </>
+        )}
 
         {/* Deep Search Queue Prompts */}
         {selectedOptions.includes('add_to_ds_queue') && (
@@ -184,7 +214,8 @@ function SubmitLeadsDialog({
           disabled={
             urlCount === 0 ||
             isPending ||
-            (selectedOptions.includes('add_to_ds_queue') && selectedPromptIds.length === 0)
+            (selectedOptions.includes('add_to_ds_queue') && selectedPromptIds.length === 0) ||
+            (selectedOptions.includes('update_status') && !selectedStatusId)
           }
         >
           <Send className="h-4 w-4 mr-2" />
