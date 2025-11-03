@@ -1,5 +1,3 @@
-export { default as ProspectHeader } from './ProspectHeader'
-export { default as CompanyCard } from './CompanyCard'
 export { default as TabsPanel } from './TabsPanel'
 export { default as NotesList } from './NotesList'
 export { default as TasksList } from './TasksList'

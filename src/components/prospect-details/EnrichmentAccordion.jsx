@@ -88,7 +88,7 @@ export default function EnrichmentAccordion({ enrichment = {}, onRefetch }) {
               </Button>
               
               {isExpanded && (
-                <div className="px-4 pb-4 space-y-3">
+                <div className="px-4 pb-4 space-y-2">
                   {items.map((item, index) => (
                     <div key={item.id || index} className="border-l-2 border-muted pl-4 relative group">
                       <div className="flex items-center justify-between mb-2">
@@ -124,18 +124,12 @@ export default function EnrichmentAccordion({ enrichment = {}, onRefetch }) {
                       </div>
                       
                       {item.summary && (
-                        <div className="mb-2">
-                          <p className="text-sm font-medium mb-1">Summary:</p>
-                          <MarkdownScrollBox content={item.summary} />
-                        </div>
-                      )}
-                      
-                      {item.raw_data && (
-                        <div>
-                          <p className="text-sm font-medium mb-1">Raw Data:</p>
-                          <pre className="text-xs bg-muted p-2 rounded overflow-x-auto max-h-40">
-                            {JSON.stringify(item.raw_data, null, 2)}
-                          </pre>
+                        <div className="mb-1">
+                          <p className="text-sm font-medium mb-0.5">Summary:</p>
+                          <MarkdownScrollBox 
+                            content={item.summary} 
+                            dense 
+                          />
                         </div>
                       )}
                     </div>
