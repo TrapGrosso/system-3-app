@@ -231,8 +231,8 @@ function GroupProspectsTable({
                     </div>
                   </TableCell>
                   <TableCell className="max-w-sm">
-                    <div className="truncate text-sm text-muted-foreground" title={prospect.company}>
-                      {prospect.company || 'No company'}
+                    <div className="truncate text-sm text-muted-foreground" title={prospect?.company?.name}>
+                      {prospect?.company?.name || 'No company'}
                     </div>
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
