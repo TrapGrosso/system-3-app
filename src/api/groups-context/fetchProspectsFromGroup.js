@@ -57,9 +57,20 @@ export const useFetchProspectsFromGroup = (userId, groupId) => {
  *     "status": "new",
  *     "email": "john@apple.com",
  *     "title": "Account Executive",
- *     "custom_vars": {},
  *     "created_at": "2025-07-04T18:35:22.123456",
- *     "updated_at": "2025-07-05T08:11:02.987654"
+ *     "updated_at": "2025-07-05T08:11:02.987654",
+ *     "company": {
+ *       "linkedin_id": "apple-001",
+ *       "user_id": "bb370a65-08df-4ddc-8a0f-aa5c65fc568f",
+ *       "name": "Apple Inc.",
+ *       "website": "https://apple.com",
+ *       "industry": "Technology",
+ *       "size": 150000,
+ *       "location": "Cupertino, CA",
+ *       "extra": {},
+ *       "created_at": "2025-07-04T18:35:22.123456",
+ *       "updated_at": "2025-07-05T08:11:02.987654"
+ *     }
  *   }
  * ]
  * 
