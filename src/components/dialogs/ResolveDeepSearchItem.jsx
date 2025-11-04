@@ -10,6 +10,8 @@ import CheckboxMatrix from "@/components/shared/dialog/CheckboxMatrix"
 import { SingleSelect } from "@/components/shared/filter/SingleSelect"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { Label } from "@/components/ui/label"
+import { StatusSelect } from "@/components/ui/StatusSelect"
 
 import { useDeepSearchQueue } from "@/contexts/DeepSearchQueueContext"
 import { useUserSettings } from "@/contexts/UserSettingsContext"
@@ -24,7 +26,8 @@ const PRECISION_OPTIONS = [
 // Placeholder flags for future use
 const FLAG_OPTIONS = [
   { value: 'reduce_search_tokens', label: 'Reduce search token usage' },
-  { value: 'cache_linkedin_scrape', label: 'Cache linkedin scrape' }
+  { value: 'cache_linkedin_scrape', label: 'Cache linkedin scrape' },
+  { value: 'update_status', label: 'Update status on resolution' }
 ]
 
 function ResolveDeepSearchItem({
@@ -39,6 +42,7 @@ function ResolveDeepSearchItem({
   const [maxSearches, setMaxSearches] = useState("3")
   const [maxScrapes, setMaxScrapes] = useState("3")
   const [selectedFlags, setSelectedFlags] = useState([])
+  const [selectedStatusId, setSelectedStatusId] = useState(null)
 
   // Get deep search queue context
   const { resolveProspects, isResolvingQueue } = useDeepSearchQueue()
@@ -57,7 +61,10 @@ function ResolveDeepSearchItem({
       agent_precision: precision,
       max_searches: maxSearchesNum,
       max_scrapes: maxScrapesNum,
-      flags: selectedFlags
+      flags: selectedFlags,
+      ...(selectedFlags.includes('update_status') && selectedStatusId && {
+        status_id: selectedStatusId
+      })
     }
 
     try {
@@ -72,6 +79,8 @@ function ResolveDeepSearchItem({
 
   const handleClose = () => {
     onOpenChange(false)
+    // Reset state when closing
+    setSelectedStatusId(null)
   }
 
   // Reset state when dialog closes or set defaults when dialog opens
@@ -83,6 +92,12 @@ function ResolveDeepSearchItem({
       setMaxSearches(String(d.max_searches ?? 3))
       setMaxScrapes(String(d.max_scrapes ?? 3))
       setSelectedFlags(Array.isArray(d.flags) ? d.flags : [])
+      // Preload status_id if update_status flag is enabled
+      if (Array.isArray(d.flags) && d.flags.includes("update_status") && d.status_id) {
+        setSelectedStatusId(d.status_id)
+      } else {
+        setSelectedStatusId(null)
+      }
     }
   }, [open, getSetting])
 
@@ -93,7 +108,8 @@ function ResolveDeepSearchItem({
                      maxSearchesNum > 0 && 
                      maxScrapesNum > 0 &&
                      Number.isInteger(maxSearchesNum) &&
-                     Number.isInteger(maxScrapesNum)
+                     Number.isInteger(maxScrapesNum) &&
+                     !(selectedFlags.includes('update_status') && !selectedStatusId)
 
   return (
     <DialogWrapper
@@ -168,6 +184,24 @@ function ResolveDeepSearchItem({
           onChange={setSelectedFlags}
           disabled={!isFormValid || isResolvingQueue}
         />
+
+        {/* Update Status Selection */}
+        {selectedFlags.includes('update_status') && (
+          <>
+            <Separator />
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">
+                Status to set on completion
+              </Label>
+              <StatusSelect
+                selectedId={selectedStatusId}
+                onChange={(status) => setSelectedStatusId(status?.id ?? null)}
+                placeholder="Select status to set on completion"
+                disabled={isResolvingQueue}
+              />
+            </div>
+          </>
+        )}
       </DialogWrapper.Body>
 
       <DialogWrapper.Footer className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
