@@ -20,11 +20,13 @@ import { SingleSelect } from "@/components/shared/filter/SingleSelect"
 import { EnrichmentFilters } from "./EnrichmentFilters"
 import { ConfirmationSummary } from "./ConfirmationSummary"
 import { useGetProspectEnrichments } from "@/api/variable-dialog/getProspectEnrichments"
+import { StatusSelect } from "@/components/ui/StatusSelect"
 
 // Multi-select options for enrichment processing
 const MULTI_OPTIONS = [
   { value: "send_notification", label: "Send email notification when finished" },
   { value: 'save_tokens', label: "Reduce token usage" },
+  { value: 'update_status', label: "Update status on creation" }
 ]
 
 function ProspectEnrichmentsDialog({
@@ -40,6 +42,7 @@ function ProspectEnrichmentsDialog({
   const [selectedPromptIds, setSelectedPromptIds] = useState([])
   const [selectedOptions, setSelectedOptions] = useState([])
   const [agentPrecision, setAgentPrecision] = useState('default')
+  const [selectedStatusId, setSelectedStatusId] = useState('')
   const [filters, setFilters] = useState({
     promptIds: [],
     entityKinds: [],
@@ -54,6 +57,12 @@ function ProspectEnrichmentsDialog({
       const defaults = getSetting("create_variables_with_ai") || {}
       setSelectedOptions(defaults.flags ?? [])
       setAgentPrecision(defaults.agent_precision ?? "default")
+      // Preload status_id if update_status flag is enabled
+      if (Array.isArray(defaults.flags) && defaults.flags.includes("update_status") && defaults.status_id) {
+        setSelectedStatusId(defaults.status_id)
+      } else {
+        setSelectedStatusId('')
+      }
       initializedRef.current = true
     } else if (!open) {
       initializedRef.current = false
@@ -171,6 +180,7 @@ function ProspectEnrichmentsDialog({
     setStep('select')
     setSelectedPromptIds([])
     setSelectedOptions([])
+    setSelectedStatusId('')
     setFilters({ promptIds: [], entityKinds: [], sources: [] })
     initializedRef.current = false // Reset ref on close
     onOpenChange?.(false)
@@ -186,13 +196,20 @@ function ProspectEnrichmentsDialog({
       })
     )
 
+    const options = {
+      flags: selectedOptions,
+      agent_precision: agentPrecision
+    }
+
+    // Include status_id only when update_status flag is selected and status is chosen
+    if (selectedOptions.includes('update_status') && selectedStatusId) {
+      options.status_id = selectedStatusId
+    }
+
     createVariablesMutation.mutate({ 
       user_id, 
       prospect_enrichments_ids,
-      options: {
-        flags: selectedOptions,
-        agent_precision: agentPrecision
-      }
+      options
     })
   }
 
@@ -331,6 +348,23 @@ function ProspectEnrichmentsDialog({
                   ))}
                 </div>
               </div>
+
+              {/* Update Status Selection */}
+              {selectedOptions.includes('update_status') && (
+                <>
+                  <Separator />
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">
+                      Status to set on creation
+                    </Label>
+                    <StatusSelect
+                      selectedId={selectedStatusId}
+                      onChange={(status) => setSelectedStatusId(status?.id || '')}
+                      placeholder="Select status to set on creation"
+                    />
+                  </div>
+                </>
+              )}
             </div>
           )}
 

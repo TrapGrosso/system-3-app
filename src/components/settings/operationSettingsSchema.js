@@ -10,7 +10,8 @@ export const OPERATION_SCHEMAS = {
         type: "flags",
         options: [
           { value: "send_notification", label: "Send Notification" },
-          { value: "save_tokens", label: "Save Tokens" }
+          { value: "save_tokens", label: "Save Tokens" },
+          { value: "update_status", label: "Update status on creation" }
         ],
         default: []
       },
@@ -22,7 +23,8 @@ export const OPERATION_SCHEMAS = {
           { value: "high", label: "High" }
         ],
         default: "default"
-      }
+      },
+      status_id: { type: "status_single", default: "" }
     }
   },
   add_leads: {
