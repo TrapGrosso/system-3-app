@@ -52,7 +52,8 @@ export const OPERATION_SCHEMAS = {
         type: "flags",
         options: [
           { value: "reduce_search_tokens", label: "Reduce Search Tokens" },
-          { value: "cache_linkedin_scrape", label: "Cache LinkedIn Scrape" }
+          { value: "cache_linkedin_scrape", label: "Cache LinkedIn Scrape" },
+          { value: 'update_status', label: 'Update status on resolution' }
         ],
         default: []
       },
@@ -66,7 +67,8 @@ export const OPERATION_SCHEMAS = {
         default: "default"
       },
       max_searches: { type: "int", default: 3 },
-      max_scrapes: { type: "int", default: 3 }
+      max_scrapes: { type: "int", default: 3 },
+      status_id: { type: "status_single", default: "" }
     }
   },
   search_company_with_ai: {

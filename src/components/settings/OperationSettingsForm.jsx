@@ -9,6 +9,7 @@ import SpinnerButton from "@/components/shared/ui/SpinnerButton"
 import { OPERATION_SCHEMAS, getSchemaDefaults } from "@/components/settings/operationSettingsSchema"
 import GroupSingleSelect from "@/components/shared/dialog/GroupSingleSelect"
 import PromptMultiSelect from "@/components/shared/dialog/PromptMultiSelect"
+import { StatusSelect } from "@/components/ui/StatusSelect"
 
 /**
  * Form for editing a single operation's default settings.
@@ -39,6 +40,11 @@ export default function OperationSettingsForm({
   }
 
   const renderField = (fieldKey, def) => {
+    // Hide status_id field unless update_status flag is enabled
+    if (fieldKey === "status_id" && !((values.flags || []).includes("update_status"))) {
+      return null
+    }
+
     switch (def.type) {
       case "flags":
         return (
@@ -118,6 +124,18 @@ export default function OperationSettingsForm({
               value={values[fieldKey] || []}
               type={def.promptType || "all"}
               onChange={(val) => handleChange(fieldKey, val)}
+            />
+          </div>
+        )
+      case "status_single":
+        return (
+          <div key={fieldKey} className="space-y-1">
+            <Label>{fieldKey}</Label>
+            <StatusSelect
+              selectedId={values[fieldKey] || ""}
+              allowClear
+              onChange={(s) => handleChange(fieldKey, s?.id || "")}
+              disabled={isLoadingDefaults}
             />
           </div>
         )
