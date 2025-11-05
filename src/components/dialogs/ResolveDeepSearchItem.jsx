@@ -30,6 +30,9 @@ const FLAG_OPTIONS = [
   { value: 'update_status', label: 'Update status on resolution' }
 ]
 
+// Conditional flag that only appears when update_status is selected
+const CONDITIONAL_FLAG = { value: 'include_partially_completed', label: 'Include partially completed' }
+
 function ResolveDeepSearchItem({
   open,
   onOpenChange,
@@ -91,7 +94,14 @@ function ResolveDeepSearchItem({
       setPrecision(d.agent_precision ?? "default")
       setMaxSearches(String(d.max_searches ?? 3))
       setMaxScrapes(String(d.max_scrapes ?? 3))
-      setSelectedFlags(Array.isArray(d.flags) ? d.flags : [])
+      
+      // Sanitize flags - remove conditional flag if update_status is not selected
+      let flags = Array.isArray(d.flags) ? d.flags : []
+      if (flags.includes('include_partially_completed') && !flags.includes('update_status')) {
+        flags = flags.filter(flag => flag !== 'include_partially_completed')
+      }
+      setSelectedFlags(flags)
+      
       // Preload status_id if update_status flag is enabled
       if (Array.isArray(d.flags) && d.flags.includes("update_status") && d.status_id) {
         setSelectedStatusId(d.status_id)
@@ -100,6 +110,13 @@ function ResolveDeepSearchItem({
       }
     }
   }, [open, getSetting])
+
+  // Remove conditional flag when update_status is deselected
+  useEffect(() => {
+    if (!selectedFlags.includes('update_status') && selectedFlags.includes('include_partially_completed')) {
+      setSelectedFlags(prev => prev.filter(flag => flag !== 'include_partially_completed'))
+    }
+  }, [selectedFlags])
 
   // Validation
   const maxSearchesNum = Number(maxSearches) || 0
@@ -110,6 +127,11 @@ function ResolveDeepSearchItem({
                      Number.isInteger(maxSearchesNum) &&
                      Number.isInteger(maxScrapesNum) &&
                      !(selectedFlags.includes('update_status') && !selectedStatusId)
+
+  // Compute visible flags - include conditional flag only when update_status is selected
+  const visibleFlags = selectedFlags.includes('update_status') 
+    ? [...FLAG_OPTIONS, CONDITIONAL_FLAG] 
+    : FLAG_OPTIONS
 
   return (
     <DialogWrapper
@@ -179,7 +201,7 @@ function ResolveDeepSearchItem({
         {/* Flags (placeholder for future) */}
         <CheckboxMatrix
           label="Flags (coming soon)"
-          options={FLAG_OPTIONS}
+          options={visibleFlags}
           value={selectedFlags}
           onChange={setSelectedFlags}
           disabled={!isFormValid || isResolvingQueue}
