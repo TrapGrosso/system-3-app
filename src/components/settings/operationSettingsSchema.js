@@ -11,7 +11,8 @@ export const OPERATION_SCHEMAS = {
         options: [
           { value: "send_notification", label: "Send Notification" },
           { value: "save_tokens", label: "Save Tokens" },
-          { value: "update_status", label: "Update status on creation" }
+          { value: "update_status", label: "Update status on creation" },
+          { value: 'include_partially_completed', label: 'Include partially completed' }
         ],
         default: []
       },
@@ -55,7 +56,8 @@ export const OPERATION_SCHEMAS = {
         options: [
           { value: "reduce_search_tokens", label: "Reduce Search Tokens" },
           { value: "cache_linkedin_scrape", label: "Cache LinkedIn Scrape" },
-          { value: 'update_status', label: 'Update status on resolution' }
+          { value: 'update_status', label: 'Update status on resolution' },
+          { value: 'include_partially_completed', label: 'Include partially completed' }
         ],
         default: []
       },
