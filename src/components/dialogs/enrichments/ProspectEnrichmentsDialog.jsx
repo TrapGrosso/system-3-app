@@ -55,10 +55,17 @@ function ProspectEnrichmentsDialog({
   React.useEffect(() => {
     if (open && !initializedRef.current) {
       const defaults = getSetting("create_variables_with_ai") || {}
-      setSelectedOptions(defaults.flags ?? [])
+      let initialFlags = defaults.flags ?? []
+      
+      // Ensure update_status is included if include_partially_completed is selected
+      if (Array.isArray(initialFlags) && initialFlags.includes("include_partially_completed") && !initialFlags.includes("update_status")) {
+        initialFlags = [...initialFlags, "update_status"]
+      }
+      
+      setSelectedOptions(initialFlags)
       setAgentPrecision(defaults.agent_precision ?? "default")
       // Preload status_id if update_status flag is enabled
-      if (Array.isArray(defaults.flags) && defaults.flags.includes("update_status") && defaults.status_id) {
+      if (Array.isArray(initialFlags) && initialFlags.includes("update_status") && defaults.status_id) {
         setSelectedStatusId(defaults.status_id)
       } else {
         setSelectedStatusId('')
@@ -219,11 +226,27 @@ function ProspectEnrichmentsDialog({
   }
 
   const handleOptionToggle = (optionValue) => {
-    setSelectedOptions(prev => 
-      prev.includes(optionValue) 
-        ? prev.filter(val => val !== optionValue)
-        : [...prev, optionValue]
-    )
+    setSelectedOptions(prev => {
+      let newOptions = [...prev]
+      
+      if (prev.includes(optionValue)) {
+        // Removing option
+        newOptions = prev.filter(val => val !== optionValue)
+        // If update_status is being unchecked, also remove include_partially_completed
+        if (optionValue === 'update_status') {
+          newOptions = newOptions.filter(val => val !== 'include_partially_completed')
+        }
+      } else {
+        // Adding option
+        newOptions = [...prev, optionValue]
+        // If include_partially_completed is being checked, ensure update_status is also checked
+        if (optionValue === 'include_partially_completed' && !prev.includes('update_status')) {
+          newOptions = [...newOptions, 'update_status']
+        }
+      }
+      
+      return newOptions
+    })
   }
 
 
@@ -362,6 +385,17 @@ function ProspectEnrichmentsDialog({
                       onChange={(status) => setSelectedStatusId(status?.id || '')}
                       placeholder="Select status to set on creation"
                     />
+                  </div>
+                  
+                  <Separator />
+                  <div className="space-y-3">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={selectedOptions.includes('include_partially_completed')}
+                        onCheckedChange={() => handleOptionToggle('include_partially_completed')}
+                      />
+                      <span className="text-sm">Include partially completed</span>
+                    </label>
                   </div>
                 </>
               )}
