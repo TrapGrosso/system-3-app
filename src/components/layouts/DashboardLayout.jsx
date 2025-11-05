@@ -65,22 +65,13 @@ export function DashboardLayout({ children, headerText = "Dashboard" }) {
         title: "Add Leads",
         url: "/add-leads",
         icon: IconListDetails,
-      },
-      {
-        title: "Marketing",
-        url: "/marketing",
-        icon: IconChartBar,
       }
     ],
     navPrimary: [
       {
         name: "Groups",
         url: "/groups",
-        icon: IconUsersGroup,
-        dropdownItems: [
-          { label: "All Groups", action: "view-all" },
-          { label: "My Groups", action: "view-mine" }
-        ]
+        icon: IconUsersGroup
       },
       {
         name: "Logs",
@@ -90,22 +81,17 @@ export function DashboardLayout({ children, headerText = "Dashboard" }) {
       {
         name: "Tasks",
         url: "/tasks",
-        icon: IconChecklist,
-        dropdownItems: [
-          { label: "All Tasks", action: "view-all" },
-          { label: "My Tasks", action: "view-mine" },
-          { label: "Overdue", action: "view-overdue" }
-        ]
+        icon: IconChecklist
+      },
+      {
+        name: "Deep Search Queue",
+        url: "/deep-search-queue",
+        icon: IconChartBar,
       },
       {
         name: "Prompts",
         url: "/prompts",
-        icon: IconMessageCircle,
-        dropdownItems: [
-          { label: "Create New", action: "create" },
-          { label: "Templates", action: "templates" },
-          { label: "Export", action: "export" }
-        ]
+        icon: IconMessageCircle
       },
       /*{
         name: "Custom Actions",

@@ -70,7 +70,7 @@ function App() {
           } 
         />
         <Route 
-          path="/marketing" 
+          path="/deep-search-queue" 
           element={
             <ProtectedRoute>
               <Marketing />
