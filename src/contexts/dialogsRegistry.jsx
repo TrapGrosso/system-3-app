@@ -238,10 +238,7 @@ const dialogsRegistry = {
   promptPreview: {
     component: PromptPreviewDialog,
     mapProps: ({ prompt }, resolve) => ({
-      prompt,
-      onOpenChange: (open) => {
-        if (!open) resolve(null);
-      }
+      prompt
     })
   }
 }

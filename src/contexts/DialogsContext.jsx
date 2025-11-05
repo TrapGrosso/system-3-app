@@ -205,9 +205,9 @@ function DialogRenderer() {
 
   return (
     <Component
+      {...mappedProps}
       open={true}
       onOpenChange={handleOpenChange}
-      {...mappedProps}
     />
   )
 }
