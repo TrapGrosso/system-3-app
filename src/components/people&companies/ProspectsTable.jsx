@@ -114,10 +114,10 @@ export default function ProspectsTable({
         const statusObj = row.original.status;
         const { 
           status: label = '—',
-          description = statusObj.label ?? 'No description provided',
+          description = statusObj?.label ?? statusObj ? 'No description provided' : 'No status selected for this prospect',
           color,
           text_color,
-         } = statusObj
+         } = statusObj || {}
 
         return (
           <Tooltip>
