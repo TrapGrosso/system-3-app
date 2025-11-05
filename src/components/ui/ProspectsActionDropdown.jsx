@@ -522,35 +522,27 @@ export function ProspectsActionDropdown({
       ...restProps
     } = triggerProps
     
-    if (mode === 'single') {
-      return (
-        <Button
-          variant={variant}
-          size={size}
-          className={`h-8 w-8 p-0 ${className}`}
-          disabled={disabled}
-          {...restProps}
-        >
-          <span className="sr-only">Open menu</span>
-          {children || <TriggerIcon className="h-4 w-4" />}
-        </Button>
-      )
-    } else {
-      return (
-        <div className="flex justify-end">
-          <Button
-            variant={variant}
-            size={size}
-            disabled={disabled}
-            className={className}
-            {...restProps}
-          >
+    return (
+      <Button
+        variant={variant}
+        size={size}
+        disabled={disabled}
+        className={mode === 'single' ? `h-8 w-8 p-0 ${className}` : className}
+        {...restProps}
+      >
+        {mode === 'single' ? (
+          <>
+            <span className="sr-only">Open menu</span>
+            {children || <TriggerIcon className="h-4 w-4" />}
+          </>
+        ) : (
+          <>
             {children || `Selected (${selectedIds.length})`}
             <TriggerIcon className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      )
-    }
+          </>
+        )}
+      </Button>
+    )
   }
 
   if (allActions.length === 0) {
@@ -558,55 +550,57 @@ export function ProspectsActionDropdown({
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        {renderTrigger()}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {allActions.map((action, index) => {
-          // Handle separator
-          if (action === 'separator') {
-            return <DropdownMenuSeparator key={`separator-${index}`} />
-          }
-          
-          // Handle action item
-          const {
-            id = `action-${index}`,
-            label,
-            onSelect,
-            icon: ItemIcon,
-            variant = 'default',
-            disabled = false,
-            description
-          } = action
-          
-          return (
-            <DropdownMenuItem
-              key={id}
-              variant={variant}
-              disabled={disabled}
-              onClick={(e) => {
-                e.stopPropagation()
-                if (onSelect && !disabled) {
-                  if (mode === 'single') {
-                    onSelect(prospect)
-                  } else if (mode === 'bulk') {
-                    onSelect(selectedIds)
+    <div className={mode === 'bulk' ? 'flex justify-end' : undefined}>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          {renderTrigger()}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {allActions.map((action, index) => {
+            // Handle separator
+            if (action === 'separator') {
+              return <DropdownMenuSeparator key={`separator-${index}`} />
+            }
+            
+            // Handle action item
+            const {
+              id = `action-${index}`,
+              label,
+              onSelect,
+              icon: ItemIcon,
+              variant = 'default',
+              disabled = false,
+              description
+            } = action
+            
+            return (
+              <DropdownMenuItem
+                key={id}
+                variant={variant}
+                disabled={disabled}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (onSelect && !disabled) {
+                    if (mode === 'single') {
+                      onSelect(prospect)
+                    } else if (mode === 'bulk') {
+                      onSelect(selectedIds)
+                    }
                   }
-                }
-              }}
-            >
-              {ItemIcon && <ItemIcon className="h-4 w-4 mr-2" />}
-              <div>
-                <div>{label}</div>
-                {description && (
-                  <div className="text-xs text-muted-foreground mt-1">{description}</div>
-                )}
-              </div>
-            </DropdownMenuItem>
-          )
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
+                }}
+              >
+                {ItemIcon && <ItemIcon className="h-4 w-4 mr-2" />}
+                <div>
+                  <div>{label}</div>
+                  {description && (
+                    <div className="text-xs text-muted-foreground mt-1">{description}</div>
+                  )}
+                </div>
+              </DropdownMenuItem>
+            )
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   )
 }
