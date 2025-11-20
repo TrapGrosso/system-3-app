@@ -125,6 +125,10 @@ export function DialogsProvider({ children }) {
     return open('promptPreview', { prompt })
   }, [open])
 
+  const openExecuteCustomAction = useCallback(({ action, mode, prospectIds = [] }) => {
+    return open('executeCustomAction', { action, mode, prospectIds })
+  }, [open])
+
   const value = {
     activeDialog,
     open,
@@ -150,7 +154,8 @@ export function DialogsProvider({ children }) {
     openPromptSelect,
     openResolveDeepSearchItem,
     openN8nWarnings,
-    openPromptPreview
+    openPromptPreview,
+    openExecuteCustomAction
   }
 
   return (

@@ -22,7 +22,8 @@ import {
   UpdatePromptDialog,
   VerifyProspectEmailsDialog,
   ChangeCompanyDialog,
-  N8nWarningsDialog
+  N8nWarningsDialog,
+  ExecuteCustomActionDialog
 } from '@/components/dialogs'
 
 import { PromptPreviewDialog } from '@/components/prompts'
@@ -239,6 +240,17 @@ const dialogsRegistry = {
     component: PromptPreviewDialog,
     mapProps: ({ prompt }, resolve) => ({
       prompt
+    })
+  },
+
+  // Execute Custom Action Dialog
+  executeCustomAction: {
+    component: ExecuteCustomActionDialog,
+    mapProps: ({ action, mode, prospectIds = [] }, resolve) => ({
+      action,
+      mode,
+      prospectIds,
+      onSuccess: (data) => resolve(data ?? true)
     })
   }
 }

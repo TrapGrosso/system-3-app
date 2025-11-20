@@ -55,6 +55,7 @@ export const useGetCustomActionAll = (userId) => {
  *       "description": "Push prospect to webhook",
  *       "execution_mode": "single",
  *       "warning_message": null,
+ *       "options": {},
  *       "is_active": true
  *     }
  *   ]
@@ -67,3 +68,4 @@ export const useGetCustomActionAll = (userId) => {
  * Example Requests:
  *   GET /functions/v1/custom-actions/all?user_id=bb370a65-08df-4ddc-8a0f-aa5c65fc568f
  */
+

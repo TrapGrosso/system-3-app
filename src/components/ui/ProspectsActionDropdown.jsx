@@ -14,7 +14,6 @@ import { useAuth } from "@/contexts/AuthContext"
 import { toast } from "sonner"
 import { useDeleteProspects } from "@/api/prospect-context/deleteProspects"
 import { useQueryClient } from '@tanstack/react-query'
-import { useExecuteCustomAction } from "@/api/custom-actions/post/execute"
 
 /**
  * Central hub for all prospect actions with customizable trigger and automatic custom action fetching
@@ -111,7 +110,8 @@ export function ProspectsActionDropdown({
     openRemoveFromGroup,
     openUpdateProspect,
     openProspectEnrichments,
-    confirm
+    confirm,
+    openExecuteCustomAction
   } = useDialogs()
 
   const { mutate: deleteProspectsMutate, isPending: isDeleting } = useDeleteProspects({
@@ -120,17 +120,6 @@ export function ProspectsActionDropdown({
       queryClient.invalidateQueries({ queryKey: ['prospects', userId] })
     },
     onError: (err) => toast.error(err.message || "Failed to delete prospect(s)")
-  })
-
-  const { mutate: executeCustomAction, isPending: isExecuting } = useExecuteCustomAction({
-    onSuccess: (res) => {
-      toast.success(res?.message || "Custom action executed successfully")
-      // Optionally invalidate queries if the action affects prospect data
-      queryClient.invalidateQueries({ queryKey: ['prospects', userId] })
-    },
-    onError: (err) => {
-      toast.error(err.message || "Failed to execute custom action")
-    }
   })
 
   // Build default single actions
@@ -381,8 +370,8 @@ export function ProspectsActionDropdown({
           id: `custom-${action.id}`,
           label: action.name,
           description: action.description,
-          disabled: isExecuting,
           onSelect: async () => {
+            // Allow external override to keep API backward-compatible
             if (onExecuteCustomAction) {
               onExecuteCustomAction({
                 action,
@@ -390,45 +379,34 @@ export function ProspectsActionDropdown({
                 prospect: mode === 'single' ? prospect : undefined,
                 selectedIds: mode === 'bulk' ? selectedIds : undefined
               })
-            } else {
-              // Determine the source of prospect IDs based on mode
-              const fromTable = mode === 'single' ? prospect?.linkedin_id : selectedIds
-              
-              // Guard against empty selections in bulk mode
-              if (mode === 'bulk' && (!fromTable || !fromTable.length)) {
-                toast.info('No prospects selected')
-                return
-              }
-              
-              // For single mode, ensure we have a prospect
-              if (mode === 'single' && !prospect?.linkedin_id) {
-                toast.error('No prospect selected')
-                return
-              }
-              
-              // Normalize to array
-              const prospectIds = toArray(fromTable)
-              
-              // Build payload
-              const payload = { user_id: userId, prospectIds }
-              
-              // Show confirm dialog with warning message
-              const ok = await confirm({
-                title: `Execute "${action.name}"?`,
-                description: action.warning_message || `This will process ${prospectIds.length} prospect(s).`,
-                confirmLabel: 'Run'
-              })
-              
-              if (ok) {
-                // Execute the custom action
-                executeCustomAction({ action_id: action.id, payload })
-              }
+              return
             }
+
+            // Determine prospect IDs
+            const fromTable = mode === 'single' ? prospect?.linkedin_id : selectedIds
+
+            if (mode === 'bulk' && (!fromTable || !fromTable.length)) {
+              toast.info('No prospects selected')
+              return
+            }
+            if (mode === 'single' && !prospect?.linkedin_id) {
+              toast.error('No prospect selected')
+              return
+            }
+
+            const prospectIds = Array.isArray(fromTable) ? fromTable : [fromTable]
+
+            // Open the ExecuteCustomActionDialog
+            await openExecuteCustomAction({
+              action,
+              mode,
+              prospectIds,
+            })
           }
         }))
     }
     return []
-  }, [customActionsData, mode, prospect, selectedIds, includeTypes.custom, groupVisibility.custom, onExecuteCustomAction, isExecuting, userId, confirm, executeCustomAction])
+  }, [customActionsData, mode, prospect, selectedIds, includeTypes.custom, groupVisibility.custom, onExecuteCustomAction, openExecuteCustomAction])
 
   // Merge all actions
   const allActions = React.useMemo(() => {
